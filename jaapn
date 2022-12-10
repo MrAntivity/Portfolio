@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Time Until July 1, 2024</title>
+  <style>
+    /* Define a style for the code */
+    .code {
+      /* Center the code on the page */
+      margin: 0 auto;
+      /* Set a fixed width for the code */
+      width: 800px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Time Until July 1, 2024</h1>
+  <p>
+    <script class="code">
+      // Import the datetime library
+      const datetime = require('datetime');
+
+      // Get the current date and time
+      const now = datetime.datetime.now();
+
+      // Set the target date and time
+      const target = datetime.datetime(2024, 7, 1);
+
+      // Calculate the time difference
+      const time_difference = target - now;
+
+      // Print the time difference
+      document.write(`There are ${time_difference.days} days and ${time_difference.seconds // 3600} hours until July 1, 2024.`);
+    </script>
+  </p>
+</body>
+</html>
