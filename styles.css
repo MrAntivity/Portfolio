@@ -47,6 +47,27 @@ body {
   scroll-behavior: smooth;
 }
 
+.skip-link {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 12px 18px;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #04010a;
+  font-weight: 600;
+  text-decoration: none;
+  transform: translateY(-200%);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  z-index: 999;
+  box-shadow: 0 12px 30px rgba(4, 1, 10, 0.35);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+  outline: none;
+}
+
 .glow {
   position: fixed;
   inset: -20vh -30vw auto;
@@ -635,6 +656,35 @@ section h2 {
 .skills-content h3 {
   margin: 0 0 12px;
   font-size: 1.1rem;
+}
+
+.faq {
+  margin-top: 120px;
+}
+
+.faq-grid {
+  margin-top: 40px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 28px;
+}
+
+.faq-item {
+  padding: 28px;
+  border-radius: var(--radius);
+  background: rgba(9, 6, 18, 0.78);
+  border: 1px solid rgba(124, 92, 255, 0.25);
+  box-shadow: var(--shadow);
+}
+
+.faq-item h3 {
+  margin-top: 0;
+  font-size: 1.15rem;
+}
+
+.faq-item p {
+  color: var(--muted);
+  margin-bottom: 0;
 }
 
 .skills-content ul {
