@@ -29,10 +29,11 @@
         <a href="#experience">Experience</a>
         <a href="#projects">Projects</a>
         <a href="#skills">Skills</a>
+        <a href="#blog">Blog</a>
         <a href="#contact">Contact</a>
       </nav>
-      <button class="theme-toggle" aria-label="Toggle dark mode">
-        <span class="material-symbols-outlined">dark_mode</span>
+      <button class="theme-toggle" type="button" aria-label="Activate light mode">
+        <span class="material-symbols-outlined" aria-hidden="true">dark_mode</span>
       </button>
     </header>
 
@@ -45,7 +46,9 @@
             I’m <strong>Aiden Yue</strong>, a Boston University biology student and
             founder dedicated to improving healthcare through scientific
             innovation while scaling design-forward e-commerce ventures.
-            Explore the research, ventures, and community impact I champion.
+            Before turning 18, I guided Asynq Designs past a quarter-million
+            dollars in revenue—proof that design rigor and community empathy can
+            grow into world-class outcomes.
           </p>
           <div class="hero-actions">
             <a class="button primary" href="#projects">View projects</a>
@@ -83,8 +86,11 @@
             e-commerce operations, I bring a data-driven, people-first mindset to
             every project. After completing 50 units with a 3.9 GPA and Dean’s
             List honors at UC Riverside, I transferred to BU to pursue broader
-            pre-med opportunities. I’m actively seeking research assistant roles
-            where I can contribute rigorous analysis, operational excellence, and
+            pre-med opportunities. Guiding Asynq Designs from concept to
+            $250K+ revenue before my 18th birthday taught me how disciplined
+            design systems and compassionate leadership translate into measurable
+            results. I’m actively seeking research assistant roles where I can
+            contribute rigorous analysis, operational excellence, and
             community-centered leadership to the future of healthcare.
           </p>
         </div>
@@ -196,7 +202,8 @@
             <p>
               Designed, color-matched, and 3D-modeled custom keycap sets and
               keyboard accessories—including the internationally released
-              PBTfans Basin—that have surpassed 5,000 global sales.
+              PBTfans Basin—scaling Asynq Designs beyond $250K in revenue and
+              5,000 global sales before my 18th birthday.
             </p>
             <div class="project-links">
               <a href="https://www.linkedin.com/in/aidenyue/details/projects/" target="_blank" rel="noopener">Project details</a>
@@ -263,13 +270,31 @@
             <ul>
               <li>Dean’s List, University of California (Apr 2025)</li>
               <li>International Baccalaureate Diploma (Jul 2024)</li>
-              <li>Bilingual in Chinese and English · 500+ connections &amp; 539 followers</li>
-              <li>27 search appearances &amp; 87 profile views showcase active community engagement</li>
-              <li>Follows Andrew Huberman, OpenAI, and UBS to track cross-industry innovation</li>
-              <li>15+ endorsed skills spanning start-up leadership, marketing strategy, and creative tools</li>
+              <li>Scaled Asynq Designs beyond $250K in global revenue prior to age 18</li>
+              <li>Launched Asynq Ventures to mentor founders on design-first growth</li>
+              <li>Bilingual in Chinese and English with a multicultural client network</li>
             </ul>
           </div>
         </div>
+      </section>
+
+      <section class="blog" id="blog">
+        <div class="section-heading blog-heading">
+          <div>
+            <h2>Blog &amp; Dispatches</h2>
+            <p>
+              Essays on entrepreneurship, health innovation, and the lessons I’m
+              collecting while building Asynq ventures alongside rigorous
+              scientific research.
+            </p>
+          </div>
+          <button class="admin-trigger" type="button" aria-haspopup="dialog">
+            <span class="material-symbols-outlined" aria-hidden="true">lock</span>
+            Admin
+          </button>
+        </div>
+        <div class="blog-grid" data-empty="true"></div>
+        <p class="blog-empty">New essays are coming soon—check back for fresh insights.</p>
       </section>
 
       <section class="contact" id="contact">
@@ -281,17 +306,17 @@
             entrepreneurship.
           </p>
           <div class="contact-grid">
-            <a class="contact-link" href="mailto:connect@asynqdesigns.com">
+            <a class="contact-link" href="mailto:aidenyue2006@gmail.com">
               <span class="material-symbols-outlined">mail</span>
-              connect@asynqdesigns.com
+              Personal Email: aidenyue2006@gmail.com
+            </a>
+            <a class="contact-link" href="mailto:aidenyue@bu.edu">
+              <span class="material-symbols-outlined">school</span>
+              School Email: aidenyue@bu.edu
             </a>
             <a class="contact-link" href="https://www.linkedin.com/in/aidenyue/" target="_blank" rel="noopener">
               <span class="material-symbols-outlined">groups</span>
               linkedin.com/in/aidenyue
-            </a>
-            <a class="contact-link" href="https://www.linkedin.com/school/boston-university/people/" target="_blank" rel="noopener">
-              <span class="material-symbols-outlined">school</span>
-              Connect with BU community
             </a>
           </div>
         </div>
@@ -301,6 +326,49 @@
     <footer class="site-footer">
       <p>© <span id="year"></span> Aiden Yue. Crafted with intent.</p>
     </footer>
+
+    <div class="admin-modal" role="dialog" aria-modal="true" aria-labelledby="admin-title" hidden>
+      <div class="admin-modal__content">
+        <button class="admin-close" type="button" aria-label="Close admin panel">
+          <span class="material-symbols-outlined" aria-hidden="true">close</span>
+        </button>
+        <div class="admin-forms">
+          <form class="admin-login" novalidate>
+            <h3 id="admin-title">Admin login</h3>
+            <p>Securely publish new blog entries.</p>
+            <label>
+              <span>Username</span>
+              <input type="text" name="username" autocomplete="username" required />
+            </label>
+            <label>
+              <span>Password</span>
+              <input type="password" name="password" autocomplete="current-password" required />
+            </label>
+            <button class="button primary" type="submit">Access dashboard</button>
+            <p class="form-error" role="alert" hidden>Invalid credentials. Please try again.</p>
+          </form>
+          <form class="admin-dashboard" hidden>
+            <h3>Publish a post</h3>
+            <label>
+              <span>Title</span>
+              <input type="text" name="title" required />
+            </label>
+            <label>
+              <span>Summary</span>
+              <textarea name="summary" rows="4" required></textarea>
+            </label>
+            <label>
+              <span>Link (optional)</span>
+              <input type="url" name="link" placeholder="https://" />
+            </label>
+            <div class="admin-actions">
+              <button class="button primary" type="submit">Add blog post</button>
+              <button class="button ghost admin-logout" type="button">Log out</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
 
     <script src="script.js"></script>
   </body>

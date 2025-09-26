@@ -10,6 +10,13 @@
   --card-bg: rgba(12, 8, 25, 0.75);
   --shadow: 0 20px 45px rgba(12, 5, 35, 0.45);
   --radius: 24px;
+  --surface-blur: blur(120px);
+  --background-gradient: radial-gradient(
+      circle at 20% 20%,
+      rgba(124, 92, 255, 0.15),
+      transparent 45%
+    ),
+    radial-gradient(circle at 80% 0%, rgba(0, 168, 255, 0.15), transparent 45%);
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
     sans-serif;
 }
@@ -20,9 +27,7 @@
 
 body {
   margin: 0;
-  background: radial-gradient(circle at 20% 20%, rgba(124, 92, 255, 0.15), transparent 45%),
-    radial-gradient(circle at 80% 0%, rgba(0, 168, 255, 0.15), transparent 45%),
-    var(--bg);
+  background: var(--background-gradient), var(--bg);
   color: var(--text);
   font-size: 17px;
   line-height: 1.6;
@@ -35,7 +40,7 @@ body {
   width: 70vw;
   height: 70vw;
   background: radial-gradient(circle, rgba(124, 92, 255, 0.45), transparent 60%);
-  filter: blur(120px);
+  filter: var(--surface-blur);
   opacity: 0.35;
   pointer-events: none;
   z-index: 0;
@@ -106,7 +111,13 @@ main,
   color: var(--text);
   display: grid;
   place-items: center;
-  cursor: not-allowed;
+  cursor: pointer;
+  transition: transform 0.3s ease, background 0.3s ease, border-color 0.3s ease;
+}
+
+.theme-toggle:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .hero {
@@ -248,6 +259,101 @@ section h2 {
   gap: 12px;
   color: var(--muted);
   max-width: 640px;
+}
+
+.blog-heading {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 32px;
+}
+
+.blog-heading > div {
+  flex: 1;
+}
+
+.admin-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted);
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.3s ease, background 0.3s ease, color 0.3s ease;
+}
+
+.admin-trigger:hover,
+.admin-trigger:focus-visible {
+  transform: translateY(-2px);
+  background: rgba(124, 92, 255, 0.12);
+  color: var(--text);
+}
+
+.blog {
+  position: relative;
+}
+
+.blog-grid {
+  margin-top: 48px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 28px;
+}
+
+.blog-card {
+  padding: 28px;
+  border-radius: var(--radius);
+  background: var(--card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.blog-card h3 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.blog-card p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.blog-card a {
+  align-self: flex-start;
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 500;
+  position: relative;
+}
+
+.blog-card a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(135deg, var(--accent), #00a8ff);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+
+.blog-card a:hover::after {
+  transform: scaleX(1);
+}
+
+.blog-empty {
+  margin-top: 32px;
+  color: var(--muted);
+  text-align: center;
 }
 
 .timeline {
@@ -450,6 +556,105 @@ section h2 {
   text-align: center;
 }
 
+.admin-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 1, 10, 0.75);
+  backdrop-filter: blur(8px);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  z-index: 10;
+}
+
+.admin-modal[hidden] {
+  display: none;
+}
+
+.admin-modal__content {
+  width: min(480px, 100%);
+  padding: 40px;
+  border-radius: calc(var(--radius) * 1.1);
+  background: var(--bg-alt);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: var(--shadow);
+  position: relative;
+  display: grid;
+  gap: 24px;
+}
+
+.admin-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.admin-forms form {
+  display: grid;
+  gap: 16px;
+}
+
+.admin-forms label {
+  display: grid;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.admin-forms input,
+.admin-forms textarea {
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  font: inherit;
+  resize: vertical;
+}
+
+.admin-forms input:focus,
+.admin-forms textarea:focus {
+  outline: 2px solid rgba(124, 92, 255, 0.4);
+  outline-offset: 0;
+}
+
+.admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.form-error {
+  margin: 0;
+  color: #ff7a7a;
+  font-size: 0.9rem;
+}
+
+.admin-dashboard h3,
+.admin-login h3 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.admin-login p,
+.admin-dashboard p {
+  margin: 0;
+  color: var(--muted);
+}
+
+body.modal-open {
+  overflow: hidden;
+}
+
 @media (max-width: 900px) {
   .about-content {
     column-count: 1;
@@ -470,28 +675,36 @@ section h2 {
   .hero {
     margin-top: 40px;
   }
+
+  .blog-heading {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    --bg: #f4f5fa;
-    --bg-alt: #ffffff;
-    --text: #1c1232;
-    --muted: rgba(28, 18, 50, 0.65);
-    --card-bg: rgba(255, 255, 255, 0.75);
-    --border: rgba(124, 92, 255, 0.25);
-    --shadow: 0 14px 30px rgba(28, 18, 50, 0.12);
-  }
+body[data-theme='light'] {
+  --bg: #f4f5fa;
+  --bg-alt: #ffffff;
+  --text: #1c1232;
+  --muted: rgba(28, 18, 50, 0.65);
+  --card-bg: rgba(255, 255, 255, 0.85);
+  --border: rgba(124, 92, 255, 0.25);
+  --shadow: 0 14px 30px rgba(28, 18, 50, 0.12);
+  --surface-blur: blur(160px);
+  --background-gradient: radial-gradient(
+      circle at 20% 20%,
+      rgba(124, 92, 255, 0.25),
+      transparent 45%
+    ),
+    radial-gradient(circle at 80% 0%, rgba(0, 168, 255, 0.2), transparent 45%);
+}
 
-  body {
-    background: radial-gradient(circle at 20% 20%, rgba(124, 92, 255, 0.25), transparent 45%),
-      radial-gradient(circle at 80% 0%, rgba(0, 168, 255, 0.2), transparent 45%),
-      var(--bg);
-  }
+body[data-theme='light'] .theme-toggle {
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(124, 92, 255, 0.25);
+  color: var(--text);
+}
 
-  .theme-toggle {
-    background: rgba(0, 0, 0, 0.04);
-    border: 1px solid rgba(124, 92, 255, 0.25);
-    color: var(--text);
-  }
+body[data-theme='light'] .admin-modal {
+  background: rgba(244, 245, 250, 0.8);
 }
