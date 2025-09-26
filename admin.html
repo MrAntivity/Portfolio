@@ -43,8 +43,9 @@
           <p class="eyebrow">Secure dashboard</p>
           <h1>Welcome back, administrator.</h1>
           <p class="lede">
-            Review live portfolio data and craft new blog dispatches for the
-            public site—all protected by your secure login.
+            Review the portfolio’s operating metrics, travel documentation, and
+            academic milestones in one place—all protected by your secure
+            login.
           </p>
         </div>
         <button class="button ghost" type="button" data-logout>Log out</button>
@@ -54,41 +55,20 @@
         <div class="section-heading">
           <h2>Website overview</h2>
           <p>
-            Key data points pulled from the public-facing experience to keep you
-            oriented while updating content.
+            Key data points pulled from the public-facing experience to keep the
+            travel journals, academic updates, and venture milestones aligned.
           </p>
         </div>
         <div class="admin-overview__grid" data-admin-data></div>
       </section>
 
       <section class="admin-blog-panel">
-        <div class="admin-blog__form">
-          <h2>Create a blog post</h2>
-          <p>
-            Draft a new dispatch to immediately publish across the site. Posts
-            appear here and on the public blog page in reverse chronological
-            order.
-          </p>
-          <form data-admin-blog-form novalidate>
-            <label>
-              <span>Title</span>
-              <input type="text" name="title" required />
-            </label>
-            <label>
-              <span>Summary</span>
-              <textarea name="summary" rows="5" required></textarea>
-            </label>
-            <label>
-              <span>Link (optional)</span>
-              <input type="url" name="link" placeholder="https://" />
-            </label>
-            <button class="button primary" type="submit">Publish post</button>
-          </form>
-        </div>
         <div class="admin-blog__list">
-          <h2>Published posts</h2>
-          <p class="admin-blog__empty" data-admin-empty hidden>
-            No custom posts yet. Add your first dispatch using the form.
+          <h2>Editorial library</h2>
+          <p>
+            Every published piece below lives as a static entry in the
+            repository, keeping GitHub Pages deployment simple while retaining a
+            rich travel log.
           </p>
           <div class="blog-grid" data-admin-posts></div>
         </div>
