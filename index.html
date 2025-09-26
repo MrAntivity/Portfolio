@@ -17,7 +17,7 @@
     <link rel="stylesheet" href="styles.css" />
     <link rel="icon" type="image/svg+xml" href="assets/avatar.svg" />
   </head>
-  <body>
+  <body data-page="home">
     <div class="glow"></div>
     <header class="site-header">
       <div class="brand">
@@ -25,12 +25,12 @@
         <span class="name">Aiden Yue</span>
       </div>
       <nav class="site-nav" aria-label="Primary">
-        <a href="#about">About</a>
-        <a href="#experience">Experience</a>
-        <a href="#projects">Projects</a>
-        <a href="#skills">Skills</a>
-        <a href="#blog">Blog</a>
-        <a href="#contact">Contact</a>
+        <a href="index.html#about">About</a>
+        <a href="index.html#experience">Experience</a>
+        <a href="index.html#projects">Projects</a>
+        <a href="index.html#skills">Skills</a>
+        <a href="blog.html">Blog</a>
+        <a href="index.html#contact">Contact</a>
       </nav>
       <button class="theme-toggle" type="button" aria-label="Activate light mode">
         <span class="material-symbols-outlined" aria-hidden="true">dark_mode</span>
@@ -278,25 +278,6 @@
         </div>
       </section>
 
-      <section class="blog" id="blog">
-        <div class="section-heading blog-heading">
-          <div>
-            <h2>Blog &amp; Dispatches</h2>
-            <p>
-              Essays on entrepreneurship, health innovation, and the lessons I’m
-              collecting while building Asynq ventures alongside rigorous
-              scientific research.
-            </p>
-          </div>
-          <button class="admin-trigger" type="button" aria-haspopup="dialog">
-            <span class="material-symbols-outlined" aria-hidden="true">lock</span>
-            Admin
-          </button>
-        </div>
-        <div class="blog-grid" data-empty="true"></div>
-        <p class="blog-empty">New essays are coming soon—check back for fresh insights.</p>
-      </section>
-
       <section class="contact" id="contact">
         <div class="contact-card">
           <h2>Let’s collaborate</h2>
@@ -324,51 +305,11 @@
     </main>
 
     <footer class="site-footer">
-      <p>© <span id="year"></span> Aiden Yue. Crafted with intent.</p>
+      <p>
+        © <span id="year"></span> Aiden Yue. Crafted with intent.
+        <a class="admin-access" href="login.html">Admin login</a>
+      </p>
     </footer>
-
-    <div class="admin-modal" role="dialog" aria-modal="true" aria-labelledby="admin-title" hidden>
-      <div class="admin-modal__content">
-        <button class="admin-close" type="button" aria-label="Close admin panel">
-          <span class="material-symbols-outlined" aria-hidden="true">close</span>
-        </button>
-        <div class="admin-forms">
-          <form class="admin-login" novalidate>
-            <h3 id="admin-title">Admin login</h3>
-            <p>Securely publish new blog entries.</p>
-            <label>
-              <span>Username</span>
-              <input type="text" name="username" autocomplete="username" required />
-            </label>
-            <label>
-              <span>Password</span>
-              <input type="password" name="password" autocomplete="current-password" required />
-            </label>
-            <button class="button primary" type="submit">Access dashboard</button>
-            <p class="form-error" role="alert" hidden>Invalid credentials. Please try again.</p>
-          </form>
-          <form class="admin-dashboard" hidden>
-            <h3>Publish a post</h3>
-            <label>
-              <span>Title</span>
-              <input type="text" name="title" required />
-            </label>
-            <label>
-              <span>Summary</span>
-              <textarea name="summary" rows="4" required></textarea>
-            </label>
-            <label>
-              <span>Link (optional)</span>
-              <input type="url" name="link" placeholder="https://" />
-            </label>
-            <div class="admin-actions">
-              <button class="button primary" type="submit">Add blog post</button>
-              <button class="button ghost admin-logout" type="button">Log out</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
 
     <script src="script.js"></script>
   </body>
