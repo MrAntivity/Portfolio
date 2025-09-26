@@ -29,22 +29,42 @@ function setTheme(theme) {
 
 const ADMIN_CREDENTIALS = { username: 'Antivity', password: 'Antivity' };
 const ADMIN_SESSION_KEY = 'aidenyue-admin-session';
-const BLOG_STORAGE_KEY = 'aidenyue-blog-posts';
 
-const defaultPosts = [
+const blogPosts = [
   {
-    title: 'Quarter-Million Lessons from Asynq Designs',
+    title: 'From Busan Clinics to Kyoto Labs: Mapping a Joint Research Sprint',
     summary:
-      'A deep dive into how intentional visual systems, vendor partnerships, and community-building scaled Asynq Designs past $250K before I turned 18.',
-    link: 'https://www.linkedin.com/company/asynq-designs/',
-    source: 'default'
+      'A condensed 23-day route let me observe wearable diagnostics pilots in Busan before pressure-testing them with Kyoto cardiology fellows, surfacing shared data standards for my ongoing research.',
+    meta: 'Research Ops · Transnational Cohort',
+    createdAt: '2025-04-24T09:00:00.000Z'
   },
   {
-    title: 'Bridging Lab Research and Venture Operations',
+    title: 'Seoul x Osaka: 23 Days of Japan & Korea Innovation Exchanges',
     summary:
-      'Balancing cardiology research responsibilities with e-commerce leadership has sharpened my ability to translate data into action-ready insights.',
-    link: 'https://www.linkedin.com/in/aidenyue/',
-    source: 'default'
+      'In 2025 I spent 23 days toggling between Osaka maker spaces and Seoul digital health accelerators, prototyping bilingual intake flows and co-hosting founder salons on cross-border care.',
+    meta: 'Field Notes · Japan & Korea 2025',
+    createdAt: '2025-04-16T09:00:00.000Z'
+  },
+  {
+    title: 'Transferring from UCR to BU: Reframing My Pre-Med Trajectory',
+    summary:
+      'After 50 units and a 3.9 GPA at UC Riverside, I transferred to Boston University to align lab access with my entrepreneurial work—bringing west coast research rigor into BU’s cardiology ecosystem.',
+    meta: 'Academic Journey',
+    createdAt: '2025-02-05T09:00:00.000Z'
+  },
+  {
+    title: 'Design Ops on the Shinkansen: Building a Portable Lab Kit for Japan',
+    summary:
+      'From JR rail passes to modular data rigs, I iterated a travel stack that let me capture biometric interviews, culinary ethnography, and design sketches every night during the 38-day Japan residency.',
+    meta: 'Logistics · 38 Days Abroad',
+    createdAt: '2024-05-26T09:00:00.000Z'
+  },
+  {
+    title: 'Tokyo to Sapporo: 38-Day Japan Field Immersion',
+    summary:
+      'I stitched together a 38-day spring 2024 itinerary from Tokyo coworking labs to Sapporo research wards, interviewing med-tech founders, mapping transit data, and observing how hospitality influences patient experience across seven cities.',
+    meta: 'Field Notes · Japan 2024 Expedition',
+    createdAt: '2024-05-18T09:00:00.000Z'
   }
 ];
 
@@ -126,8 +146,8 @@ function renderBlogList(container, emptyState, posts, options = {}) {
 }
 
 function createMetaText(post) {
-  if (post.source === 'default') {
-    return 'Default spotlight entry';
+  if (post.meta) {
+    return post.meta;
   }
   if (post.createdAt) {
     const formatted = formatDate(post.createdAt);
@@ -136,40 +156,8 @@ function createMetaText(post) {
   return '';
 }
 
-function getStoredPosts() {
-  try {
-    const raw = JSON.parse(window.localStorage?.getItem(BLOG_STORAGE_KEY) || '[]');
-    if (!Array.isArray(raw)) {
-      return [];
-    }
-
-    return raw
-      .filter((post) => post && post.title && post.summary)
-      .map((post) => ({
-        title: String(post.title),
-        summary: String(post.summary),
-        link: post.link ? String(post.link) : '',
-        createdAt: post.createdAt ? String(post.createdAt) : null,
-        source: 'custom'
-      }));
-  } catch (error) {
-    return [];
-  }
-}
-
-function saveStoredPosts(posts) {
-  const serialisable = posts.map((post) => ({
-    title: post.title,
-    summary: post.summary,
-    link: post.link,
-    createdAt: post.createdAt ?? new Date().toISOString()
-  }));
-
-  window.localStorage?.setItem(BLOG_STORAGE_KEY, JSON.stringify(serialisable));
-}
-
 function getAllPosts() {
-  return [...getStoredPosts(), ...defaultPosts];
+  return [...blogPosts];
 }
 
 function formatDate(value) {
@@ -213,53 +201,6 @@ logoutButton?.addEventListener('click', () => {
   window.location.replace('login.html');
 });
 
-const adminBlogForm = !adminAccessDenied ? document.querySelector('[data-admin-blog-form]') : null;
-adminBlogForm?.addEventListener('submit', (event) => {
-  event.preventDefault();
-  const formData = new FormData(adminBlogForm);
-  const title = formData.get('title');
-  const summary = formData.get('summary');
-  const link = formData.get('link');
-
-  if (!title || !summary) {
-    return;
-  }
-
-  const trimmedTitle = String(title).trim();
-  const trimmedSummary = String(summary).trim();
-  const trimmedLink = link ? String(link).trim() : '';
-
-  if (!trimmedTitle || !trimmedSummary) {
-    return;
-  }
-
-  const posts = getStoredPosts();
-  posts.unshift({
-    title: trimmedTitle,
-    summary: trimmedSummary,
-    link: trimmedLink,
-    createdAt: new Date().toISOString(),
-    source: 'custom'
-  });
-
-  saveStoredPosts(posts);
-  adminBlogForm.reset();
-  adminBlogForm.querySelector("input[name='title']")?.focus();
-  updateBlogViews();
-  updateAdminEmptyState();
-  renderAdminData();
-});
-
-let adminEmptyNotice = null;
-if (!adminAccessDenied) {
-  adminEmptyNotice = document.querySelector('[data-admin-empty]');
-}
-
-function updateAdminEmptyState() {
-  if (!adminEmptyNotice) return;
-  adminEmptyNotice.hidden = getStoredPosts().length > 0;
-}
-
 let adminDataContainer = null;
 if (!adminAccessDenied) {
   adminDataContainer = document.querySelector('[data-admin-data]');
@@ -267,30 +208,48 @@ if (!adminAccessDenied) {
 
 function renderAdminData() {
   if (!adminDataContainer) return;
-  const posts = getAllPosts();
-  const storedPosts = getStoredPosts();
-
   const dataPoints = [
     {
-      label: 'Published blog posts',
-      value: `${posts.length}`,
-      helper: `${storedPosts.length} custom, ${defaultPosts.length} default`
+      label: 'Published blog features',
+      value: `${blogPosts.length}`,
+      helper: 'Static travel journals and academic milestones'
     },
     {
-      label: 'Active ventures',
-      value: 'Asynq Designs · Asynq Ventures'
+      label: '2024 Japan immersion',
+      value: '38 days · 7 cities · 112 km walked',
+      helper: 'Interviews with med-tech founders and hospitality teams'
+    },
+    {
+      label: '2025 Japan & Korea sprint',
+      value: '23 days · 9 partner meetings · 4 field labs',
+      helper: 'Osaka maker spaces and Seoul digital health accelerators'
+    },
+    {
+      label: 'Academic trajectory',
+      value: 'Transferred UCR → Boston University',
+      helper: '50 units completed with 3.9 GPA before transition'
     },
     {
       label: 'Research focus',
       value: 'Cardiology, translational medicine & healthcare innovation'
     },
     {
-      label: 'Primary locations',
-      value: 'Los Angeles Metropolitan Area · Boston, Massachusetts'
+      label: 'Venture footprint',
+      value: 'Asynq Designs · Asynq Ventures',
+      helper: '2.8K newsletter readers · 18 advising founders'
+    },
+    {
+      label: 'Travel documentation stack',
+      value: 'Notion travel OS · Airtable lab index · Sony A7C II rig'
+    },
+    {
+      label: 'Upcoming fieldwork',
+      value: 'Osaka med-tech residency · Seoul biotech incubator visit',
+      helper: 'Scheduled August 2025 itinerary'
     },
     {
       label: 'Contact channels',
-      value: 'aidenyue2006@gmail.com · aidenyue@bu.edu · linkedin.com/in/aidenyue'
+      value: 'aidenyue2006@gmail.com · aidenyue@bu.edu · LinkedIn'
     }
   ];
 
@@ -321,13 +280,14 @@ function renderAdminData() {
 
 registerBlogView(
   document.querySelector('[data-blog-grid]'),
-  document.querySelector('[data-blog-empty]')
+  document.querySelector('[data-blog-empty]'),
+  { showMeta: true }
 );
 
 if (!adminAccessDenied) {
   registerBlogView(
     document.querySelector('[data-admin-posts]'),
-    document.querySelector('[data-admin-empty]'),
+    null,
     { showMeta: true }
   );
 }
@@ -335,6 +295,5 @@ if (!adminAccessDenied) {
 updateBlogViews();
 
 if (!adminAccessDenied) {
-  updateAdminEmptyState();
   renderAdminData();
 }
