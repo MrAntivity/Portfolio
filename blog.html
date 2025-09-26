@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Blog · Aiden Yue</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="icon" type="image/svg+xml" href="assets/avatar.svg" />
+  </head>
+  <body data-page="blog">
+    <div class="glow"></div>
+    <header class="site-header">
+      <div class="brand">
+        <span class="logo">AY</span>
+        <span class="name">Aiden Yue</span>
+      </div>
+      <nav class="site-nav" aria-label="Primary">
+        <a href="index.html#about">About</a>
+        <a href="index.html#experience">Experience</a>
+        <a href="index.html#projects">Projects</a>
+        <a href="index.html#skills">Skills</a>
+        <a href="blog.html" aria-current="page">Blog</a>
+        <a href="index.html#contact">Contact</a>
+      </nav>
+      <button class="theme-toggle" type="button" aria-label="Activate light mode">
+        <span class="material-symbols-outlined" aria-hidden="true">dark_mode</span>
+      </button>
+    </header>
+
+    <main>
+      <section class="blog-hero">
+        <p class="eyebrow">Dispatches</p>
+        <h1>Stories from the lab and the venture studio.</h1>
+        <p class="lede">
+          Dig into the experiments, leadership lessons, and community insights
+          powering Asynq Ventures and my cardiology research journey.
+        </p>
+        <div class="hero-actions">
+          <a class="button primary" href="index.html#contact">Start a collaboration</a>
+          <a class="button ghost" href="index.html">Return to portfolio</a>
+        </div>
+      </section>
+
+      <section class="blog-listing">
+        <div class="section-heading">
+          <h2>Latest writing</h2>
+          <p>
+            Published pieces update automatically when new posts go live through
+            the admin dashboard.
+          </p>
+        </div>
+        <div class="blog-grid" data-blog-grid></div>
+        <p class="blog-empty" data-blog-empty hidden>
+          New essays are coming soon—check back for fresh insights.
+        </p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>
+        © <span id="year"></span> Aiden Yue. Crafted with intent.
+        <a class="admin-access" href="login.html">Admin login</a>
+      </p>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
