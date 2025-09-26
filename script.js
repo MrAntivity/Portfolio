@@ -7,6 +7,7 @@ const body = document.body;
 const pageType = body.dataset.page || 'home';
 const themeToggle = document.querySelector('.theme-toggle');
 const themeIcon = themeToggle?.querySelector('.material-symbols-outlined');
+const header = document.querySelector('.site-header');
 const THEME_STORAGE_KEY = 'aidenyue-theme-preference';
 
 const savedTheme = window.localStorage?.getItem(THEME_STORAGE_KEY);
@@ -25,6 +26,105 @@ function setTheme(theme) {
   const nextMode = theme === 'light' ? 'dark' : 'light';
   themeIcon.textContent = theme === 'light' ? 'light_mode' : 'dark_mode';
   themeToggle.setAttribute('aria-label', `Activate ${nextMode} mode`);
+}
+
+let lastScrollY = window.scrollY || 0;
+let scrollRaf = null;
+
+function updateScrollUI() {
+  scrollRaf = null;
+  const currentScroll = window.scrollY || 0;
+  const maxScroll = Math.max(
+    document.documentElement.scrollHeight - window.innerHeight,
+    1
+  );
+  const progress = Math.min(Math.max(currentScroll / maxScroll, 0), 1);
+  document.documentElement.style.setProperty(
+    '--scroll-progress',
+    progress.toFixed(3)
+  );
+
+  if (header) {
+    if (!header.dataset.scrollDirection) {
+      header.dataset.scrollDirection = 'up';
+    }
+    header.classList.toggle('is-condensed', currentScroll > 40);
+    header.dataset.scrollDirection = currentScroll > lastScrollY ? 'down' : 'up';
+  }
+
+  lastScrollY = currentScroll;
+}
+
+function onScroll() {
+  if (scrollRaf !== null) return;
+  scrollRaf = window.requestAnimationFrame(updateScrollUI);
+}
+
+window.addEventListener('scroll', onScroll, { passive: true });
+updateScrollUI();
+
+if (pageType === 'home') {
+  const sectionLinks = Array.from(
+    document.querySelectorAll('.site-nav a[href*="#"]')
+  ).filter((link) => {
+    const href = link.getAttribute('href');
+    if (!href) return false;
+    if (!href.includes('#')) return false;
+    return href.startsWith('#') || href.startsWith('index.html#');
+  });
+
+  const sectionMap = new Map();
+
+  sectionLinks.forEach((link) => {
+    const href = link.getAttribute('href');
+    if (!href) return;
+    const [, hash] = href.split('#');
+    if (!hash) return;
+    const section = document.getElementById(hash);
+    if (!section) return;
+    sectionMap.set(section, link);
+  });
+
+  if (sectionMap.size) {
+    let activeLink = null;
+    const sections = Array.from(sectionMap.keys());
+
+    const activateLink = (nextLink) => {
+      if (!nextLink || nextLink === activeLink) return;
+      if (activeLink && activeLink.getAttribute('aria-current') === 'section') {
+        activeLink.removeAttribute('aria-current');
+      }
+      activeLink = nextLink;
+      if (activeLink.getAttribute('aria-current') !== 'page') {
+        activeLink.setAttribute('aria-current', 'section');
+      }
+    };
+
+    activateLink(sectionMap.get(sections[0]));
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+
+        if (!visible.length) return;
+
+        const candidate = sectionMap.get(visible[0].target);
+        activateLink(candidate);
+      },
+      {
+        rootMargin: '-45% 0px -40% 0px',
+        threshold: [0.35, 0.6]
+      }
+    );
+
+    sections.forEach((section) => observer.observe(section));
+
+    window.addEventListener('beforeunload', () => observer.disconnect(), {
+      once: true
+    });
+  }
 }
 
 const ADMIN_CREDENTIALS = { username: 'Antivity', password: 'Antivity' };
