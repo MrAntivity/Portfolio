@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7c5cff" />
+      <stop offset="100%" stop-color="#00a8ff" />
+    </linearGradient>
+  </defs>
+  <rect width="160" height="160" rx="40" fill="url(#g)" />
+  <text
+    x="50%"
+    y="52%"
+    font-family="Inter, 'Segoe UI', sans-serif"
+    font-size="64"
+    font-weight="700"
+    text-anchor="middle"
+    fill="#04010a"
+    dy="0.35em"
+  >
+    AY
+  </text>
+</svg>
