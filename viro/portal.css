@@ -2238,3 +2238,204 @@ body[data-theme='light'] .calendar-event {
     min-width: 640px;
   }
 }
+
+/* ==================== 2026 portal refresh ====================
+   Visual-only overrides keep the existing Firebase, calendar, vault, notes,
+   files, and modal behavior intact while giving the private workspace the
+   same editorial feel as the public portfolio. */
+body[data-portal='true'] {
+  --portal-surface: rgba(255,255,255,.045);
+  --portal-surface-strong: rgba(255,255,255,.075);
+  --portal-line: rgba(255,255,255,.14);
+  --portal-shadow: 0 24px 70px rgba(0,0,0,.28);
+  background:
+    radial-gradient(circle at 7% 7%, rgba(176,176,176,.11), transparent 26rem),
+    radial-gradient(circle at 95% 17%, rgba(176,176,176,.07), transparent 24rem),
+    var(--bg);
+}
+body[data-portal='true'][data-theme='light'] {
+  --portal-surface: rgba(20,20,20,.045);
+  --portal-surface-strong: rgba(20,20,20,.075);
+  --portal-line: rgba(20,20,20,.14);
+  --portal-shadow: 0 24px 70px rgba(25,25,25,.1);
+  background: radial-gradient(circle at 7% 7%, rgba(20,20,20,.08), transparent 26rem), var(--bg);
+}
+body[data-portal='true'] .glow { opacity: .25; filter: blur(8px); }
+body[data-portal='true'] .portal-header {
+  padding: 15px clamp(18px,4.5vw,72px);
+  min-height: 74px;
+  background: color-mix(in srgb, var(--bg) 84%, transparent);
+  border-color: var(--portal-line);
+  box-shadow: 0 10px 35px rgba(0,0,0,.08);
+}
+body[data-portal='true'] .portal-header .brand {
+  font-size: 1.15rem;
+  letter-spacing: .16em;
+}
+body[data-portal='true'] .portal-header .brand::after {
+  content: ' / PRIVATE WORKSPACE';
+  color: var(--muted);
+  font-family: var(--font-display);
+  font-size: .58rem;
+  letter-spacing: .13em;
+  font-weight: 500;
+  vertical-align: middle;
+  margin-left: 9px;
+}
+body[data-portal='true'] .portal-nav {
+  gap: 3px;
+  padding: 4px;
+  border: 1px solid var(--portal-line);
+  border-radius: 999px;
+  background: var(--portal-surface);
+}
+body[data-portal='true'] .portal-nav button {
+  padding: 8px 13px;
+  font-size: .72rem;
+  letter-spacing: .08em;
+}
+body[data-portal='true'] .portal-nav button.is-active {
+  background: var(--text);
+  color: var(--bg);
+  box-shadow: 0 3px 12px rgba(0,0,0,.18);
+}
+body[data-portal='true'] #logout-btn {
+  padding: 9px 14px;
+  font-size: .7rem;
+  letter-spacing: .1em;
+  border-radius: 999px;
+}
+body[data-portal='true'] .portal-main {
+  max-width: 1440px;
+  padding: clamp(30px,5vw,78px) clamp(18px,4.5vw,72px) 120px;
+}
+body[data-portal='true'] .portal-tab:not([hidden]) { animation: portal-panel-in .5s cubic-bezier(.2,.7,.2,1); }
+@keyframes portal-panel-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+body[data-portal='true'] .universal-search { margin-bottom: 35px; }
+body[data-portal='true'] .universal-search-bar {
+  max-width: 940px;
+  margin: 0 auto;
+  padding: 9px 10px 9px 20px;
+  border-radius: 17px;
+  border-color: var(--portal-line);
+  background: var(--portal-surface);
+  box-shadow: var(--portal-shadow);
+}
+body[data-portal='true'] .universal-search-bar:focus-within { border-color: var(--text); box-shadow: 0 0 0 4px rgba(176,176,176,.1), var(--portal-shadow); }
+body[data-portal='true'] .universal-search-bar .button { border-radius: 11px; }
+body[data-portal='true'] .overview-top,
+body[data-portal='true'] .overview-grid { gap: 18px; }
+body[data-portal='true'] .overview-top { grid-template-columns: 1.25fr .75fr; }
+body[data-portal='true'] .overview-grid { grid-template-columns: repeat(3,1fr); margin-top: 18px; }
+body[data-portal='true'] .overview-card,
+body[data-portal='true'] .todo-column,
+body[data-portal='true'] .calendar-connect-card,
+body[data-portal='true'] .calendar-grid-wrap,
+body[data-portal='true'] .editor-surface,
+body[data-portal='true'] .entry-card,
+body[data-portal='true'] .note-card,
+body[data-portal='true'] .file-card {
+  border: 1px solid var(--portal-line);
+  background: var(--portal-surface);
+  box-shadow: none;
+}
+body[data-portal='true'] .overview-card { border-radius: 19px; padding: 25px; transition: transform .25s, border-color .25s, background .25s; }
+body[data-portal='true'] .overview-card:hover { transform: translateY(-3px); border-color: rgba(176,176,176,.34); background: var(--portal-surface-strong); }
+body[data-portal='true'] .overview-clock { min-height: 182px; display: flex; flex-direction: column; justify-content: space-between; background: linear-gradient(135deg, var(--portal-surface-strong), transparent); }
+body[data-portal='true'] .overview-time { font-family: var(--font-display); font-size: clamp(3.3rem,7vw,7.3rem); letter-spacing: -.08em; line-height: .9; }
+body[data-portal='true'] .overview-date,
+body[data-portal='true'] .weather-loc { font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+body[data-portal='true'] .overview-weather { min-height: 182px; display: grid; grid-template-columns: 1fr auto; align-content: space-between; gap: 5px 15px; }
+body[data-portal='true'] .overview-weather .weather-loc { grid-column: 1 / -1; }
+body[data-portal='true'] .weather-icon { font-size: 2.1rem; align-self: end; color: var(--text); }
+body[data-portal='true'] .weather-temp { font-family: var(--font-display); font-size: 3.1rem; letter-spacing: -.07em; line-height: 1; }
+body[data-portal='true'] .weather-desc,
+body[data-portal='true'] .weather-advice { color: var(--muted); font-size: .82rem; }
+body[data-portal='true'] .weather-desc { grid-column: 1 / -1; }
+body[data-portal='true'] .weather-advice { grid-column: 1 / -1; margin: 0; }
+body[data-portal='true'] .overview-card-header { border-bottom: 1px solid var(--portal-line); padding-bottom: 16px; margin-bottom: 8px; }
+body[data-portal='true'] .overview-card-header h2 { font-size: 1rem; letter-spacing: -.025em; }
+body[data-portal='true'] .overview-card-header a,
+body[data-portal='true'] .overview-schedule-text a { color: var(--text); text-decoration: underline; text-underline-offset: 4px; font-size: .75rem; }
+body[data-portal='true'] .entry-list--compact { gap: 0; }
+body[data-portal='true'] .entry-list--compact li { border-color: var(--portal-line); padding: 12px 0; }
+body[data-portal='true'] .tab-toolbar { align-items: end; margin-bottom: 34px; padding-bottom: 22px; border-bottom: 1px solid var(--portal-line); }
+body[data-portal='true'] .tab-toolbar h2 { font-size: clamp(2rem,4vw,3.9rem); letter-spacing: -.07em; }
+body[data-portal='true'] .tab-toolbar-actions { gap: 9px; }
+body[data-portal='true'] .tab-toolbar-actions input,
+body[data-portal='true'] .tab-toolbar-actions select,
+body[data-portal='true'] .editor-header input,
+body[data-portal='true'] .editor-header select { border: 1px solid var(--portal-line); background: var(--portal-surface); border-radius: 11px; color: var(--text); }
+body[data-portal='true'] .tab-toolbar-actions input { padding: 10px 13px; min-height: 42px; }
+body[data-portal='true'] .button { border-radius: 11px; }
+body[data-portal='true'] .button.primary { background: var(--text); color: var(--bg); }
+body[data-portal='true'] .button.primary:hover { background: var(--muted-strong); }
+body[data-portal='true'] .button.ghost { border-color: var(--portal-line); }
+body[data-portal='true'] .button.ghost:hover { border-color: var(--text); background: var(--portal-surface-strong); }
+body[data-portal='true'] .entry-list { gap: 12px; }
+body[data-portal='true'] .entry-card,
+body[data-portal='true'] .note-card,
+body[data-portal='true'] .file-card { border-radius: 15px; transition: transform .22s, border-color .22s, background .22s; }
+body[data-portal='true'] .entry-card:hover,
+body[data-portal='true'] .note-card:hover,
+body[data-portal='true'] .file-card:hover { transform: translateY(-2px); border-color: rgba(176,176,176,.4); background: var(--portal-surface-strong); }
+body[data-portal='true'] .todo-columns { gap: 18px; }
+body[data-portal='true'] .todo-column { border-radius: 19px; padding: 20px; }
+body[data-portal='true'] .todo-column-header { padding-bottom: 18px; margin-bottom: 12px; border-bottom: 1px solid var(--portal-line); }
+body[data-portal='true'] .todo-column-header h3 { font-size: 1.05rem; letter-spacing: -.02em; }
+body[data-portal='true'] .vault-hint { border: 1px solid var(--portal-line); border-radius: 12px; padding: 13px 15px; background: var(--portal-surface); color: var(--muted); font-size: .82rem; }
+body[data-portal='true'] .folder-breadcrumb { margin: 0 0 14px; color: var(--muted); }
+body[data-portal='true'] .folder-grid,
+body[data-portal='true'] .file-grid,
+body[data-portal='true'] .note-grid { gap: 14px; }
+body[data-portal='true'] .folder-card { border: 1px solid var(--portal-line); border-radius: 15px; background: var(--portal-surface); }
+body[data-portal='true'] .editor-header { border-bottom: 1px solid var(--portal-line); padding-bottom: 17px; margin-bottom: 15px; gap: 9px; }
+body[data-portal='true'] .editor-surface { border-radius: 15px; min-height: 540px; padding: clamp(22px,4vw,50px); line-height: 1.75; }
+body[data-portal='true'] .editor-toolbar { border: 1px solid var(--portal-line); border-radius: 14px; background: var(--portal-surface); margin-bottom: 12px; padding: 7px; }
+body[data-portal='true'] .editor-toolbar button:hover { background: var(--portal-surface-strong); }
+body[data-portal='true'] .modal { border: 1px solid var(--portal-line); border-radius: 18px; background: var(--bg); box-shadow: var(--portal-shadow); }
+body[data-portal='true'] .modal::backdrop { background: rgba(0,0,0,.68); backdrop-filter: blur(9px); }
+body[data-portal='true'] .form-field input,
+body[data-portal='true'] .form-field textarea,
+body[data-portal='true'] .form-field select,
+body[data-portal='true'] .modal input,
+body[data-portal='true'] .modal textarea,
+body[data-portal='true'] .modal select { border: 1px solid var(--portal-line); background: var(--portal-surface); color: var(--text); border-radius: 11px; }
+body[data-portal='true'] .drop-overlay { background: rgba(9,9,9,.86); backdrop-filter: blur(12px); }
+body[data-portal='true'] .drop-overlay-inner { border: 1px solid var(--text); border-radius: 18px; background: var(--portal-surface-strong); }
+
+@media (max-width: 1000px) {
+  body[data-portal='true'] .portal-header { flex-wrap: wrap; }
+  body[data-portal='true'] .portal-header .brand { order: 1; }
+  body[data-portal='true'] .portal-header #logout-btn { order: 2; }
+  body[data-portal='true'] .portal-nav { order: 3; width: 100%; overflow-x: auto; justify-content: flex-start; flex-wrap: nowrap; scrollbar-width: none; }
+  body[data-portal='true'] .portal-nav::-webkit-scrollbar { display: none; }
+  body[data-portal='true'] .overview-grid { grid-template-columns: 1fr 1fr; }
+  body[data-portal='true'] .overview-grid > :last-child { grid-column: 1 / -1; }
+}
+@media (max-width: 680px) {
+  body[data-portal='true'] .portal-header { padding: 13px 16px; gap: 13px; }
+  body[data-portal='true'] .portal-header .brand::after { display: none; }
+  body[data-portal='true'] .portal-main { padding: 26px 16px 80px; }
+  body[data-portal='true'] .overview-top,
+  body[data-portal='true'] .overview-grid { grid-template-columns: 1fr; }
+  body[data-portal='true'] .overview-grid > :last-child { grid-column: auto; }
+  body[data-portal='true'] .overview-time { font-size: clamp(3.2rem,18vw,5rem); }
+  body[data-portal='true'] .overview-card { padding: 20px; }
+  body[data-portal='true'] .tab-toolbar { display: grid; gap: 20px; align-items: start; }
+  body[data-portal='true'] .tab-toolbar-actions { display: grid; grid-template-columns: 1fr auto auto; }
+  body[data-portal='true'] .tab-toolbar-actions input { grid-column: 1 / -1; width: 100%; }
+  body[data-portal='true'] .tab-toolbar-actions .button { min-height: 42px; }
+  body[data-portal='true'] .todo-columns { grid-template-columns: 1fr; }
+  body[data-portal='true'] .editor-header { flex-wrap: wrap; }
+  body[data-portal='true'] .editor-header input { order: 2; width: calc(100% - 48px); }
+  body[data-portal='true'] .editor-header select { order: 3; width: 100%; }
+  body[data-portal='true'] .editor-header #editor-delete-btn { order: 1; margin-left: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body[data-portal='true'] .portal-tab:not([hidden]) { animation: none; }
+  body[data-portal='true'] .overview-card:hover,
+  body[data-portal='true'] .entry-card:hover,
+  body[data-portal='true'] .note-card:hover,
+  body[data-portal='true'] .file-card:hover { transform: none; }
+}
