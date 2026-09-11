@@ -3,6 +3,8 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.16.0/fireba
 import {
   getAuth,
   signInWithEmailAndPassword,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
   createUserWithEmailAndPassword,
   onAuthStateChanged,
   signOut
@@ -209,6 +211,11 @@ const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)
 
 function setTheme(theme) {
   document.body.dataset.theme = theme;
+  themeToggleBtn?.setAttribute('aria-label', `Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`);
+  themeToggleBtn?.setAttribute('aria-pressed', String(theme === 'light'));
+  const icon = themeToggleBtn?.querySelector('.material-symbols-outlined');
+  if (icon) icon.textContent = theme === 'dark' ? 'light_mode' : 'dark_mode';
+  document.querySelector('meta[name="theme-color"]').content = theme === 'light' ? '#f3f2ee' : '#090909';
 }
 
 const savedTheme = window.localStorage?.getItem(THEME_STORAGE_KEY);
@@ -260,7 +267,7 @@ loginForm.addEventListener('submit', async (event) => {
   } finally {
     manualLoginInProgress = false;
     loginSubmit.disabled = false;
-    loginSubmitLabel.textContent = 'Unlock';
+    loginSubmitLabel.textContent = 'Unlock workspace';
   }
 });
 
@@ -330,11 +337,12 @@ function getGreeting() {
 
 function enterPortal() {
   loginScreen.hidden = true;
+  document.getElementById('overview-greeting').textContent = `${getGreeting()}.`;
   greetingText.textContent = getGreeting();
   greetingLoader.hidden = false;
 
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const minWait = prefersReducedMotion ? 0 : 1700;
+  const minWait = prefersReducedMotion ? 0 : 450;
 
   window.setTimeout(() => {
     greetingLoader.classList.add('is-exiting');
@@ -343,7 +351,7 @@ function enterPortal() {
     window.setTimeout(() => {
       greetingLoader.hidden = true;
       greetingLoader.classList.remove('is-exiting');
-    }, 650);
+    }, prefersReducedMotion ? 0 : 550);
   }, minWait);
 }
 
@@ -356,13 +364,9 @@ function startPortal() {
 }
 
 /* ==================== tab navigation ==================== */
-/* Vault gets an extra step-up password on top of the portal PIN + the
-   client-side encryption already protecting its contents — mainly to stop
-   casual access if the portal is left open on this device. It resets on
-   every fresh page load/login, unlike the PIN, so it doesn't just become a
-   second copy of the same "stay logged in" convenience. */
+/* Vault requires a fresh Firebase PIN verification on each page load/login.
+   The credential is entered by the user and never embedded in the source. */
 
-const VAULT_PASSWORD = 'Aiden1loves$';
 let vaultUnlocked = false;
 
 portalNav.addEventListener('click', (event) => {
@@ -394,8 +398,35 @@ function requestTabSwitch(tabName, onArrive) {
 // browser's back/forward buttons step between tabs instead of leaving the
 // portal entirely after the very first switch.
 const PORTAL_TAB_NAMES = ['overview', 'birthdays', 'todos', 'vault', 'files', 'drive', 'calendar', 'contacts'];
+const PORTAL_TAB_LABELS = { overview: 'Overview', birthdays: 'Birthdays', todos: 'Tasks', vault: 'Vault', files: 'Files', drive: 'Notes', calendar: 'Calendar', contacts: 'Contacts' };
+const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+const portalHeader = document.querySelector('.portal-header');
+
+function setMobileMenu(open) {
+  portalHeader.classList.toggle('is-menu-open', open);
+  mobileMenuToggle.setAttribute('aria-expanded', String(open));
+  mobileMenuToggle.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
+  mobileMenuToggle.querySelector('span').textContent = open ? 'close' : 'menu';
+}
+
+mobileMenuToggle.addEventListener('click', () => {
+  setMobileMenu(mobileMenuToggle.getAttribute('aria-expanded') !== 'true');
+});
+
+document.addEventListener('keydown', (event) => {
+  if (portalEl.hidden || !modalBackdrop.hidden) return;
+  if (event.key === 'Escape' && mobileMenuToggle.getAttribute('aria-expanded') === 'true') {
+    setMobileMenu(false);
+    mobileMenuToggle.focus();
+  }
+  if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k' && !event.altKey) {
+    event.preventDefault();
+    requestTabSwitch('overview', () => document.getElementById('universal-search-input').focus());
+  }
+});
 
 function pushTab(tabName) {
+  if (!PORTAL_TAB_NAMES.includes(tabName)) return;
   if (location.hash.slice(1) !== tabName) {
     history.pushState({ tab: tabName }, '', `#${tabName}`);
   }
@@ -431,27 +462,48 @@ function highlightEntry(id) {
 function openVaultUnlockPrompt(onSuccess) {
   openModal(
     `
-    <h2>Vault locked</h2>
+    <h2>Unlock your vault</h2>
+    <p>Re-enter the PIN you use to open your workspace.</p>
     <form id="vault-unlock-form">
-      <label>Password<input type="password" name="password" required autocomplete="new-password" data-lpignore="true" data-1p-ignore /></label>
-      <p class="form-error" id="vault-unlock-error" hidden>Incorrect password.</p>
-      <button class="button primary" type="submit">Unlock</button>
+      <label>Your PIN<input type="password" name="password" inputmode="numeric" required autocomplete="current-password" /></label>
+      <p class="form-error" id="vault-unlock-error" role="alert" hidden></p>
+      <button class="button primary" type="submit">Unlock vault</button>
     </form>
   `,
     (root) => {
+      const form = root.querySelector('#vault-unlock-form');
       const input = root.querySelector('[name="password"]');
       const errorEl = root.querySelector('#vault-unlock-error');
+      const submit = form.querySelector('button[type="submit"]');
       input.focus();
-      root.querySelector('#vault-unlock-form').addEventListener('submit', (event) => {
+      form.addEventListener('submit', async (event) => {
         event.preventDefault();
-        if (input.value === VAULT_PASSWORD) {
+        if (!currentUser || submit.disabled || !input.value.trim()) return;
+        const user = currentUser;
+        errorEl.hidden = true;
+        submit.disabled = true;
+        submit.textContent = 'Checking…';
+        try {
+          const credential = EmailAuthProvider.credential(user.email || PORTAL_ACCOUNT_EMAIL, input.value.trim());
+          await reauthenticateWithCredential(user, credential);
+          // A closed prompt or a changed session must not navigate into Vault.
+          if (!form.isConnected || currentUser !== user) return;
           vaultUnlocked = true;
           closeModal();
           onSuccess();
-        } else {
+        } catch (error) {
+          if (!form.isConnected) return;
+          errorEl.textContent = error.code === 'auth/network-request-failed'
+            ? 'Couldn’t connect. Check your connection and try again.'
+            : error.code === 'auth/too-many-requests'
+              ? 'Too many attempts. Wait a moment before trying again.'
+              : 'That PIN couldn’t be verified. Try again.';
           errorEl.hidden = false;
-          input.value = '';
           input.focus();
+        } finally {
+          input.value = '';
+          submit.disabled = false;
+          submit.textContent = 'Unlock vault';
         }
       });
     }
@@ -464,16 +516,42 @@ function switchTab(tabName) {
   });
   document.querySelectorAll('.portal-nav button').forEach((btn) => {
     btn.classList.toggle('is-active', btn.dataset.tab === tabName);
+    if (btn.dataset.tab === tabName) btn.setAttribute('aria-current', 'page');
+    else btn.removeAttribute('aria-current');
   });
+  document.getElementById('workspace-current-page').textContent = PORTAL_TAB_LABELS[tabName];
+  document.title = `${PORTAL_TAB_LABELS[tabName]} · Aiden Yue`;
+  setMobileMenu(false);
+  if (!portalEl.hidden) {
+    document.getElementById('portal-main').focus({ preventScroll: true });
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
 }
 
 /* ==================== modal ==================== */
 
+let modalReturnFocus = null;
+
 function openModal(html, onMount, extraClass) {
+  if (modalBackdrop.hidden) modalReturnFocus = document.activeElement;
   modalEl.className = extraClass ? `modal ${extraClass}` : 'modal';
   modalContent.innerHTML = html;
   modalBackdrop.hidden = false;
+  document.body.classList.add('modal-open');
+  portalEl.inert = true;
+  const heading = modalContent.querySelector('h2');
+  if (heading) {
+    heading.id = heading.id || 'modal-heading';
+    modalEl.setAttribute('aria-labelledby', heading.id);
+    modalEl.removeAttribute('aria-label');
+  } else {
+    modalEl.removeAttribute('aria-labelledby');
+    modalEl.setAttribute('aria-label', 'Workspace dialog');
+  }
   if (onMount) onMount(modalContent);
+  if (!modalBackdrop.hidden && !modalEl.contains(document.activeElement)) {
+    (modalContent.querySelector('input:not([type="hidden"]):not([disabled]), textarea, select, button') || modalClose).focus();
+  }
 }
 
 // Set by openFilePreview while a multi-page entry is open, so the single
@@ -483,8 +561,12 @@ let activePager = null;
 
 function closeModal() {
   modalBackdrop.hidden = true;
+  document.body.classList.remove('modal-open');
+  portalEl.inert = false;
   modalContent.innerHTML = '';
   activePager = null;
+  if (modalReturnFocus?.isConnected) modalReturnFocus.focus({ preventScroll: true });
+  modalReturnFocus = null;
 }
 
 function confirmAction(title, message, confirmLabel, onConfirm) {
@@ -518,8 +600,22 @@ modalBackdrop.addEventListener('click', (event) => {
 document.addEventListener('keydown', (event) => {
   if (modalBackdrop.hidden) return;
   if (event.key === 'Escape') {
+    event.preventDefault();
     closeModal();
     return;
+  }
+  if (event.key === 'Tab') {
+    const focusable = [...modalEl.querySelectorAll('a[href], button, input, select, textarea, [tabindex="0"], [contenteditable="true"]')]
+      .filter((el) => !el.disabled && el.getClientRects().length > 0);
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && (document.activeElement === first || !modalEl.contains(document.activeElement))) {
+      event.preventDefault();
+      last?.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first?.focus();
+    }
   }
   if (!activePager) return;
   if (event.key === 'ArrowLeft') activePager.prev();

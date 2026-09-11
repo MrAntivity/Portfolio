@@ -16,7 +16,11 @@ Google Fonts supplies Inter and Space Grotesk; system fonts remain available off
 
 ## Private portal
 
-`viro/`, `functions/`, Firebase configuration, `styles.css`, and `script.js` retain their existing implementation. The public site has its own CSS and JavaScript so its redesign cannot change the portal's shared theme or behavior.
+`viro/` is the personal workspace. Its eight sections use the public portfolio’s monochrome palette, typography, and shared light/dark preference. Desktop navigation uses a sidebar; on smaller screens, the menu button opens navigation. Tasks retains the original `#todos` route, and Notes retains `#drive` so existing links continue to work.
+
+Use **Cmd/Ctrl + K** to open workspace search. Dialogs keep keyboard focus inside, close with Escape, and return focus to their trigger. Existing Firebase authentication, encrypted vault storage, uploads, notes, and Google Calendar connections are retained. The Vault’s extra unlock now reauthenticates with your workspace PIN through Firebase instead of comparing against a password embedded in the JavaScript source. `functions/` and Firebase configuration are unchanged. A network or module-loading error shows a retry message on the sign-in screen.
+
+The public site and portal keep separate stylesheets and scripts. The portal uses `styles.css` for its existing shared component base, with its workspace theme scoped in `viro/portal.css`. No installation or build step is required.
 
 ## Image credit
 
