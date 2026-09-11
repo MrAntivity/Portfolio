@@ -3,9 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Portal</title>
+    <title>Workspace · Aiden Yue</title>
     <meta name="robots" content="noindex, nofollow, noarchive" />
-    <meta name="theme-color" content="#000000" />
+    <meta name="theme-color" content="#090909" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -22,16 +22,33 @@
     <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
   <body data-portal="true">
-    <div class="glow"></div>
+    <script>
+      try {
+        const theme = localStorage.getItem('aidenyue-theme-preference') === 'light' ? 'light' : 'dark';
+        document.body.dataset.theme = theme;
+        document.querySelector('meta[name="theme-color"]').content = theme === 'light' ? '#f3f2ee' : '#090909';
+      } catch { /* Use the default dark theme when storage is unavailable. */ }
+    </script>
+    <a class="skip-link" href="#portal-main">Skip to workspace</a>
+    <noscript><p class="startup-message">Enable JavaScript to sign in to your workspace. <a href="../">Back to portfolio</a></p></noscript>
 
     <!-- ===================== LOGIN ===================== -->
-    <div id="login-screen" class="login-screen" hidden>
+    <div id="login-screen" class="login-screen">
+      <a class="login-home workspace-wordmark" href="../" aria-label="Aiden Yue portfolio">AY<span>↗</span></a>
+      <div class="login-intro">
+        <p class="workspace-eyebrow">AIDEN YUE / PRIVATE WORKSPACE</p>
+        <h2>A little space.<br /><span>For everything.</span></h2>
+        <p>Your days, ideas, and the things you’re building.</p>
+        <a href="../" class="workspace-back">Back to portfolio <span aria-hidden="true">↗</span></a>
+      </div>
       <form id="login-form" class="login-card" autocomplete="off" novalidate>
-        <p class="eyebrow">Private</p>
-        <h1>Enter PIN</h1>
-        <p class="lede login-lede">If you’re not Aiden, this isn’t for you — leave now. This is private.</p>
+        <span class="material-symbols-outlined login-lock" aria-hidden="true">lock</span>
+        <h1>Welcome back.</h1>
+        <p class="login-lede">Enter your PIN to open your workspace.</p>
+        <label class="pin-label" for="pin-input">Your PIN</label>
         <input
           id="pin-input"
+          aria-describedby="login-error"
           class="pin-field"
           type="password"
           inputmode="numeric"
@@ -43,11 +60,12 @@
           aria-label="PIN"
           required
         />
-        <p class="form-error" id="login-error" hidden>Incorrect PIN. Try again.</p>
+        <p class="form-error" id="login-error" role="alert" hidden>Incorrect PIN. Try again.</p>
         <button class="button primary" type="submit" id="login-submit">
-          <span id="login-submit-label">Unlock</span>
+          <span id="login-submit-label">Unlock workspace</span>
         </button>
       </form>
+      <span class="login-footer">PERSONAL / VIRO</span>
     </div>
 
     <!-- ===================== GREETING LOADER ===================== -->
@@ -64,35 +82,47 @@
         </div>
       </div>
       <header class="portal-header">
-        <button type="button" class="brand" id="theme-toggle" aria-label="Toggle light/dark mode" title="Toggle light/dark mode">VIRO</button>
+        <div class="sidebar-brand"><a class="workspace-wordmark" href="../" aria-label="Aiden Yue portfolio">AY<span>↗</span></a><span class="workspace-label">Workspace</span></div>
+        <button class="icon-btn mobile-menu-toggle" id="mobile-menu-toggle" type="button" aria-controls="portal-nav" aria-expanded="false" aria-label="Open navigation"><span class="material-symbols-outlined" aria-hidden="true">menu</span></button>
         <nav class="portal-nav" id="portal-nav" aria-label="Portal">
-          <button type="button" class="is-active" data-tab="overview">Overview</button>
-          <button type="button" data-tab="birthdays">Birthdays</button>
-          <button type="button" data-tab="todos">To-Do</button>
-          <button type="button" data-tab="vault">Vault</button>
-          <button type="button" data-tab="files">Files</button>
-          <button type="button" data-tab="drive">Drive</button>
-          <button type="button" data-tab="calendar">Calendar</button>
-          <button type="button" data-tab="contacts">Contacts</button>
+          <span class="nav-group-label">Your day</span>
+          <button type="button" class="is-active" data-tab="overview" aria-current="page"><span class="material-symbols-outlined" aria-hidden="true">space_dashboard</span>Overview</button>
+          <button type="button" data-tab="todos"><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>Tasks</button>
+          <button type="button" data-tab="calendar"><span class="material-symbols-outlined" aria-hidden="true">calendar_today</span>Calendar</button>
+          <span class="nav-group-label">Your people</span>
+          <button type="button" data-tab="birthdays"><span class="material-symbols-outlined" aria-hidden="true">cake</span>Birthdays</button>
+          <button type="button" data-tab="contacts"><span class="material-symbols-outlined" aria-hidden="true">group</span>Contacts</button>
+          <span class="nav-group-label">Your collection</span>
+          <button type="button" data-tab="files"><span class="material-symbols-outlined" aria-hidden="true">folder_open</span>Files</button>
+          <button type="button" data-tab="drive"><span class="material-symbols-outlined" aria-hidden="true">edit_note</span>Notes</button>
+          <button type="button" data-tab="vault"><span class="material-symbols-outlined" aria-hidden="true">lock</span>Vault</button>
         </nav>
-        <button class="button ghost" type="button" id="logout-btn">Log out</button>
+        <div class="sidebar-footer">
+          <a class="portfolio-return" href="../">View portfolio <span aria-hidden="true">↗</span></a>
+          <div class="sidebar-account"><img src="../assets/photos/headshot.webp" alt="" width="38" height="38" /><div><strong>Aiden Yue</strong><span>Personal workspace</span></div><button class="icon-btn" type="button" id="logout-btn" aria-label="Log out" title="Log out"><span class="material-symbols-outlined" aria-hidden="true">logout</span></button></div>
+        </div>
       </header>
 
-      <main class="portal-main">
+      <div class="workspace-content">
+      <div class="workspace-topbar"><p>PERSONAL <span aria-hidden="true">/</span> <span id="workspace-current-page">Overview</span></p><button class="icon-btn" type="button" id="theme-toggle" aria-label="Switch to light theme" title="Switch theme"><span class="material-symbols-outlined" aria-hidden="true">light_mode</span></button></div>
+      <main class="portal-main" id="portal-main" tabindex="-1">
         <!-- ---------- OVERVIEW ---------- -->
-        <section class="portal-tab" id="tab-overview" data-tab-panel="overview">
+        <section class="portal-tab" aria-label="Overview" id="tab-overview" data-tab-panel="overview">
+          <div class="overview-heading"><div><p class="workspace-eyebrow">YOUR DAY, AT A GLANCE</p><h1 id="overview-greeting">Welcome back, Aiden.</h1><p>Make room for what matters today.</p></div><a class="button ghost" href="#todos" data-goto-tab="todos">Open tasks <span aria-hidden="true">↗</span></a></div>
           <div class="universal-search">
             <div class="universal-search-bar">
               <span class="material-symbols-outlined" aria-hidden="true">auto_awesome</span>
               <input
                 type="text"
                 id="universal-search-input"
-                placeholder="Search everything, or tell it what to add — “take out trash tmrw”…"
+                placeholder="Search your workspace or add a task…"
                 aria-label="Search everything, or tell it what to add"
               />
+              <kbd class="search-shortcut" aria-hidden="true">⌘ / Ctrl K</kbd>
               <button class="button primary" id="universal-search-btn" type="button">Go</button>
             </div>
-            <p class="universal-search-status" id="universal-search-status" hidden></p>
+            <p class="search-helper">Try “remind me to study tomorrow” or search a name, file, or note.</p>
+            <p class="universal-search-status" id="universal-search-status" role="status" hidden></p>
             <div class="universal-search-results" id="universal-search-results" hidden></div>
           </div>
 
@@ -100,6 +130,7 @@
             <div class="overview-card overview-clock" id="overview-clock" role="button" tabindex="0" aria-label="View world clock">
               <p class="overview-date" id="overview-date">—</p>
               <p class="overview-time" id="overview-time">—</p>
+              <span class="card-footnote">Local time <span>World clocks ↗</span></span>
             </div>
             <div class="overview-card overview-weather" id="overview-weather" role="button" tabindex="0" aria-label="View this week's weather">
               <p class="weather-loc" id="weather-loc">Locating…</p>
@@ -110,6 +141,7 @@
             </div>
           </div>
 
+          <div class="overview-section-label"><span>On your radar</span><span>TODAY &amp; COMING UP</span></div>
           <div class="overview-grid">
             <div class="overview-card">
               <div class="overview-card-header">
@@ -142,9 +174,9 @@
         </section>
 
         <!-- ---------- BIRTHDAYS ---------- -->
-        <section class="portal-tab" id="tab-birthdays" data-tab-panel="birthdays" hidden>
+        <section class="portal-tab" aria-label="Birthdays" id="tab-birthdays" data-tab-panel="birthdays" hidden>
           <div class="tab-toolbar">
-            <h2>Birthdays</h2>
+            <div><h2>Birthdays</h2><p class="tab-description">The people and dates worth remembering.</p></div>
             <div class="tab-toolbar-actions">
               <input type="search" id="birthday-search" placeholder="Search by name…" aria-label="Search birthdays" />
               <button class="button primary" id="add-birthday-btn" type="button">+ Add</button>
@@ -156,9 +188,9 @@
         </section>
 
         <!-- ---------- TO-DO ---------- -->
-        <section class="portal-tab" id="tab-todos" data-tab-panel="todos" hidden>
+        <section class="portal-tab" aria-label="Tasks" id="tab-todos" data-tab-panel="todos" hidden>
           <div class="tab-toolbar">
-            <h2>To-Do</h2>
+            <div><h2>Tasks</h2><p class="tab-description">School, personal, and business. One place to keep moving.</p></div>
           </div>
           <div class="todo-columns">
             <div class="todo-column" data-category="school">
@@ -192,24 +224,24 @@
         </section>
 
         <!-- ---------- VAULT ---------- -->
-        <section class="portal-tab" id="tab-vault" data-tab-panel="vault" hidden>
+        <section class="portal-tab" aria-label="Vault" id="tab-vault" data-tab-panel="vault" hidden>
           <div class="tab-toolbar">
-            <h2>Vault</h2>
+            <div><h2>Vault</h2><p class="tab-description">Your saved credentials and private details.</p></div>
             <div class="tab-toolbar-actions">
               <input type="search" id="vault-search" placeholder="Search by name…" aria-label="Search saved entries" />
               <button class="button primary" id="add-vault-btn" type="button">+ Add</button>
             </div>
           </div>
-          <p class="vault-hint">Password protected, and entries are end-to-end encrypted with your PIN — nothing sensitive is stored in plain text.</p>
+          <p class="vault-hint">Vault access requires your workspace PIN. Secret fields are encrypted in your browser before they are saved.</p>
           <div class="entry-list" id="vault-list">
             <p class="entry-empty">Nothing saved yet.</p>
           </div>
         </section>
 
         <!-- ---------- FILES ---------- -->
-        <section class="portal-tab" id="tab-files" data-tab-panel="files" hidden>
+        <section class="portal-tab" aria-label="Files" id="tab-files" data-tab-panel="files" hidden>
           <div class="tab-toolbar">
-            <h2>Files</h2>
+            <div><h2>Files</h2><p class="tab-description">Documents, uploads, and everything you need to find again.</p></div>
             <div class="tab-toolbar-actions">
               <input type="search" id="file-search" placeholder="Search by name or description…" aria-label="Search files" />
               <button class="icon-btn icon-btn--ai" id="ai-search-btn" type="button" title="Smart search" aria-label="Smart search">
@@ -228,10 +260,10 @@
         </section>
 
         <!-- ---------- DRIVE ---------- -->
-        <section class="portal-tab" id="tab-drive" data-tab-panel="drive" hidden>
+        <section class="portal-tab" aria-label="Notes" id="tab-drive" data-tab-panel="drive" hidden>
           <div id="drive-list-view">
             <div class="tab-toolbar">
-              <h2>Drive</h2>
+              <div><h2>Notes</h2><p class="tab-description">A place for ideas, plans, and work in progress.</p></div>
               <div class="tab-toolbar-actions">
                 <input type="search" id="note-search" placeholder="Search notes…" aria-label="Search notes" />
                 <button class="icon-btn icon-btn--ai" id="ai-note-search-btn" type="button" title="Smart search" aria-label="Smart search">
@@ -309,14 +341,15 @@
               </div>
             </div>
 
-            <div class="editor-surface" id="editor-surface" contenteditable="true" spellcheck="true"></div>
-            <p class="editor-status" id="editor-status"></p>
+            <div class="editor-surface" id="editor-surface" contenteditable="true" spellcheck="true" role="textbox" aria-label="Note content" aria-multiline="true"></div>
+            <p class="editor-status" id="editor-status" role="status"></p>
           </div>
         </section>
 
         <!-- ---------- CALENDAR ---------- -->
-        <section class="portal-tab" id="tab-calendar" data-tab-panel="calendar" hidden>
+        <section class="portal-tab" aria-label="Calendar" id="tab-calendar" data-tab-panel="calendar" hidden>
           <div id="calendar-connect-view">
+            <div class="tab-toolbar"><div><h2>Calendar</h2><p class="tab-description">Make space for the week ahead.</p></div></div>
             <div class="calendar-connect-card">
               <span class="material-symbols-outlined" aria-hidden="true">calendar_month</span>
               <h2>Connect Google Calendar</h2>
@@ -328,7 +361,7 @@
 
           <div id="calendar-connected-view" hidden>
             <div class="tab-toolbar">
-              <h2>Calendar</h2>
+              <div><h2>Calendar</h2><p class="tab-description">Make space for the week ahead.</p></div>
               <div class="tab-toolbar-actions">
                 <button class="icon-btn" id="calendar-prev-week-btn" type="button" aria-label="Previous week">
                   <span class="material-symbols-outlined">chevron_left</span>
@@ -360,9 +393,9 @@
         </section>
 
         <!-- ---------- CONTACTS ---------- -->
-        <section class="portal-tab" id="tab-contacts" data-tab-panel="contacts" hidden>
+        <section class="portal-tab" aria-label="Contacts" id="tab-contacts" data-tab-panel="contacts" hidden>
           <div class="tab-toolbar">
-            <h2>Contacts</h2>
+            <div><h2>Contacts</h2><p class="tab-description">Keep your people close at hand.</p></div>
             <div class="tab-toolbar-actions">
               <input type="search" id="contact-search" placeholder="Search by name…" aria-label="Search contacts" />
               <button class="icon-btn icon-btn--ai" id="ai-contact-search-btn" type="button" title="Smart search" aria-label="Smart search">
@@ -377,6 +410,8 @@
           </div>
         </section>
       </main>
+      <footer class="workspace-footer"><span>AIDEN YUE / VIRO</span><span>A WORK IN PROGRESS. ALWAYS.</span></footer>
+      </div>
     </div>
 
     <!-- ===================== MODAL ===================== -->
@@ -389,6 +424,14 @@
       </div>
     </div>
 
-    <script type="module" src="portal.js"></script>
+    <script type="module">
+      import('./portal.js').catch((error) => {
+        console.error('Workspace could not start', error);
+        const message = document.getElementById('login-error');
+        message.textContent = 'The workspace couldn’t load. Check your connection and refresh to try again.';
+        message.hidden = false;
+        document.getElementById('login-submit').disabled = true;
+      });
+    </script>
   </body>
 </html>
