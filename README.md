@@ -25,3 +25,7 @@ The public site and portal keep separate stylesheets and scripts. The portal use
 ## Image credit
 
 PBTfans Basin, designed by Asynq Designs. Product render via [KBDfans](https://kbdfans.com/products/pbtfans-doubleshot-basin).
+
+## Lecture Studio
+
+Portal → Notes includes microphone recording, saved audio, incremental AI transcription, and timestamped study notes. See [setup and verification](docs/lecture-notes-setup.md) for the required Firebase function deployment, access rules, storage CORS, recovery behavior, and tests. A GitHub Pages push alone does not deploy the AI backend.

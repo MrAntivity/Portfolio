@@ -1,3 +1,4 @@
+import { initLectures } from './lectures.js';
 import { firebaseConfig, PORTAL_ACCOUNT_EMAIL, GOOGLE_CLIENT_ID, GOOGLE_PLACES_API_KEY } from './firebase-config.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js';
 import {
@@ -35,6 +36,7 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 const functions = getFunctions(app);
+const lectureStudio = initLectures({ auth, db, storage, functions });
 const callAiAssist = httpsCallable(functions, 'aiAssist');
 const callGoogleCalendarConnect = httpsCallable(functions, 'googleCalendarConnect');
 const callGoogleCalendarToken = httpsCallable(functions, 'googleCalendarToken');
@@ -313,6 +315,7 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 logoutBtn.addEventListener('click', async () => {
+  if (lectureStudio.isBusy()) { alert('Finish the lecture and wait for audio sync and AI processing before signing out.'); return; }
   unsubscribers.forEach((unsub) => unsub());
   unsubscribers.length = 0;
   encryptionKey = null;
