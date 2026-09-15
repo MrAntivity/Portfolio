@@ -360,3 +360,5 @@ exports.googleCalendarDisconnect = onCall({ cors: true }, async (request) => {
 
   return { ok: true };
 });
+
+exports.transcribeLecture = require('./lectures').transcribeLecture;
