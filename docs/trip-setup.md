@@ -11,7 +11,7 @@ A standalone shared travel journal at `https://aidenyue.com/trip/`. GitHub Pages
 - Photon address search, map click/drag adjustment, and manual coordinate fallback. A failed geocoding service does not block entering a location manually.
 - Collaborative galleries with photo credits/captions, full-screen viewing, keyboard navigation, cover selection by the trip creator, and deletion of the contributor's own photos.
 - Guest contribution sessions that do not replace the private portal session. A guest can edit their own trip on the browser that created it. Clearing site data or changing browsers loses that guest identity; the portal owner can still maintain data in Firebase Console.
-- Up to 20 photos per batch. JPEG/PNG/WebP originals up to 20 MB are resized to a maximum 2400-pixel edge and stored as JPEG, up to 8 MB. Originals are not separately archived. Canvas export strips original EXIF/location metadata. HEIC must first be exported as JPEG.
+- Up to 20 photos per batch. JPEG/PNG/WebP/HEIC/HEIF originals up to 20 MB are resized to a maximum 2400-pixel edge and stored as JPEG, up to 8 MB. Originals are not separately archived. Canvas export strips original EXIF/location metadata. HEIC/HEIF photos are converted locally using the pinned heic-to 1.5.2 decoder, loaded on demand from jsDelivr. Only the converted JPEG is stored; Live Photo motion and original metadata are not retained. The same conversion supports portal Files and note image insertion.
 - Progress and partial upload recovery. Successful photos remain saved; retry sends only the remaining selected files. Pending selections are in memory and do not survive a page reload.
 - Real-time trip/gallery updates and shareable `#trip=...` links.
 

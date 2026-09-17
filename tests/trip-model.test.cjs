@@ -9,7 +9,7 @@ test('invalid date ranges and impossible calendar dates cannot be submitted', as
  const m = await import('../trip/model.js'); assert.throws(() => m.validateTrip({...values,endDate:'2026-08-31'}), /dates/); assert.throws(() => m.validateTrip({...values,startDate:'2026-02-31'}), /dates/);
 });
 test('uploads reject unsupported formats, oversized originals, and batches over twenty', async () => {
- const m = await import('../trip/model.js'); assert.throws(() => m.validateFiles([{name:'a.heic',type:'image/heic',size:100}]), /JPEG/); assert.throws(() => m.validateFiles([{name:'a.jpg',type:'image/jpeg',size:21*1024*1024}]), /20 MB/); assert.throws(() => m.validateFiles(Array(21).fill({type:'image/jpeg',size:100})), /20 photos/);
+ const m = await import('../trip/model.js'); assert.doesNotThrow(() => m.validateFiles([{name:'a.heic',type:'image/heic',size:100},{name:'IMG.HEIC',type:'',size:100},{name:'a.heif',type:'application/octet-stream',size:100}])); assert.throws(() => m.validateFiles([{name:'a.pdf',type:'application/pdf',size:100}]), /JPEG/); assert.throws(() => m.validateFiles([{name:'a.jpg',type:'image/jpeg',size:21*1024*1024}]), /20 MB/); assert.throws(() => m.validateFiles(Array(21).fill({type:'image/jpeg',size:100})), /20 photos/);
 });
 test('search matches people and excursions; year and map stats are consistent', async () => {
  const m = await import('../trip/model.js'); const a = m.validateTrip(values), b = {...a,title:'Another weekend',startDate:'2025-09-01',people:['Sam','Taylor']}; assert.equal(m.filterTrips([a,b], 'harbor Sam', '2026').length, 1); assert.deepEqual(m.tripStats([a,b]),{trips:2,places:1,friends:4});

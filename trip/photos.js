@@ -1,6 +1,8 @@
+import { convertHeicPhoto } from '../shared/heic.js';
 import { MAX_UPLOAD_BYTES } from './model.js';
 // Resize before upload and strip original EXIF/location metadata through canvas export.
 export async function preparePhoto(file) {
+  file = await convertHeicPhoto(file);
   let bitmap, url;
   try {
     if ('createImageBitmap' in window) bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });

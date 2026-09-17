@@ -1,3 +1,4 @@
+import { convertHeicPhoto, isHeicPhoto } from '../shared/heic.js';
 import { initLectures } from './lectures.js';
 import { firebaseConfig, PORTAL_ACCOUNT_EMAIL, GOOGLE_CLIENT_ID, GOOGLE_PLACES_API_KEY } from './firebase-config.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js';
@@ -2101,7 +2102,7 @@ async function uploadPages(fileList, onProgress) {
 
   const pages = [];
   for (let i = 0; i < fileList.length; i += 1) {
-    const file = fileList[i];
+    const file = await convertHeicPhoto(fileList[i]);
     const safeFileName = file.name.replace(/[/\\]/g, '_');
     const path = `users/${currentUser.uid}/files/${crypto.randomUUID()}-${safeFileName}`;
     const fileRef = storageRef(storage, path);
@@ -2111,7 +2112,7 @@ async function uploadPages(fileList, onProgress) {
       task.on(
         'state_changed',
         (snap) => {
-          transferred[i] = snap.bytesTransferred;
+          transferred[i] = (snap.bytesTransferred / (snap.totalBytes || 1)) * totals[i];
           reportProgress();
         },
         reject,
@@ -2136,7 +2137,7 @@ function openUploadModal(initialFiles) {
     `
     <h2>Upload files</h2>
     <form id="upload-form">
-      <label>Files<input type="file" name="files" multiple required /></label>
+      <label>Files<input type="file" name="files" multiple required /></label><p class="field-hint">HEIC/HEIF photos are converted to JPEG for viewing. Uploads save the converted photo, not the HEIC original.</p>
       <div class="upload-mode-row" id="upload-mode-row" hidden>
         <label class="upload-mode-option">
           <input type="radio" name="mode" value="separate" checked />
@@ -2250,6 +2251,7 @@ function openUploadModal(initialFiles) {
           closeModal();
         } catch (err) {
           console.error(err);
+          errorEl.textContent = err.message || 'Upload failed. Try again.';
           errorEl.hidden = false;
           submitBtn.disabled = false;
         }
@@ -3215,25 +3217,32 @@ const editorImageInput = document.getElementById('editor-image-input');
 document.getElementById('editor-insert-image-btn').addEventListener('click', () => editorImageInput.click());
 
 editorImageInput.addEventListener('change', async () => {
-  const file = editorImageInput.files[0];
+  let file = editorImageInput.files[0];
   editorImageInput.value = '';
   if (!file || !currentNoteId) return;
+  const targetNoteId = currentNoteId;
 
-  editorStatus.textContent = 'Uploading image…';
+  editorStatus.textContent = isHeicPhoto(file) ? 'Converting HEIC photo…' : 'Uploading image…';
   try {
+    file = await convertHeicPhoto(file);
+    editorStatus.textContent = 'Uploading image…';
     const safeName = file.name.replace(/[/\\]/g, '_');
-    const path = `users/${currentUser.uid}/notes/${currentNoteId}/${crypto.randomUUID()}-${safeName}`;
+    const path = `users/${currentUser.uid}/notes/${targetNoteId}/${crypto.randomUUID()}-${safeName}`;
     const imgRef = storageRef(storage, path);
     await new Promise((resolve, reject) => {
       uploadBytesResumable(imgRef, file).on('state_changed', null, reject, resolve);
     });
     const url = await getDownloadURL(imgRef);
+    if (currentNoteId !== targetNoteId) {
+      await deleteObject(imgRef).catch(() => {});
+      return;
+    }
     editorSurface.focus();
     document.execCommand('insertHTML', false, `<img src="${url}" alt="${escapeHtml(file.name)}" />`);
     scheduleAutosave();
   } catch (err) {
     console.error(err);
-    editorStatus.textContent = 'Image upload failed.';
+    editorStatus.textContent = err.message || 'Image upload failed.';
   }
 });
 
