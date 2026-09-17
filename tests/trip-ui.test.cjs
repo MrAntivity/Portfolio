@@ -37,6 +37,8 @@ function fillTrip(p, name) {
 test('journal filters, opens details, shows excursions, navigates photos and themes',async()=>{
  const p=await page(); try {
   assert.equal(p.doc.querySelectorAll('.trip-card').length,3);
+  const cover = p.doc.querySelector('.card-image img'); cover.dispatchEvent(new p.w.Event('error'));
+  assert.equal(cover.hidden,true); assert.equal(cover.parentElement.querySelector('.cover-placeholder').hidden,false);
   const search=p.doc.querySelector('#search'); search.value='Kyoto'; search.dispatchEvent(new p.w.Event('input')); assert.equal(p.doc.querySelectorAll('.trip-card').length,1);
   p.doc.querySelector('[data-open-trip]').click(); await p.flush();
   assert.match(p.doc.querySelector('#detail-title').textContent,/long way/); assert.equal(p.doc.querySelectorAll('.excursion').length,2);
@@ -47,7 +49,13 @@ test('journal filters, opens details, shows excursions, navigates photos and the
 });
 test('a valid new trip enters the journal once and invalid dates preserve the form',async()=>{
  const p=await page(); try {
-  p.doc.querySelector('[data-new-trip]').click(); const form=fillTrip(p,'A test memory');
+  p.doc.querySelector('[data-new-trip]').click();
+  const emptyForm=p.doc.querySelector('#trip-form');
+  emptyForm.elements.lat.value='42.36'; emptyForm.elements.lat.dispatchEvent(new p.w.Event('change'));
+  assert.equal(emptyForm.elements.lng.value,'','Entering latitude must not turn blank longitude into zero');
+  emptyForm.elements.lng.value='200'; emptyForm.elements.lng.dispatchEvent(new p.w.Event('change'));
+  assert.equal(emptyForm.elements.lng.value,'200','Invalid manual coordinates must remain invalid rather than silently moving the pin');
+  const form=fillTrip(p,'A test memory');
   form.elements.endDate.value='2026-08-01'; form.dispatchEvent(new p.w.Event('submit',{cancelable:true})); await p.flush();
   assert.match(p.doc.querySelector('#form-error').textContent,/dates/); assert.equal(p.doc.querySelectorAll('.trip-card').length,3);
   form.elements.endDate.value='2026-09-03'; form.dispatchEvent(new p.w.Event('submit',{cancelable:true})); await p.flush();

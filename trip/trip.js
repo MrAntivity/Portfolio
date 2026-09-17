@@ -50,8 +50,10 @@ function connectionError(err) {
 async function fillImages(scope) {
   if (!api) return;
   await Promise.all([...scope.querySelectorAll('[data-photo-path]')].map(async img => {
+    const unavailable = () => { img.hidden = true; const fallback = img.parentElement?.querySelector('.cover-placeholder'); if (fallback) fallback.hidden = false; };
+    img.addEventListener('error', unavailable, { once: true });
     try { const src = await api.imageUrl(img.dataset.photoPath); if (img.isConnected) img.src = src; }
-    catch { img.hidden = true; const fallback = img.parentElement?.querySelector('.cover-placeholder'); if (fallback) fallback.hidden = false; }
+    catch { unavailable(); }
   }));
 }
 function cover(path, title, loading = 'lazy') {
@@ -111,8 +113,9 @@ function setPin(lat, lng, fly = false) {
   }
 }
 for (const name of ['lat', 'lng']) form.elements[name].addEventListener('change', () => {
+  if (form.elements.lat.value.trim() === '' || form.elements.lng.value.trim() === '') return;
   const lat = Number(form.elements.lat.value), lng = Number(form.elements.lng.value);
-  if (Number.isFinite(lat) && Number.isFinite(lng)) setPin(lat, lng, true);
+  if (Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 85 && Math.abs(lng) <= 180) setPin(lat, lng, true);
 });
 $('#find-location').onclick = async () => {
   const button = $('#find-location'); button.disabled = true; $('#location-results').textContent = 'Finding your place…';
