@@ -29,3 +29,7 @@ PBTfans Basin, designed by Asynq Designs. Product render via [KBDfans](https://k
 ## Lecture Studio
 
 Portal → Notes includes microphone recording, saved audio, incremental AI transcription, and timestamped study notes. See [setup and verification](docs/lecture-notes-setup.md) for the required Firebase function deployment, access rules, storage CORS, recovery behavior, and tests. A GitHub Pages push alone does not deploy the AI backend.
+
+## Shared travel journal
+
+`trip/` is the standalone, unlisted **Somewhere together** travel journal. It includes a world map, trip stories/attendees/excursions, and collaborative Firebase photo galleries. It is not linked from the main portfolio. See [activation and validation](docs/trip-setup.md) before enabling guest contributions or merging the frontend. A `?demo=1` preview uses labeled sample data only and never writes to Firebase.

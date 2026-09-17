@@ -1,3 +1,4 @@
+const { assertPortalOwner } = require('./portal-auth');
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { setGlobalOptions } = require('firebase-functions/v2');
 const { defineSecret } = require('firebase-functions/params');
@@ -37,9 +38,7 @@ const MAX_INPUT_CHARS = 12000; // keeps requests (and cost) bounded
  * googleCalendarToken, googleCalendarDisconnect) since they don't need the OpenAI key at all.
  */
 exports.aiAssist = onCall({ secrets: [openaiApiKey], cors: true }, async (request) => {
-  if (!request.auth) {
-    throw new HttpsError('unauthenticated', 'Sign in required.');
-  }
+  assertPortalOwner(request);
 
   const { task, text, context } = request.data || {};
   if (!task || typeof task !== 'string') {
@@ -273,7 +272,7 @@ async function exchangeGoogleCode(code, redirectUri) {
 }
 
 exports.googleCalendarConnect = onCall({ secrets: [googleClientSecret], cors: true }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Sign in required.');
+  assertPortalOwner(request);
   const { code, redirectUri } = request.data || {};
   if (!code) throw new HttpsError('invalid-argument', 'Missing authorization code.');
 
@@ -309,7 +308,7 @@ exports.googleCalendarConnect = onCall({ secrets: [googleClientSecret], cors: tr
 });
 
 exports.googleCalendarToken = onCall({ secrets: [googleClientSecret], cors: true }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Sign in required.');
+  assertPortalOwner(request);
 
   const ref = admin.firestore().doc(`users/${request.auth.uid}/googleCalendar/connection`);
   const snap = await ref.get();
@@ -338,7 +337,7 @@ exports.googleCalendarToken = onCall({ secrets: [googleClientSecret], cors: true
 });
 
 exports.googleCalendarDisconnect = onCall({ cors: true }, async (request) => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Sign in required.');
+  assertPortalOwner(request);
 
   const uid = request.auth.uid;
   const ref = admin.firestore().doc(`users/${uid}/googleCalendar/connection`);

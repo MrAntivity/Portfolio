@@ -1,0 +1,26 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() { return request.auth != null; }
+    function portalOwner() { return signedIn() && request.auth.token.get('email', '') == 'aiden@viro.local'; }
+    function privateOwner(uid) { return portalOwner() && request.auth.uid == uid; }
+    match /users/{uid}/{folder}/{allPaths=**} {
+      allow read, write: if privateOwner(uid) && folder != 'lectures';
+    }
+    match /users/{uid}/lectures/{lectureId}/{fileName} {
+      allow read, delete: if privateOwner(uid);
+      allow create, update: if privateOwner(uid) && fileName.matches('[0-9]+[.]wav')
+        && request.resource.contentType == 'audio/wav' && request.resource.size > 44 && request.resource.size <= 4000044;
+    }
+    match /tripPhotos/{tripId}/{uid}/{fileName} {
+      function photoId() { return fileName.replace('[.]jpg$', ''); }
+      function metadata() { return firestore.get(/databases/(default)/documents/trips/$(tripId)/photos/$(photoId())).data; }
+      // Public gallery reads; client-created paths must have a matching reservation.
+      allow read: if metadata().status == 'ready';
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && fileName.matches('[a-zA-Z0-9_-]+[.]jpg') && metadata().uploaderId == uid && metadata().status == 'pending'
+        && request.resource.contentType == 'image/jpeg' && request.resource.size > 0 && request.resource.size <= 8 * 1024 * 1024;
+      allow delete: if signedIn() && (request.auth.uid == uid || portalOwner());
+    }
+  }
+}
