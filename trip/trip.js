@@ -144,6 +144,58 @@ function selectedFiles(input, label, assign) {
 }
 $('#initial-photos').onchange = e => selectedFiles(e.target, $('#initial-file-count'), files => { tripFiles = files; });
 $('#more-photos').onchange = e => selectedFiles(e.target, $('#more-file-count'), files => { moreFiles = files; });
+function openPhotoUpload(id) {
+  uploadTarget = id; $('#photo-form').reset(); moreFiles = [];
+  $('#upload-error').textContent = ''; $('#more-file-count').textContent = '';
+  $('#upload-progress').hidden = true;
+  $('#photo-form').elements.uploaderName.value = storage.get('trip-contributor-name') || '';
+  showDialog($('#upload-dialog'));
+}
+function hasDraggedFiles(event) { return [...(event.dataTransfer?.types || [])].includes('Files'); }
+function dropZone(target) {
+  if ($('#lightbox').open) return null;
+  if ($('#upload-dialog').open) return target.closest('#upload-dialog');
+  if (formDialog.open) return target.closest('#form-dialog');
+  if (tripDialog.open) return target.closest('#trip-dialog');
+  return target.closest('.trip-card');
+}
+function clearDropHighlight() { document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over')); }
+document.addEventListener('dragover', event => {
+  if (!hasDraggedFiles(event)) return;
+  event.preventDefault();
+  const zone = busy ? null : dropZone(event.target);
+  clearDropHighlight(); zone?.classList.add('drag-over');
+  event.dataTransfer.dropEffect = zone ? 'copy' : 'none';
+});
+document.addEventListener('dragleave', event => {
+  if (!event.relatedTarget || !event.target.contains?.(event.relatedTarget)) clearDropHighlight();
+});
+document.addEventListener('dragend', clearDropHighlight);
+document.addEventListener('drop', event => {
+  if (!hasDraggedFiles(event)) return;
+  event.preventDefault(); clearDropHighlight();
+  if (busy) return toast('Let the current upload finish before adding more photos.');
+  const zone = dropZone(event.target), files = [...event.dataTransfer.files];
+  if (!zone) return toast('Drop photos onto a memory or an open photo form.');
+  if (!files.length) return toast('Drag photo files here, rather than a folder or link.');
+  const initial = zone === formDialog;
+  try {
+    const existing = initial ? tripFiles : zone.id === 'upload-dialog' ? moreFiles : [];
+    const combined = [...existing, ...files]; validateFiles(combined);
+    if (initial) {
+      tripFiles = combined;
+      $('#initial-file-count').textContent = `${combined.length} photos ready to upload. Drop more to add to this selection.`;
+    } else {
+      if (zone.id !== 'upload-dialog') {
+        const id = zone === tripDialog ? selectedTrip?.id : zone.querySelector('[data-open-trip]')?.dataset.openTrip;
+        if (!id || !api) return toast('Wait for the memory to finish loading, then try again.');
+        openPhotoUpload(id);
+      }
+      moreFiles = combined;
+      $('#more-file-count').textContent = `${combined.length} photos ready to upload. Add your name and save them below.`;
+    }
+  } catch (err) { toast(err.message); }
+});
 async function uploadQueue(id, queue, name, caption, progress, label, canSetCover) {
   const total = queue.length; let done = 0;
   progress.hidden = false;
@@ -190,10 +242,10 @@ function watchGallery(id) {
 function renderDetail() {
   const t = selectedTrip; if (!t) return;
   const own = t.createdBy === user?.uid;
-  $('#trip-detail').innerHTML = `<div class="detail-cover">${cover(t.coverPath, t.title, 'eager')}<span class="detail-cover-label">${h(dateLabel(t.startDate, t.endDate))}</span></div><div class="detail-content"><div class="detail-title-row"><h2 id="detail-title">${h(t.title)}</h2>${own ? '<button class="button small" id="edit-trip">Edit story ↗</button>' : ''}</div><p class="detail-location"><a href="https://www.openstreetmap.org/?mlat=${t.lat}&mlon=${t.lng}#map=13/${t.lat}/${t.lng}" target="_blank" rel="noopener noreferrer">${h(t.locationLabel)} ↗</a>${t.address ? ` · ${h(t.address)}` : ''}</p><div class="detail-info"><p class="detail-story">${h(t.description)}</p><aside><span class="eyebrow">THE GOOD COMPANY</span><div class="detail-friends">${t.people.map(n => `<span class="person-chip">${h(n)}</span>`).join('')}</div></aside></div>${t.excursions.length ? `<section class="excursions"><span class="eyebrow">THE LITTLE DETOURS</span><h3 style="margin-top:10px">Out & about.</h3><div class="excursion-list">${t.excursions.map((x, i) => `<div class="excursion"><span>${String(i + 1).padStart(2, '0')}</span><p>${h(x)}</p></div>`).join('')}</div></section>` : ''}<div class="gallery-heading"><div><h3>Through our lenses.</h3><p id="gallery-count">Everyone’s photos, all in one place.</p></div><button class="button" id="add-photos">＋ Add photos</button></div><div id="gallery"></div><button class="text-button detail-load-more" id="more-gallery" hidden>Load more photos ↓</button><div class="detail-share"><span>STORY ADDED BY ${h(t.authorName.toUpperCase())}</span><button class="text-button" id="share-trip">Copy trip link ↗</button></div></div>`;
+  $('#trip-detail').innerHTML = `<div class="detail-cover">${cover(t.coverPath, t.title, 'eager')}<span class="detail-cover-label">${h(dateLabel(t.startDate, t.endDate))}</span></div><div class="detail-content"><div class="detail-title-row"><h2 id="detail-title">${h(t.title)}</h2>${own ? '<button class="button small" id="edit-trip">Edit story ↗</button>' : ''}</div><p class="detail-location"><a href="https://www.openstreetmap.org/?mlat=${t.lat}&mlon=${t.lng}#map=13/${t.lat}/${t.lng}" target="_blank" rel="noopener noreferrer">${h(t.locationLabel)} ↗</a>${t.address ? ` · ${h(t.address)}` : ''}</p><div class="detail-info"><p class="detail-story">${h(t.description)}</p><aside><span class="eyebrow">THE GOOD COMPANY</span><div class="detail-friends">${t.people.map(n => `<span class="person-chip">${h(n)}</span>`).join('')}</div></aside></div>${t.excursions.length ? `<section class="excursions"><span class="eyebrow">THE LITTLE DETOURS</span><h3 style="margin-top:10px">Out & about.</h3><div class="excursion-list">${t.excursions.map((x, i) => `<div class="excursion"><span>${String(i + 1).padStart(2, '0')}</span><p>${h(x)}</p></div>`).join('')}</div></section>` : ''}<div class="gallery-heading"><div><h3>Through our lenses.</h3><p id="gallery-count">Drop photos onto this memory, or use Add photos.</p></div><button class="button" id="add-photos">＋ Add photos</button></div><div id="gallery"></div><button class="text-button detail-load-more" id="more-gallery" hidden>Load more photos ↓</button><div class="detail-share"><span>STORY ADDED BY ${h(t.authorName.toUpperCase())}</span><button class="text-button" id="share-trip">Copy trip link ↗</button></div></div>`;
   fillImages($('#trip-detail')); renderGallery();
   $('#edit-trip')?.addEventListener('click', () => openForm(t));
-  $('#add-photos').onclick = () => { uploadTarget = t.id; $('#photo-form').reset(); moreFiles = []; $('#upload-error').textContent = ''; $('#more-file-count').textContent = ''; $('#upload-progress').hidden = true; $('#photo-form').elements.uploaderName.value = storage.get('trip-contributor-name') || ''; showDialog($('#upload-dialog')); };
+  $('#add-photos').onclick = () => openPhotoUpload(t.id);
   $('#share-trip').onclick = async () => {
     const url = `${location.origin}${location.pathname}${demo ? '?demo=1' : ''}#trip=${encodeURIComponent(t.id)}`;
     try { await navigator.clipboard.writeText(url); toast('Trip link copied. Send it to the group.'); } catch { toast('Copy this page’s address from your browser to share the trip.'); }
@@ -229,7 +281,10 @@ $('#photo-form').addEventListener('submit', async e => {
     const name = values.uploaderName.trim(), caption = values.caption.trim(); if (!name) throw new Error('Add your name for the photo credit.');
     formBusy(button, true); user = await api.guest(); storage.set('trip-contributor-name', name);
     await uploadQueue(uploadTarget, moreFiles, name, caption, $('#upload-progress'), button, selectedTrip?.id === uploadTarget && selectedTrip.createdBy === user.uid && !selectedTrip.coverPath);
-    formBusy(button, false); $('#upload-dialog').close(); renderGallery(); toast('Your photos are in the memory book.');
+    formBusy(button, false); $('#upload-dialog').close();
+    if (!tripDialog.open || selectedTrip?.id !== uploadTarget) openTrip(uploadTarget);
+    else renderGallery();
+    toast('Your photos are in the memory book.');
   } catch (err) { $('#upload-error').textContent = `${friendlyError(err)}${moreFiles.length ? ` ${moreFiles.length} photo(s) remain to upload.` : ''}`; }
   finally { formBusy(button, false); button.textContent = 'Add to the gallery ↗'; }
 });

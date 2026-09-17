@@ -70,3 +70,35 @@ test('partial photo failure keeps the trip and retries only remaining photos',as
   form.dispatchEvent(new p.w.Event('submit',{cancelable:true})); await p.flush(); assert.equal(p.doc.querySelectorAll('.trip-card').length,4); assert.equal(p.doc.querySelectorAll('.gallery-photo').length,2);
  } finally {p.dom.window.close();}
 });
+function dropPhotos(p, target, files, type='drop') {
+ const event=new p.w.Event(type,{bubbles:true,cancelable:true});
+ Object.defineProperty(event,'dataTransfer',{value:{types:['Files'],files,dropEffect:'none'}});
+ target.dispatchEvent(event); return event;
+}
+test('dropping onto a memory card opens upload and saves dropped HEIC without a file-picker selection',async()=>{
+ const p=await page(); try {
+  const card=p.doc.querySelector('.trip-card');
+  const file=new p.w.File(['heic'],'IMG.HEIC',{type:''});
+  dropPhotos(p,card,[file],'dragover'); assert.equal(card.classList.contains('drag-over'),true);
+  assert.equal(dropPhotos(p,card,[file]).defaultPrevented,true);
+  assert.equal(p.doc.querySelector('#upload-dialog').open,true);
+  assert.equal(p.doc.querySelector('#more-photos').required,false);
+  const form=p.doc.querySelector('#photo-form'); form.elements.uploaderName.value='Drop tester';
+  assert.equal(form.checkValidity(),true);
+  form.dispatchEvent(new p.w.Event('submit',{cancelable:true})); await p.flush();
+  assert.equal(p.doc.querySelector('#upload-dialog').open,false);
+  assert.equal(p.doc.querySelectorAll('.gallery-photo').length,5);
+ } finally {p.dom.window.close();}
+});
+test('new-memory drops append files and invalid drops preserve the selected photos',async()=>{
+ const p=await page(); try {
+  p.doc.querySelector('[data-new-trip]').click(); const form=fillTrip(p,'Dropped memory');
+  const zone=p.doc.querySelector('#initial-upload-box');
+  dropPhotos(p,zone,[new p.w.File(['a'],'first.jpg',{type:'image/jpeg'})]);
+  dropPhotos(p,zone,[new p.w.File(['b'],'second.png',{type:'image/png'})]);
+  dropPhotos(p,zone,[new p.w.File(['bad'],'bad.pdf',{type:'application/pdf'})]);
+  assert.match(p.doc.querySelector('#initial-file-count').textContent,/2 photos/);
+  form.dispatchEvent(new p.w.Event('submit',{cancelable:true})); await p.flush();
+  assert.equal(p.doc.querySelectorAll('.gallery-photo').length,2);
+ } finally {p.dom.window.close();}
+});
