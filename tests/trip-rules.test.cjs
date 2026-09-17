@@ -1,0 +1,51 @@
+const { test, before, after } = require('node:test');
+const fs = require('node:fs');
+const { initializeTestEnvironment, assertSucceeds, assertFails } = require('@firebase/rules-unit-testing');
+const { doc, setDoc, getDoc, updateDoc, serverTimestamp } = require('firebase/firestore');
+const { ref, uploadBytes, getBytes } = require('firebase/storage');
+let env;
+const projectId = 'demo-travel-journal';
+const memory = (uid = 'guest-a') => ({ title:'Weekend',authorName:'Alex',locationLabel:'Boston',address:'',country:'United States',lat:42.36,lng:-71.06,startDate:'2026-09-01',endDate:'',people:['Alex','Aiden'],description:'A weekend away.',excursions:['Harbor walk'],createdBy:uid,createdAt:serverTimestamp(),updatedAt:serverTimestamp(),coverPath:'' });
+before(async () => { env = await initializeTestEnvironment({ projectId, firestore: { rules:fs.readFileSync('trip/firestore.rules','utf8') }, storage: { rules:fs.readFileSync('trip/storage.rules','utf8') } }); });
+after(async () => { await env?.cleanup(); });
+test('public reads and authenticated guest trip creation; stranger cannot edit', async () => {
+ const a = env.authenticatedContext('guest-a').firestore(), b = env.authenticatedContext('guest-b').firestore(), publicDb = env.unauthenticatedContext().firestore();
+ await assertSucceeds(setDoc(doc(a,'trips','one'),memory()));
+ await assertSucceeds(getDoc(doc(publicDb,'trips','one')));
+ await assertFails(setDoc(doc(publicDb,'trips','public-write'),memory()));
+ await assertFails(updateDoc(doc(b,'trips','one'),{title:'Changed',updatedAt:serverTimestamp()}));
+ await assertSucceeds(updateDoc(doc(a,'trips','one'),{title:'A new title',updatedAt:serverTimestamp()}));
+});
+test('identity spoofing, unknown fields, invalid pins and hostile cover paths fail', async () => {
+ const db = env.authenticatedContext('guest-a').firestore();
+ await assertFails(setDoc(doc(db,'trips','spoof'),memory('guest-b')));
+ await assertFails(setDoc(doc(db,'trips','extra'),{...memory(),admin:true}));
+ await assertFails(setDoc(doc(db,'trips','bad-location'),{...memory(),lat:99}));
+ await assertFails(updateDoc(doc(db,'trips','one'),{coverPath:'users/owner/private.jpg',updatedAt:serverTimestamp()}));
+});
+test('guests cannot read or write private portal collections; owner still can', async () => {
+ const guest = env.authenticatedContext('guest-a').firestore();
+ const owner = env.authenticatedContext('owner',{email:'aiden@viro.local'}).firestore();
+ await assertSucceeds(setDoc(doc(owner,'users','owner','notes','n1'),{title:'Private'}));
+ await assertFails(getDoc(doc(guest,'users','owner','notes','n1')));
+ await assertFails(setDoc(doc(guest,'users','guest-a','notes','n1'),{title:'Bypass'}));
+ await assertFails(setDoc(doc(owner,'users','owner','lectures','lecture'),{title:'Lecture',processedCount:10}));
+ await assertSucceeds(setDoc(doc(owner,'users','owner','lectures','lecture'),{title:'Lecture',count:1,seconds:10,rate:16000,finished:true,uploadedCount:1}));
+ await assertFails(setDoc(doc(owner,'users','owner','lectures','lecture','sections','0'),{notes:'Override AI'}));
+});
+test('photo ownership, reservations and immutable metadata protect shared uploads', async () => {
+ const a = env.authenticatedContext('guest-a'), b = env.authenticatedContext('guest-b');
+ const photoRef = doc(a.firestore(),'trips','one','photos','photo-a');
+ const metadata = {uploaderId:'guest-a',uploaderName:'Alex',caption:'Sunset',storagePath:'tripPhotos/one/guest-a/photo-a.jpg',width:100,height:100,createdAt:serverTimestamp(),status:'pending'};
+ await assertSucceeds(setDoc(photoRef,metadata));
+ const bytes = new Uint8Array([255,216,255,217]);
+ await assertFails(uploadBytes(ref(a.storage(),'tripPhotos/one/guest-a/unreserved.jpg'),bytes,{contentType:'image/jpeg'}));
+ await assertFails(uploadBytes(ref(b.storage(),metadata.storagePath),bytes,{contentType:'image/jpeg'}));
+ await assertFails(uploadBytes(ref(a.storage(),metadata.storagePath),bytes,{contentType:'text/html'}));
+ await assertSucceeds(uploadBytes(ref(a.storage(),metadata.storagePath),bytes,{contentType:'image/jpeg'}));
+ await assertFails(updateDoc(doc(b.firestore(),'trips','one','photos','photo-a'),{status:'ready'}));
+ await assertSucceeds(updateDoc(photoRef,{status:'ready'}));
+ await assertSucceeds(getBytes(ref(env.unauthenticatedContext().storage(),metadata.storagePath)));
+ await assertFails(uploadBytes(ref(a.storage(),metadata.storagePath),bytes,{contentType:'image/jpeg'}));
+ await assertFails(updateDoc(photoRef,{uploaderName:'Impersonation'}));
+});

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <meta name="theme-color" content="#090909" />
+  <meta name="description" content="A shared travel journal. Places we went, people we went with, and moments worth keeping." />
+  <title>Somewhere together · Aiden Yue</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;550;600;650;700;800&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./vendor/leaflet.css" />
+  <link rel="stylesheet" href="./trip.css" />
+  <script src="./vendor/leaflet.js" defer></script>
+  <script type="module" src="./trip.js"></script>
+</head>
+<body data-theme="dark">
+  <a class="skip-link" href="#journal">Skip to the journal</a>
+  <header class="topbar wrap">
+    <a class="brand" href="/" aria-label="Aiden Yue home">ay<span>®</span></a>
+    <a class="journal-label" href="./">THE TRAVEL JOURNAL <span>BY AIDEN & FRIENDS</span></a>
+    <div class="nav-actions"><button class="theme-button" id="theme-toggle" aria-label="Switch to light theme">◐</button><button class="button small" data-new-trip>Add a trip <span>↗</span></button></div>
+  </header>
+  <main class="wrap">
+    <section class="intro" aria-labelledby="intro-title">
+      <div class="intro-copy"><p class="eyebrow"><span class="live-dot"></span> A COLLECTION OF DAYS WELL SPENT</p><h1 id="intro-title">Somewhere<br /><em>together.</em></h1><p class="intro-description">The places. The people. The stories we still tell.<br />A little archive of life outside the everyday.</p><div class="intro-links"><a href="#journal">Explore the memories <span>↓</span></a><span class="handwritten">More moments, less someday.</span></div></div>
+      <div class="memory-stack" aria-label="Photos from Aiden’s portfolio">
+        <figure class="memory-photo back"><img src="../assets/photos/waterfall.webp" alt="Aiden beside a waterfall" /><figcaption>TAKE THE SCENIC ROUTE.</figcaption></figure>
+        <figure class="memory-photo front"><img src="../assets/photos/rooftop-friends.webp" alt="Friends together on a rooftop" /><figcaption>IT’S ALWAYS THE COMPANY. <span>↗</span></figcaption></figure>
+        <span class="stack-note">For the memory books.</span><span class="stack-coordinate">LIFE, COLLECTED.</span>
+      </div>
+    </section>
+    <section class="atlas" aria-labelledby="atlas-title">
+      <div class="section-top"><div><span class="eyebrow">01 / THE ATLAS</span><h2 id="atlas-title">A few places. <em>A lot of stories.</em></h2></div><div class="stats"><div><strong id="trip-count">—</strong><span>TRIPS</span></div><div><strong id="place-count">—</strong><span>PLACES</span></div><div><strong id="friend-count">—</strong><span>TRAVEL FRIENDS</span></div></div></div>
+      <div class="map-frame"><div id="world-map" role="region" aria-label="World map of saved trips"></div><div class="map-label"><span class="live-dot"></span> OUR LITTLE CORNER OF THE WORLD</div><button class="map-reset" id="map-reset">Show all places ↗</button><p class="map-empty" id="map-empty" hidden>Your first trip puts a pin on the map.</p></div>
+      <p class="map-help">Every pin is a memory. Select one to open its story. <span id="map-status" role="status"></span></p>
+    </section>
+    <section class="journal" id="journal" aria-labelledby="journal-title">
+      <div class="section-top"><div><span class="eyebrow">02 / THE MEMORY BOOK</span><h2 id="journal-title">Wish we were <em>back here.</em></h2></div><button class="button" data-new-trip>＋ Add a memory</button></div>
+      <div class="filters"><label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Find a place, a person, a memory…" aria-label="Search trips" /></label><label class="year-filter"><span class="sr-only">Filter by year</span><select id="year"><option value="">All years</option></select></label><span id="result-count" class="result-count">Loading the journal…</span></div>
+      <div id="connection-status" class="connection-status" role="status" hidden></div>
+      <div id="trip-grid" class="trip-grid" aria-live="polite"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>
+    </section>
+    <section class="invitation"><span class="eyebrow">THE BEST PART? WE MAKE THIS TOGETHER.</span><h2>You were there.<br /><em>Add your side of the story.</em></h2><p>The blurry photos, the unexpected detours, the “remember when.”<br />There’s a place for all of it here.</p><button class="button primary" data-new-trip>Leave a little memory <span>↗</span></button><small>Anyone with the link can view and contribute. No account to create.</small></section>
+  </main>
+  <footer class="wrap footer"><a class="brand" href="/" aria-label="Aiden Yue home">ay<span>®</span></a><span>AIDEN & FRIENDS · SOMEWHERE TOGETHER</span><a href="#">Back to the beginning ↑</a></footer>
+  <dialog id="trip-dialog" class="trip-dialog" aria-labelledby="detail-title"><button class="close-button" data-close="trip-dialog" aria-label="Close trip">✕</button><div id="trip-detail"></div></dialog>
+  <dialog id="form-dialog" class="form-dialog" aria-labelledby="form-title">
+    <button class="close-button" data-close="form-dialog" aria-label="Close trip form">✕</button>
+    <div class="form-heading"><p class="eyebrow">ANOTHER ONE FOR THE MEMORY BOOK</p><h2 id="form-title">Where did we <em>go?</em></h2><p>Big adventures and little weekends both count.</p></div>
+    <form id="trip-form">
+      <div class="form-row"><label>Trip name<input name="title" maxlength="120" required placeholder="That weekend we didn’t want to end" /></label><label>Your name<input name="authorName" maxlength="60" required autocomplete="given-name" placeholder="Who’s adding this memory?" /></label></div>
+      <fieldset><legend>Where we went</legend><div class="location-search"><input name="locationQuery" id="location-query" maxlength="250" placeholder="City, landmark, or street address" aria-label="Search for a location or address" /><button type="button" class="button" id="find-location">Find location ↗</button></div><div id="location-results" class="location-results" role="status"></div><div id="picker-map" class="picker-map" role="region" aria-label="Choose a trip location on the map"></div><p class="field-hint">Choose a search result or click the map to drop a pin. Drag the pin to adjust it.</p><div class="form-row"><label>Place name<input name="locationLabel" maxlength="180" required placeholder="e.g. Kyoto, Japan" /></label><label>Address <span>(optional)</span><input name="address" maxlength="300" placeholder="Neighborhood, landmark, or street" /></label></div><div class="coordinate-row"><label>Latitude<input name="lat" type="number" step="any" min="-85" max="85" required placeholder="35.01" /></label><label>Longitude<input name="lng" type="number" step="any" min="-180" max="180" required placeholder="135.77" /></label><label>Country <span>(optional)</span><input name="country" maxlength="100" placeholder="Japan" /></label></div></fieldset>
+      <div class="form-row"><label>First day<input name="startDate" type="date" required /></label><label>Last day <span>(optional)</span><input name="endDate" type="date" /></label></div>
+      <label>Who went?<input name="people" maxlength="1200" required placeholder="Aiden, Kevin, Taylor…" /><span class="field-hint">Separate names with commas. Include yourself if you were there.</span></label>
+      <label>The story<textarea name="description" maxlength="6000" rows="5" required placeholder="What made this trip one to remember?"></textarea></label>
+      <label>Excursions & little detours <span>(optional)</span><textarea name="excursions" maxlength="6000" rows="3" placeholder="Sunrise hike — the early alarm was worth it&#10;Night market — went back for seconds"></textarea><span class="field-hint">One stop or activity per line, up to 30.</span></label>
+      <label class="upload-box" id="initial-upload-box"><span>＋ Bring the photos</span><small>JPEG, PNG, or WebP · Up to 20 at a time · 20 MB per original</small><input id="initial-photos" type="file" accept="image/jpeg,image/png,image/webp" multiple /></label><p id="initial-file-count" class="field-hint"></p>
+      <p class="form-note">This story and its photos will be visible to anyone with the link.</p><p id="form-error" class="error-message" role="alert"></p><progress id="form-progress" max="100" value="0" hidden></progress><button type="submit" class="button primary wide" id="save-trip">Save this memory ↗</button>
+    </form>
+  </dialog>
+  <dialog id="upload-dialog" class="form-dialog compact" aria-labelledby="upload-title"><button class="close-button" data-close="upload-dialog" aria-label="Close photo upload">✕</button><p class="eyebrow">THROUGH YOUR LENS</p><h2 id="upload-title">More moments.<br /><em>Same good company.</em></h2><form id="photo-form"><label>Your name<input name="uploaderName" maxlength="60" required placeholder="Photo credit goes to…" /></label><label>Caption <span>(optional, applied to these photos)</span><input name="caption" maxlength="500" placeholder="A little context for the memory" /></label><label class="upload-box"><span>＋ Choose your photos</span><small>JPEG, PNG, WebP · Up to 20 · 20 MB per original</small><input id="more-photos" type="file" accept="image/jpeg,image/png,image/webp" multiple required /></label><p id="more-file-count" class="field-hint"></p><p id="upload-error" class="error-message" role="alert"></p><progress id="upload-progress" max="100" value="0" hidden></progress><button type="submit" class="button primary wide" id="upload-submit">Add to the gallery ↗</button></form></dialog>
+  <dialog id="lightbox" class="lightbox" aria-label="Photo viewer"><button class="close-button" data-close="lightbox" aria-label="Close photo viewer">✕</button><div class="lightbox-stage"><button id="previous-photo" class="photo-nav" aria-label="Previous photo">←</button><img id="lightbox-image" alt="" /><button id="next-photo" class="photo-nav" aria-label="Next photo">→</button></div><div class="lightbox-caption"><p id="photo-caption"></p><span id="photo-position"></span></div></dialog>
+  <div id="toast" class="toast" role="status" hidden></div>
+  <noscript><p class="wrap">Enable JavaScript to explore the map, add trips, and see the shared galleries.</p></noscript>
+</body>
+</html>

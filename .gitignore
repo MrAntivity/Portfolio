@@ -10,3 +10,9 @@ firebase-debug.*.log
 *.key
 .env
 .env.local
+
+# Local validation tools and emulator logs
+tests/node_modules/
+firestore-debug.log
+storage-debug.log
+ui-debug.log

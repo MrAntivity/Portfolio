@@ -1,0 +1,69 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function portalOwner() { return signedIn() && request.auth.token.get('email', '') == 'aiden@viro.local'; }
+    function privateOwner(uid) { return portalOwner() && request.auth.uid == uid; }
+    function lectureFields() { return ['title', 'className', 'createdAt', 'count', 'seconds', 'rate', 'finished', 'uploadedCount']; }
+
+    // Preserve the private portal, including the server-managed lecture fields.
+    match /users/{uid} {
+      allow read, write: if privateOwner(uid);
+      match /{collectionName}/{document=**} {
+        allow read, write: if privateOwner(uid) && collectionName != 'lectures';
+      }
+      match /lectures/{lectureId} {
+        allow read: if privateOwner(uid);
+        allow create: if privateOwner(uid) && request.resource.data.keys().hasOnly(lectureFields());
+        allow update: if privateOwner(uid) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(lectureFields());
+        match /sections/{sectionId} { allow read: if privateOwner(uid); }
+      }
+    }
+
+    function tripFields() { return ['title', 'authorName', 'locationLabel', 'address', 'country', 'lat', 'lng', 'startDate', 'endDate', 'people', 'description', 'excursions', 'createdBy', 'createdAt', 'updatedAt', 'coverPath']; }
+    function validTrip(d, tripId) {
+      return d.keys().hasAll(tripFields()) && d.keys().hasOnly(tripFields())
+        && d.title is string && d.title.size() > 0 && d.title.size() <= 120
+        && d.authorName is string && d.authorName.size() > 0 && d.authorName.size() <= 60
+        && d.locationLabel is string && d.locationLabel.size() > 0 && d.locationLabel.size() <= 180
+        && d.address is string && d.address.size() <= 300 && d.country is string && d.country.size() <= 100
+        && d.lat is number && d.lat >= -85 && d.lat <= 85 && d.lng is number && d.lng >= -180 && d.lng <= 180
+        && d.startDate is string && d.startDate.matches('[0-9]{4}-[0-9]{2}-[0-9]{2}')
+        && d.endDate is string && (d.endDate == '' || d.endDate.matches('[0-9]{4}-[0-9]{2}-[0-9]{2}'))
+        && d.people is list && d.people.size() > 0 && d.people.size() <= 40
+        && d.description is string && d.description.size() > 0 && d.description.size() <= 6000
+        && d.excursions is list && d.excursions.size() <= 30
+        && d.createdBy is string && d.createdAt is timestamp && d.updatedAt == request.time
+        && d.coverPath is string && (d.coverPath == '' || d.coverPath.matches('tripPhotos/' + tripId + '/[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+[.]jpg'));
+    }
+    match /trips/{tripId} {
+      allow read: if true;
+      allow create: if signedIn() && validTrip(request.resource.data, tripId)
+        && request.resource.data.createdBy == request.auth.uid && request.resource.data.createdAt == request.time
+        && request.resource.data.coverPath == '';
+      allow update: if signedIn() && (resource.data.createdBy == request.auth.uid || portalOwner())
+        && validTrip(request.resource.data, tripId)
+        && request.resource.data.createdBy == resource.data.createdBy
+        && request.resource.data.createdAt == resource.data.createdAt;
+      // Trip removal is an owner maintenance operation; delete photo subcollections and objects separately.
+      allow delete: if portalOwner();
+      match /photos/{photoId} {
+        function photoFields() { return ['uploaderId', 'uploaderName', 'caption', 'storagePath', 'width', 'height', 'createdAt', 'status']; }
+        allow read: if true;
+        allow create: if signedIn() && exists(/databases/$(database)/documents/trips/$(tripId))
+          && request.resource.data.keys().hasAll(photoFields()) && request.resource.data.keys().hasOnly(photoFields())
+          && request.resource.data.uploaderId == request.auth.uid
+          && request.resource.data.uploaderName is string && request.resource.data.uploaderName.size() > 0 && request.resource.data.uploaderName.size() <= 60
+          && request.resource.data.caption is string && request.resource.data.caption.size() <= 500
+          && request.resource.data.storagePath == 'tripPhotos/' + tripId + '/' + request.auth.uid + '/' + photoId + '.jpg'
+          && request.resource.data.width is int && request.resource.data.width > 0 && request.resource.data.width <= 2400
+          && request.resource.data.height is int && request.resource.data.height > 0 && request.resource.data.height <= 2400
+          && request.resource.data.status == 'pending' && request.resource.data.createdAt == request.time;
+        allow update: if signedIn() && resource.data.uploaderId == request.auth.uid
+          && resource.data.status == 'pending' && request.resource.data.status == 'ready'
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']);
+        allow delete: if signedIn() && (resource.data.uploaderId == request.auth.uid || portalOwner());
+      }
+    }
+  }
+}

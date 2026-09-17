@@ -1,3 +1,4 @@
+const { assertPortalOwner } = require('./portal-auth');
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { defineSecret } = require('firebase-functions/params');
 const admin = require('firebase-admin');
@@ -6,7 +7,7 @@ const { toFile } = require('openai/uploads');
 const key = defineSecret('OPENAI_API_KEY');
 // Twelve independently saved ten-second WAVs form one bounded AI request.
 exports.transcribeLecture = onCall({ secrets: [key], timeoutSeconds: 300, memory: '512MiB', maxInstances: 3 }, async request => {
-  if (!request.auth) throw new HttpsError('unauthenticated', 'Sign in required.');
+  assertPortalOwner(request);
   let { lectureId, start, end } = request.data || {};
   if (!/^[a-zA-Z0-9-]{1,80}$/.test(lectureId || '') || !Number.isInteger(start) || !Number.isInteger(end) || start < 0 || end <= start || end - start > 12) {
     throw new HttpsError('invalid-argument', 'Invalid recording range.');

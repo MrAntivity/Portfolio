@@ -32,10 +32,10 @@ function backend({ cached, lease = 0, failNotes = false } = {}) {
   class HttpsError extends Error { constructor(code, message) { super(message); this.code = code; } }
   class OpenAI { constructor() { this.chat = { completions: { create: async () => { calls++; if (failNotes) throw new Error('offline'); return { choices: [{ message: { content: 'Study notes' }, finish_reason: 'stop' }] }; } } }; } }
   const mocks = { 'firebase-functions/v2/https': { onCall: (_, fn) => fn, HttpsError }, 'firebase-functions/params': { defineSecret: () => ({ value: () => 'test' }) }, 'firebase-admin': { firestore: () => db }, openai: OpenAI, 'openai/uploads': {} };
-  const m = new Module('/tmp/lectures-test.cjs'); m.require = name => mocks[name] || require(name); m._compile(fs.readFileSync('functions/lectures.js', 'utf8'), 'lectures.js');
+  const m = new Module('/tmp/lectures-test.cjs'); m.require = name => name === './portal-auth' ? require('../functions/portal-auth') : mocks[name] || require(name); m._compile(fs.readFileSync('functions/lectures.js', 'utf8'), 'lectures.js');
   return { fn: m.exports.transcribeLecture, state, get saved() { return saved; }, get calls() { return calls; } };
 }
-const request = { auth: { uid: 'owner' }, data: { lectureId: 'lecture-1', start: 0, end: 12 } };
+const request = { auth: { uid: 'owner', token: { email: 'aiden@viro.local' } }, data: { lectureId: 'lecture-1', start: 0, end: 12 } };
 test('backend rejects unauthenticated and oversized requests', async () => {
   const b = backend(); await assert.rejects(b.fn({ data: request.data }), { code: 'unauthenticated' });
   await assert.rejects(b.fn({ ...request, data: { ...request.data, end: 13 } }), { code: 'invalid-argument' });
