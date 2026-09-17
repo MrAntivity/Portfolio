@@ -1,3 +1,4 @@
+import { isHeicPhoto } from '../shared/heic.js';
 export const MAX_PHOTOS = 20;
 export const MAX_ORIGINAL_BYTES = 20 * 1024 * 1024;
 export const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
@@ -22,7 +23,7 @@ export function validateTrip(values) {
 export function validateFiles(files) {
   if (files.length > MAX_PHOTOS) throw new Error(`Choose up to ${MAX_PHOTOS} photos at a time.`);
   for (const file of files) {
-    if (!PHOTO_TYPES.has(file.type)) throw new Error(`${file.name}: choose JPEG, PNG, or WebP. Export HEIC photos as JPEG first.`);
+    if (!PHOTO_TYPES.has(file.type) && !isHeicPhoto(file)) throw new Error(`${file.name}: choose JPEG, PNG, WebP, or HEIC/HEIF.`);
     if (!file.size || file.size > MAX_ORIGINAL_BYTES) throw new Error(`${file.name}: each original must be under 20 MB.`);
   }
 }
