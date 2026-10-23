@@ -1,3 +1,4 @@
+import { originalUploadMetadata, downloadOriginal } from '../shared/original-files.js';
 import { initFileSharing } from './file-sharing.js';
 import { convertHeicPhoto, isHeicPhoto } from '../shared/heic.js';
 import { initLectures } from './lectures.js';
@@ -1835,7 +1836,7 @@ function renderFiles() {
             multi
               ? ''
               : `<div class="file-card-actions">
-                  <a class="icon-btn icon-btn--sm" href="${escapeHtml(pages[0]?.downloadURL || '')}" target="_blank" rel="noopener" download="${escapeHtml(pages[0]?.fileName || f.name)}" aria-label="Download">
+                  <a data-original-download class="icon-btn icon-btn--sm" href="${escapeHtml(pages[0]?.downloadURL || '')}" target="_blank" rel="noopener" download="${escapeHtml(pages[0]?.fileName || f.name)}" aria-label="Download">
                     <span class="material-symbols-outlined">download</span>
                   </a>
                 </div>`
@@ -2105,11 +2106,11 @@ async function uploadPages(fileList, onProgress) {
 
   const pages = [];
   for (let i = 0; i < fileList.length; i += 1) {
-    const file = await convertHeicPhoto(fileList[i]);
+    const file = fileList[i];
     const safeFileName = file.name.replace(/[/\\]/g, '_');
     const path = `users/${currentUser.uid}/files/${crypto.randomUUID()}-${safeFileName}`;
     const fileRef = storageRef(storage, path);
-    const task = uploadBytesResumable(fileRef, file);
+    const task = uploadBytesResumable(fileRef, file, originalUploadMetadata(file));
 
     await new Promise((resolve, reject) => {
       task.on(
@@ -2124,7 +2125,23 @@ async function uploadPages(fileList, onProgress) {
     });
 
     const downloadURL = await getDownloadURL(fileRef);
+    const preview = {};
+    if (isHeicPhoto(file)) {
+      const previewRef = storageRef(storage, `${path}.preview.jpg`);
+      try {
+        const jpeg = await convertHeicPhoto(file);
+        await new Promise((resolve, reject) => uploadBytesResumable(previewRef, jpeg, { contentType: 'image/jpeg' }).on('state_changed', null, reject, resolve));
+        preview.previewURL = await getDownloadURL(previewRef);
+        preview.previewStoragePath = previewRef.fullPath;
+      } catch (err) {
+        // A failed preview must never discard or replace the saved original.
+        await deleteObject(previewRef).catch(() => {});
+        console.warn('HEIC preview unavailable; the original was saved.', err);
+      }
+    }
     pages.push({
+      ...preview,
+      originalLastModified: file.lastModified || 0,
       fileName: file.name,
       contentType: file.type,
       size: file.size,
@@ -2140,7 +2157,7 @@ function openUploadModal(initialFiles) {
     `
     <h2>Upload files</h2>
     <form id="upload-form">
-      <label>Files<input type="file" name="files" multiple required /></label><p class="field-hint">HEIC/HEIF photos are converted to JPEG for viewing. Uploads save the converted photo, not the HEIC original.</p>
+      <label>Files<input type="file" name="files" multiple required /></label><p class="field-hint">Files are saved exactly as uploaded. HEIC photos get a separate JPEG preview; downloads keep the original name, format, and embedded metadata.</p>
       <div class="upload-mode-row" id="upload-mode-row" hidden>
         <label class="upload-mode-option">
           <input type="radio" name="mode" value="separate" checked />
@@ -2267,7 +2284,7 @@ function openUploadModal(initialFiles) {
 // blank, never blocks the upload UI, and silently gives up on failure (the
 // Cloud Function isn't deployed on every checkout of this repo).
 function maybeDescribeFile(docId, name, pages) {
-  const imageUrl = pages[0]?.contentType?.startsWith('image/') ? pages[0].downloadURL : undefined;
+  const imageUrl = pages[0]?.previewURL || (pages[0]?.contentType?.startsWith('image/') && !isHeicPhoto({name:pages[0].fileName,type:pages[0].contentType}) ? pages[0].downloadURL : undefined);
   requestAi('describe_file', name, imageUrl ? { imageUrl } : {})
     .then((description) => {
       if (description) return updateDoc(userDoc('files', docId), { description });
@@ -2369,7 +2386,7 @@ function previewBodyHtml(page, entryName) {
 
   switch (kind) {
     case 'image':
-      return `<img class="preview-image" src="${escapeHtml(page.downloadURL)}" alt="${escapeHtml(entryName)}" data-preview-media />`;
+      return `<img class="preview-image" src="${escapeHtml(page.previewURL || page.downloadURL)}" alt="${escapeHtml(entryName)}" data-preview-media />`;
     case 'pdf':
       return `<iframe class="preview-frame" src="${escapeHtml(page.downloadURL)}" title="${escapeHtml(entryName)}"></iframe>`;
     case 'video':
@@ -2413,7 +2430,7 @@ function openFilePreview(file) {
     ${pagerHtml}
     <div id="preview-body"></div>
     <div class="preview-actions">
-      <a class="button primary" id="preview-download-btn" target="_blank" rel="noopener">Download</a>
+      <a class="button primary" id="preview-download-btn" data-original-download target="_blank" rel="noopener">Download</a>
       <button class="button ghost" type="button" id="preview-close-btn">Close</button>
     </div>
   `,
@@ -2466,8 +2483,8 @@ function openFilePreview(file) {
 async function deleteFile(file) {
   const pages = filePages(file);
   await Promise.all(
-    pages.map((p) =>
-      deleteObject(storageRef(storage, p.storagePath)).catch((err) => {
+    pages.flatMap(p => [p.storagePath, p.previewStoragePath].filter(Boolean)).map((path) =>
+      deleteObject(storageRef(storage, path)).catch((err) => {
         // If the storage object is already gone, still remove the metadata below.
         console.error(err);
       })
@@ -4993,3 +5010,15 @@ function escapeHtml(str) {
 pinInput.focus();
 
 initFileSharing({call:httpsCallable(functions, "manageFileShares"),openModal,escapeHtml,getFiles:()=>files,getFolders:()=>folders});
+
+// Blob downloads enforce the original filename even for cross-origin Firebase URLs.
+document.addEventListener('click', async event => {
+  const link = event.target.closest('[data-original-download]');
+  if (!link) return;
+  event.preventDefault(); event.stopImmediatePropagation();
+  if (link.dataset.downloading) return;
+  link.dataset.downloading = 'true'; link.setAttribute('aria-busy', 'true');
+  try { await downloadOriginal(link.href, link.getAttribute('download')); }
+  catch (err) { alert(err.message); }
+  finally { delete link.dataset.downloading; link.removeAttribute('aria-busy'); }
+}, true);

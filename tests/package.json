@@ -3,7 +3,7 @@
   "private": true,
   "engines": { "node": ">=24" },
   "scripts": {
-    "test": "cd .. && node --test tests/trip-model.test.cjs tests/lectures.test.cjs tests/file-sharing.test.cjs && node --experimental-vm-modules --test tests/trip-ui.test.cjs tests/file-sharing-ui.test.cjs",
+    "test": "cd .. && node --test tests/trip-model.test.cjs tests/lectures.test.cjs tests/file-sharing.test.cjs && node --experimental-vm-modules --test tests/trip-ui.test.cjs tests/file-sharing-ui.test.cjs tests/original-files.test.cjs",
     "rules": "cd .. && firebase emulators:exec --only firestore,storage --project demo-travel-journal --config firebase.trip.json \"node --test tests/trip-rules.test.cjs\""
   },
   "devDependencies": {
