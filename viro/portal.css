@@ -2529,3 +2529,6 @@ body[data-portal='true'][data-theme='light'] .form-error { color: #b42323; }
   #drive-editor-view { position: static; }
   .editor-surface { border: 0; padding: 0; color: #000; background: #fff; }
 }
+
+.share-link-row{padding:20px 0;border-bottom:1px solid var(--line,#555)}
+.share-controls{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.share-link-row input{width:100%;min-width:0}.share-card-button{position:relative;z-index:2;font-size:12px;padding:6px 12px;margin-top:8px}

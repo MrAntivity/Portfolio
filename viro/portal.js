@@ -1,3 +1,4 @@
+import { initFileSharing } from './file-sharing.js';
 import { convertHeicPhoto, isHeicPhoto } from '../shared/heic.js';
 import { initLectures } from './lectures.js';
 import { firebaseConfig, PORTAL_ACCOUNT_EMAIL, GOOGLE_CLIENT_ID, GOOGLE_PLACES_API_KEY } from './firebase-config.js';
@@ -1773,6 +1774,7 @@ function renderFolderGrid() {
           <span class="material-symbols-outlined folder-card-icon" aria-hidden="true">folder</span>
           <span class="folder-card-name">${escapeHtml(f.name)}</span>
           <span class="folder-card-count">${itemCount ? `${itemCount} item${itemCount === 1 ? '' : 's'}` : 'Empty'}</span>
+          <button class="button ghost share-card-button" type="button" data-share-kind="folder" data-share-target="${f.id}">Share</button>
         </article>
       `;
     })
@@ -1825,6 +1827,7 @@ function renderFiles() {
             ${multi ? `<span class="file-card-pages-badge">${pages.length}</span>` : ''}
           </div>
           <div class="file-card-name">${escapeHtml(f.name)}</div>
+          <button class="button ghost share-card-button" type="button" data-share-kind="file" data-share-target="${f.id}">Share</button>
           <p class="file-card-meta">${formatBytes(totalSize(pages))}${multi ? ` · ${pages.length} pages` : ''}${f.folderId ? ` · ${escapeHtml(folderPathLabel(f.folderId))}` : ''}</p>
           ${fileUploadedLabel(f) ? `<p class="file-card-date">Uploaded ${fileUploadedLabel(f)}</p>` : ''}
           ${f.description ? `<p class="file-card-desc">${escapeHtml(f.description)}</p>` : ''}
@@ -4988,3 +4991,5 @@ function escapeHtml(str) {
 }
 
 pinInput.focus();
+
+initFileSharing({call:httpsCallable(functions, "manageFileShares"),openModal,escapeHtml,getFiles:()=>files,getFolders:()=>folders});
