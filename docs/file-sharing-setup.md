@@ -41,3 +41,10 @@ Revocation blocks new requests. Already downloaded copies and streams already in
 `node --test tests/file-sharing.test.cjs` exercises the function handlers with an in-memory Firestore/Storage harness: correct/wrong PINs, PIN rotation, individual/global revocation, session expiry, public links, folder membership changes, private path rejection, absence of download tokens, owner checks and throttling. `node --experimental-vm-modules --test tests/file-sharing-ui.test.cjs` tests owner controls and recipient flows with mocked API responses. Syntax and function exports are checked separately. These do not replace production Firebase or real-browser verification.
 
 After deploying, create a sample file link and folder link, open in a second browser, test a wrong and correct PIN, change the PIN while that browser remains open, and verify its next download fails. Revoke one link and then all links; verify the other browser cannot fetch more files. Confirm moving a file out of a shared folder removes access. Production configuration and real downloads cannot be verified without Firebase access.
+
+
+## Original file downloads
+
+New Files uploads store the source File bytes unchanged, including HEIC/HEIF. A separately stored JPEG is used only for HEIC previews. Private and shared downloads use the original storage path and original filename, not the editable card title or preview. Embedded metadata (EXIF, document properties, etc.) remains inside the unchanged file. The source last-modified timestamp is recorded in Storage custom metadata and the file's Firestore page metadata; normal browser downloads cannot reliably restore filesystem creation/modification times, permissions or Finder tags. Existing HEIC uploads previously saved only as JPEG cannot be reconstructed; re-upload the original. Trip galleries and note-image insertion still use their existing optimized-image behavior.
+
+Private downloads use a Blob to preserve filenames on cross-origin Storage URLs. The existing bucket CORS configuration must allow GET from the portfolio domain (as already documented for lecture playback). No backend or access-rule changes are required for this update.
