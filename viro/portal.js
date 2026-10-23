@@ -2431,6 +2431,7 @@ function openFilePreview(file) {
     <div id="preview-body"></div>
     <div class="preview-actions">
       <a class="button primary" id="preview-download-btn" data-original-download target="_blank" rel="noopener">Download</a>
+      <button class="button ghost" type="button" id="preview-edit-media-btn" hidden>Edit audio / video</button>
       <button class="button ghost" type="button" id="preview-close-btn">Close</button>
     </div>
   `,
@@ -2444,6 +2445,7 @@ function openFilePreview(file) {
         bodyEl.innerHTML = previewBodyHtml(page, file.name);
         downloadBtn.href = page.downloadURL || '#';
         downloadBtn.setAttribute('download', page.fileName || file.name);
+        root.querySelector('#preview-edit-media-btn').hidden = !isEditableMedia(page.fileName || file.name);
         if (pagerLabel) pagerLabel.textContent = `${index + 1} / ${pages.length}`;
 
         // Some formats (HEIC, TIFF, etc.) report as image/* but most browsers
@@ -2459,6 +2461,7 @@ function openFilePreview(file) {
       }
 
       root.querySelector('#preview-close-btn').addEventListener('click', closeModal);
+      root.querySelector('#preview-edit-media-btn').addEventListener('click', () => { const page = pages[index]; closeModal(); launchMediaEditor({...page, fileName:page.fileName || file.name}, file.folderId || null); });
 
       if (pages.length > 1) {
         const prev = () => {
@@ -5022,3 +5025,26 @@ document.addEventListener('click', async event => {
   catch (err) { alert(err.message); }
   finally { delete link.dataset.downloading; link.removeAttribute('aria-busy'); }
 }, true);
+
+
+function isEditableMedia(name) { return /\.(mp4|mp3|flac|wav)$/i.test(name || ''); }
+async function launchMediaEditor(initial = null, folderId = currentFolderId || null) {
+  try {
+    const ownerId = currentUser?.uid;
+    if (!ownerId) throw new Error('Sign in to use the media editor.');
+    const { openMediaEditor } = await import('./media-editor.js');
+    const library = files.flatMap(file => filePages(file).map(page => ({...page, fileName:page.fileName || file.name}))).filter(page => isEditableMedia(page.fileName));
+    await openMediaEditor({initial, library, saveCopy:async file => {
+      if (currentUser?.uid !== ownerId) throw new Error('Sign in to the same account to save this copy.');
+      const pages = await uploadPages([file], () => {});
+      try {
+        if (currentUser?.uid !== ownerId) throw new Error('Your sign-in changed. Sign in again and retry saving.');
+        await addDoc(userCollection('files'), {name:file.name,description:'Edited media copy',folderId,pages,createdAt:serverTimestamp()});
+      } catch (error) {
+        await Promise.allSettled(pages.map(page => deleteObject(storageRef(storage, page.storagePath))));
+        throw error;
+      }
+    }});
+  } catch (error) { alert(error.message || 'The media editor could not open. Please try again.'); }
+}
+document.getElementById('media-editor-btn').addEventListener('click', () => launchMediaEditor());
