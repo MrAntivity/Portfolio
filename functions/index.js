@@ -361,3 +361,6 @@ exports.googleCalendarDisconnect = onCall({ cors: true }, async (request) => {
 });
 
 exports.transcribeLecture = require('./lectures').transcribeLecture;
+
+exports.manageFileShares = require('./file-sharing').manageFileShares;
+exports.fileShareAccess = require('./file-sharing').fileShareAccess;
