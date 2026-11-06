@@ -6,6 +6,7 @@ export function createBudgetStore(db,uid){
  const settings=doc(db,'users',uid,'budget','settings');
  const entries=collection(db,'users',uid,'budgetEntries'),wishes=collection(db,'users',uid,'budgetWishlist');
  return {
+  async askBudget(messages){const result=await httpsCallable(getFunctions(db.app,'us-central1'),'budgetChat')({messages});return result.data;},
   async subscription(value,id,revision=0){await manageSubscriptions({action:"save",value,id,revision});},
   async syncSubscriptions(){await manageSubscriptions({action:"sync"});},
   subscribe(callback,error){let state={settings:undefined,entries:undefined,wishes:undefined,subscriptions:undefined};const update=(k,v)=>{state[k]=v;if(Object.values(state).every(v=>v!==undefined))callback({...state});};const stops=[onSnapshot(collection(db,'users',uid,'budgetSubscriptions'),s=>update('subscriptions',s.docs.map(d=>({...d.data(),id:d.id}))),error),onSnapshot(settings,s=>update('settings',s.exists()?s.data():null),error),onSnapshot(entries,s=>update('entries',s.docs.map(d=>({...d.data(),id:d.id}))),error),onSnapshot(wishes,s=>update('wishes',s.docs.map(d=>({...d.data(),id:d.id}))),error)];return()=>stops.forEach(f=>f());},

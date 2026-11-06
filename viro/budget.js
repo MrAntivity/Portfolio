@@ -1,3 +1,4 @@
+import { mountBudgetChat } from './budget-chat.js';
 import { ACCOUNTS,CATEGORIES,money,today,cents,validateSettings,validateEntry,summarize,wishlistStatus,refundedAmount,spendingSeries } from './budget-model.js';
 const h=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const dollars=n=>(n/100).toFixed(2);
@@ -15,6 +16,7 @@ function spendingChart(entries,month){
  return `<section class="budget-panel budget-spending-panel"><header class="budget-chart-header"><div><h3>Spending, at a glance</h3><p class="budget-muted">${h(month)} · Recorded day-to-day purchases</p></div><strong class="budget-chart-total">${money(series.total)}</strong></header>${series.total?`<svg class="budget-chart" viewBox="0 0 800 190" preserveAspectRatio="none" role="img" aria-label="Cumulative logged day-to-day purchases in ${h(month)}: ${money(series.total)}"><defs><linearGradient id="spending-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="currentColor" stop-opacity=".24"/><stop offset="100%" stop-color="currentColor" stop-opacity="0"/></linearGradient></defs><line x1="40" y1="30" x2="760" y2="30"/><line x1="40" y1="95" x2="760" y2="95"/><line x1="40" y1="160" x2="760" y2="160"/><polygon points="${points} ${x(series.points.length)},160" fill="url(#spending-fill)"/><polyline points="${points}" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/><circle cx="${x(series.points.length)}" cy="${y(series.total)}" r="4" fill="currentColor"/></svg><div class="budget-chart-labels"><span>Day 1</span><span>Day ${Math.ceil(series.days/2)}</span><span>Day ${series.days}</span></div>`:'<p class="budget-chart-empty">Your spending trend appears as you record purchases.</p>'}<p class="budget-muted">Excludes rent, refunds, balance corrections, and setup totals. Use the transaction log’s month filter to explore another month.</p></section>`;
 }
 export function mountBudget(root,store){
+ const stopChat=mountBudgetChat(root,messages=>store.askBudget(messages));
  let data,month=today().slice(0,7),query='',kind='all',account='all',dialog,disposed=false;
  const events = new AbortController();
  const on=(type,handler)=>root.addEventListener(type,handler,{signal:events.signal});
@@ -90,5 +92,5 @@ export function mountBudget(root,store){
  });
  let renewalsStarted=false;
  render();const stop=store.subscribe(value=>{data=value;render();if(data.settings&&!renewalsStarted){renewalsStarted=true;syncSubscriptions();}},err=>status('Budget could not sync. Check your connection and account access. '+(err.message||'')));
- return()=>{disposed=true;events.abort();stop();dialog?.close();root.innerHTML='';};
+ return()=>{disposed=true;events.abort();stopChat();stop();dialog?.close();root.innerHTML='';};
 }
