@@ -22,6 +22,7 @@
     <link rel="icon" type="image/svg+xml" href="../assets/avatar.svg" />
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <link rel="stylesheet" href="./media-editor.css" />
+    <link rel="stylesheet" href="budget.css" />
   </head>
   <body data-portal="true">
     <script>
@@ -96,7 +97,8 @@
           <button type="button" data-tab="contacts"><span class="material-symbols-outlined" aria-hidden="true">group</span>Contacts</button>
           <span class="nav-group-label">Your collection</span>
           <button type="button" data-tab="files"><span class="material-symbols-outlined" aria-hidden="true">folder_open</span>Files</button>
-          <button type="button" data-tab="drive"><span class="material-symbols-outlined" aria-hidden="true">edit_note</span>Notes</button>
+          <button type="button" data-tab="budget"><span class="material-symbols-outlined" aria-hidden="true">account_balance_wallet</span>Budget</button>
+          <button type="button" data-tab="drive" hidden><span class="material-symbols-outlined" aria-hidden="true">edit_note</span>Notes</button>
           <button type="button" data-tab="vault"><span class="material-symbols-outlined" aria-hidden="true">lock</span>Vault</button>
         </nav>
         <div class="sidebar-footer">
@@ -123,7 +125,7 @@
               <kbd class="search-shortcut" aria-hidden="true">⌘ / Ctrl K</kbd>
               <button class="button primary" id="universal-search-btn" type="button">Go</button>
             </div>
-            <p class="search-helper">Try “remind me to study tomorrow” or search a name, file, or note.</p>
+            <p class="search-helper">Try “remind me to study tomorrow” or search a name or file.</p>
             <p class="universal-search-status" id="universal-search-status" role="status" hidden></p>
             <div class="universal-search-results" id="universal-search-results" hidden></div>
           </div>
@@ -239,6 +241,8 @@
             <p class="entry-empty">Nothing saved yet.</p>
           </div>
         </section>
+
+        <section class="portal-tab" aria-label="Budget" id="tab-budget" data-tab-panel="budget" hidden><div id="budget-root"></div></section>
 
         <!-- ---------- FILES ---------- -->
         <section class="portal-tab" aria-label="Files" id="tab-files" data-tab-panel="files" hidden>
