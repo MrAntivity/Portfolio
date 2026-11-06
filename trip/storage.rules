@@ -12,6 +12,15 @@ service firebase.storage {
       allow create, update: if privateOwner(uid) && fileName.matches('[0-9]+[.]wav')
         && request.resource.contentType == 'audio/wav' && request.resource.size > 44 && request.resource.size <= 4000044;
     }
+    match /collectionPhotos/{collectionId}/{placeId}/{uid}/{fileName} {
+      function photoId() { return fileName.replace('[.]jpg$', ''); }
+      function metadata() { return firestore.get(/databases/(default)/documents/placeCollections/$(collectionId)/places/$(placeId)/photos/$(photoId())).data; }
+      allow read: if metadata().status == 'ready';
+      allow create, update: if portalOwner() && request.auth.uid == uid
+        && fileName.matches('[a-zA-Z0-9_-]+[.]jpg') && metadata().uploaderId == uid && metadata().status == 'pending'
+        && request.resource.contentType == 'image/jpeg' && request.resource.size > 0 && request.resource.size <= 8 * 1024 * 1024;
+      allow delete: if portalOwner();
+    }
     match /tripPhotos/{tripId}/{uid}/{fileName} {
       function photoId() { return fileName.replace('[.]jpg$', ''); }
       function metadata() { return firestore.get(/databases/(default)/documents/trips/$(tripId)/photos/$(photoId())).data; }

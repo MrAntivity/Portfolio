@@ -64,3 +64,13 @@ npm --prefix tests run rules
 The test commands use the fake `demo-travel-journal` project. They do not access production data.
 
 Verification for the owner-editing update includes public read-only UI, editor exit, existing journal behavior, and emulator checks for owner writes, anonymous/stranger denials, legacy guest content, and private portal isolation. Production owner PIN entry is left to the owner; tests do not require or record the real PIN.
+
+## Place collections
+
+The Collections tab is public. Owner editing uses the same in-memory portal PIN session as Trips. Create a named collection, open it, and choose Add place. Search by a business name, city, or address; select a result to populate its name and coordinates. The map pin is draggable, and names, addresses, coordinates, 1–5 ratings, and notes remain editable. Unrated places are supported.
+
+Relevance matches every search word and prioritizes name matches, then address matches; ties use recently added first. With no search, relevance shows recently added places. Highest rated sorts by score, then creation time. Photos use the same local conversion and size limits as trip photos, with partial upload retries retaining the saved place and completed photos.
+
+Data lives in `placeCollections/{collectionId}`, its `places/{placeId}` subcollection, and each place's `photos/{photoId}` subcollection. Image objects live in `collectionPhotos/{collectionId}/{placeId}/{uid}/{photoId}.jpg`. Firestore and Storage enforce owner-only writes, reserved uploads, and public reading of completed photos. Removing a place or collection cleans up its photo objects and child documents before deleting the parent. Existing trip and private portal policies are preserved.
+
+Collection links use `#collection=<id>` and the collection list uses `#collections`. Do not publish local test fixtures or preview login stubs.

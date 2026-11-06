@@ -78,3 +78,43 @@ test('portal owner can edit and remove memories and photos created by past guest
  await assertSucceeds(deleteDoc(doc(owner.firestore(),'trips','one','photos','photo-a')));
  await assertSucceeds(deleteDoc(doc(owner.firestore(),'trips','legacy')));
 });
+test('collections and rated places are public but only the owner can create, edit or delete',async()=>{
+ const owner=env.authenticatedContext('owner',{email:'aiden@viro.local'}).firestore();
+ const collection={title:'Cafes',description:'SoCal',createdBy:'owner',createdAt:serverTimestamp(),updatedAt:serverTimestamp()};
+ const place={name:'Cafe',address:'Irvine',lat:33.6,lng:-117.8,rating:4,notes:'Latte',createdBy:'owner',createdAt:serverTimestamp(),updatedAt:serverTimestamp(),coverPath:''};
+ await assertSucceeds(setDoc(doc(owner,'placeCollections','cafes'),collection));
+ await assertSucceeds(setDoc(doc(owner,'placeCollections','cafes','places','cafe'),place));
+ for(const context of [env.unauthenticatedContext(),env.authenticatedContext('guest-a'),env.authenticatedContext('stranger',{email:'other@example.com'})]){
+  const db=context.firestore();
+  await assertSucceeds(getDoc(doc(db,'placeCollections','cafes')));await assertSucceeds(getDoc(doc(db,'placeCollections','cafes','places','cafe')));
+  await assertFails(setDoc(doc(db,'placeCollections','forged'),collection));
+  await assertFails(updateDoc(doc(db,'placeCollections','cafes'),{title:'Hijack',updatedAt:serverTimestamp()}));
+  await assertFails(deleteDoc(doc(db,'placeCollections','cafes')));
+  await assertFails(setDoc(doc(db,'placeCollections','cafes','places','forged'),place));
+  await assertFails(updateDoc(doc(db,'placeCollections','cafes','places','cafe'),{rating:1,updatedAt:serverTimestamp()}));
+  await assertFails(deleteDoc(doc(db,'placeCollections','cafes','places','cafe')));
+ }
+ for(const bad of [{rating:6},{rating:1.5},{lat:99},{name:''},{coverPath:'users/owner/private.jpg'},{createdBy:'stranger'},{unexpected:true}])await assertFails(updateDoc(doc(owner,'placeCollections','cafes','places','cafe'),{...bad,updatedAt:serverTimestamp()}));
+ await assertFails(setDoc(doc(owner,'placeCollections','missing','places','orphan'),place));
+ await assertSucceeds(updateDoc(doc(owner,'placeCollections','cafes','places','cafe'),{rating:5,name:'Better Cafe',lat:34,updatedAt:serverTimestamp()}));
+});
+test('collection photos require owner reservations and public reads require completed uploads',async()=>{
+ const owner=env.authenticatedContext('owner',{email:'aiden@viro.local'}),guest=env.authenticatedContext('guest-a'),publicContext=env.unauthenticatedContext();
+ const path='collectionPhotos/cafes/cafe/owner/p1.jpg',metadata={uploaderId:'owner',storagePath:path,width:100,height:100,createdAt:serverTimestamp(),status:'pending'};
+ const photo=doc(owner.firestore(),'placeCollections','cafes','places','cafe','photos','p1');const bytes=new Uint8Array([255,216,255,217]);
+ await assertFails(setDoc(doc(guest.firestore(),'placeCollections','cafes','places','cafe','photos','p1'),metadata));
+ await assertSucceeds(setDoc(photo,metadata));
+ await assertFails(uploadBytes(ref(guest.storage(),path),bytes,{contentType:'image/jpeg'}));
+ await assertFails(uploadBytes(ref(owner.storage(),'collectionPhotos/cafes/cafe/owner/no-reservation.jpg'),bytes,{contentType:'image/jpeg'}));
+ await assertFails(uploadBytes(ref(owner.storage(),path),bytes,{contentType:'text/html'}));
+ await assertSucceeds(uploadBytes(ref(owner.storage(),path),bytes,{contentType:'image/jpeg'}));
+ await assertFails(getBytes(ref(publicContext.storage(),path)));
+ await assertFails(updateDoc(doc(guest.firestore(),'placeCollections','cafes','places','cafe','photos','p1'),{status:'ready'}));
+ await assertSucceeds(updateDoc(photo,{status:'ready'}));
+ await assertSucceeds(getBytes(ref(publicContext.storage(),path)));
+ await assertFails(uploadBytes(ref(owner.storage(),path),bytes,{contentType:'image/jpeg'}));
+ await assertFails(deleteObject(ref(guest.storage(),path)));
+ await assertFails(deleteDoc(doc(guest.firestore(),'placeCollections','cafes','places','cafe','photos','p1')));
+ await assertSucceeds(deleteObject(ref(owner.storage(),path)));await assertSucceeds(deleteDoc(photo));
+ await assertSucceeds(deleteDoc(doc(owner.firestore(),'placeCollections','cafes','places','cafe')));await assertSucceeds(deleteDoc(doc(owner.firestore(),'placeCollections','cafes')));
+});

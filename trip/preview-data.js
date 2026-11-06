@@ -24,3 +24,4 @@ export async function removePhoto(id, photo) { galleries.set(id, galleries.get(i
 
 export const watchEditor = callback => { callback(null); return () => {}; };
 export const lockEditor = async () => {};
+export const watchCollections = callback => { callback([]); return () => {}; };

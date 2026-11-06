@@ -82,3 +82,64 @@ export async function removeTrip(tripId) {
   for (const photo of snapshot.docs) await removePhoto(tripId, { ...photo.data(), id: photo.id });
   await deleteDoc(doc(db, 'trips', tripId));
 }
+
+// Public place collections; every mutation requires the same owner login as Trips.
+const collectionRef = id => doc(db, 'placeCollections', id);
+const placeRef = (id, placeId) => doc(db, 'placeCollections', id, 'places', placeId);
+const placePhotos = (id, placeId) => collection(db, 'placeCollections', id, 'places', placeId, 'photos');
+export const newCollectionId = () => doc(collection(db, 'placeCollections')).id;
+export const newPlaceId = id => doc(collection(db, 'placeCollections', id, 'places')).id;
+export const watchCollections = (success, failure) => onSnapshot(query(collection(db, 'placeCollections'), orderBy('createdAt', 'desc')), s => success(s.docs.map(d => ({...d.data(),id:d.id}))), failure);
+export const watchPlaces = (id, success, failure) => onSnapshot(collection(db, 'placeCollections', id, 'places'), s => success(s.docs.map(d => ({...d.data(),id:d.id}))), failure);
+export const watchPlacePhotos = (id, placeId, success, failure) => onSnapshot(query(placePhotos(id, placeId), where('status', '==', 'ready')), s => success(s.docs.map(d => ({...d.data(),id:d.id}))), failure);
+export async function saveCollection(id, values, existing = false) {
+  const user = await requireEditor();
+  if (existing) await updateDoc(collectionRef(id), {...values,updatedAt:serverTimestamp()});
+  else await setDoc(collectionRef(id), {...values,createdBy:user.uid,createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
+}
+export async function savePlace(id, placeId, values, existing = false) {
+  const user = await requireEditor();
+  if (existing) await updateDoc(placeRef(id,placeId), {...values,updatedAt:serverTimestamp()});
+  else await setDoc(placeRef(id,placeId), {...values,createdBy:user.uid,createdAt:serverTimestamp(),updatedAt:serverTimestamp(),coverPath:''});
+}
+export async function collectionImageUrl(path) {
+  if (!/^collectionPhotos\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+\.jpg$/.test(path || '')) throw new Error('Invalid collection photo path.');
+  if (!urls.has(path)) urls.set(path,getDownloadURL(ref(storage,path)).catch(error => {urls.delete(path);throw error;}));
+  return urls.get(path);
+}
+export async function uploadPlacePhoto(id, placeId, blob, info, progress) {
+  const user = await requireEditor(), photo = doc(placePhotos(id,placeId));
+  const path = `collectionPhotos/${id}/${placeId}/${user.uid}/${photo.id}.jpg`, file=ref(storage,path);
+  await setDoc(photo,{uploaderId:user.uid,storagePath:path,width:info.width,height:info.height,createdAt:serverTimestamp(),status:'pending'});
+  try {
+    await new Promise((resolve,reject) => {const task=uploadBytesResumable(file,blob,{contentType:'image/jpeg'});task.on('state_changed',s=>progress(s.bytesTransferred/s.totalBytes),reject,resolve);});
+    await updateDoc(photo,{status:'ready'});
+  } catch (error) {
+    try {await deleteObject(file);await deleteDoc(photo);} catch (cleanup) {if(cleanup.code==='storage/object-not-found') await deleteDoc(photo).catch(()=>{});}
+    throw error;
+  }
+  // Cover failure must not cause a successfully uploaded photo to be uploaded again.
+  const current = await getDoc(placeRef(id,placeId)).catch(()=>null);
+  if(current?.exists() && !current.data().coverPath) await updateDoc(placeRef(id,placeId),{coverPath:path,updatedAt:serverTimestamp()}).catch(()=>{});
+  return {id:photo.id,storagePath:path};
+}
+export async function setPlaceCover(id, placeId, path) {await requireEditor();await updateDoc(placeRef(id,placeId),{coverPath:path,updatedAt:serverTimestamp()});}
+export async function removePlacePhoto(id, placeId, photo) {
+  await requireEditor();
+  try {await deleteObject(ref(storage,photo.storagePath));} catch(error) {if(error.code!=='storage/object-not-found') throw error;}
+  await deleteDoc(doc(placePhotos(id,placeId),photo.id));urls.delete(photo.storagePath);
+  const place=await getDoc(placeRef(id,placeId));
+  if(place.exists() && place.data().coverPath===photo.storagePath) await setPlaceCover(id,placeId,'');
+}
+export async function removePlace(id, placeId) {
+  await requireEditor();
+  const photos=await getDocs(placePhotos(id,placeId));
+  for(const photo of photos.docs) await removePlacePhoto(id,placeId,{...photo.data(),id:photo.id});
+  await deleteDoc(placeRef(id,placeId));
+}
+export async function removeCollection(id) {
+  await requireEditor();
+  const places=await getDocs(collection(db,'placeCollections',id,'places'));
+  for(const place of places.docs) await removePlace(id,place.id);
+  await deleteDoc(collectionRef(id));
+}

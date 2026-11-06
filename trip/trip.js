@@ -1,11 +1,12 @@
 import { escapeHtml as h, validateTrip, validateFiles, filterTrips, tripStats, dateLabel } from './model.js';
 import { createMap, pinIcon, findPlaces } from './map.js';
 import { preparePhoto } from './photos.js';
+import { initCollections } from './collections.js';
 
 const $ = selector => document.querySelector(selector);
 const form = $('#trip-form'), formDialog = $('#form-dialog'), tripDialog = $('#trip-dialog');
 const demo = new URLSearchParams(location.search).get('demo') === '1';
-let editing = false;
+let editing = false, collectionsUI;
 let api, trips = [], visibleTrips = [], selectedTrip = null, photos = [], user = null;
 let worldMap, pinLayer, pickerMap, pickerPin, locationResults = [];
 let stopTrip, stopPhotos, photoLimit = 60, lightboxIndex = 0, busy = false, toastTimer;
@@ -14,9 +15,9 @@ const storage = { get(key) { try { return localStorage.getItem(key); } catch { r
 const openers = new Map();
 function toast(message) { $('#toast').textContent = message; $('#toast').hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { $('#toast').hidden = true; }, 5000); }
 function showDialog(dialog) { if (!dialog.open) { openers.set(dialog.id, document.activeElement); dialog.showModal(); } }
-function closeDialog(dialog) { if (busy && ['form-dialog', 'upload-dialog'].includes(dialog.id)) { toast('Let the upload finish before closing this window.'); return; } dialog.close(); }
+function closeDialog(dialog) { if (collectionsUI?.isBusy() || (busy && ['form-dialog', 'upload-dialog'].includes(dialog.id))) { toast('Let the upload finish before closing this window.'); return; } dialog.close(); }
 for (const dialog of document.querySelectorAll('dialog')) {
-  dialog.addEventListener('cancel', e => { if (busy && ['form-dialog', 'upload-dialog'].includes(dialog.id)) e.preventDefault(); });
+  dialog.addEventListener('cancel', e => { if (collectionsUI?.isBusy() || (busy && ['form-dialog', 'upload-dialog'].includes(dialog.id))) e.preventDefault(); });
   dialog.addEventListener('close', () => {
     openers.get(dialog.id)?.focus?.();
     if (dialog.id === 'trip-dialog') { stopTrip?.(); stopPhotos?.(); if (location.hash.startsWith('#trip=')) history.replaceState(null, '', location.pathname + location.search + '#journal'); }
@@ -28,6 +29,7 @@ document.addEventListener('click', e => {
 });
 function updateEditing(nextUser) {
   user = nextUser; editing = Boolean(nextUser);
+  collectionsUI?.setEditing(nextUser);
   $('#editor-toggle').textContent = editing ? 'Exit editing' : 'Editing mode';
   $('#editor-toggle').setAttribute('aria-pressed', String(editing));
   document.querySelectorAll('[data-new-trip], [data-editor-only]').forEach(button => { button.hidden = !editing; });
@@ -36,7 +38,7 @@ function updateEditing(nextUser) {
 }
 $('#editor-toggle').onclick = async () => {
   if (!api) return toast('The journal is still connecting.');
-  if (busy) return toast('Wait for the current change to finish.');
+  if (busy || collectionsUI?.isBusy()) return toast('Wait for the current change to finish.');
   if (editing) { try { await api.lockEditor(); updateEditing(null); toast('Editing locked.'); } catch (err) { toast(friendlyError(err)); } return; }
   if (demo) return toast('This preview is read-only. Open the live journal to unlock editing.');
   $('#editor-form').reset(); $('#editor-error').textContent = ''; showDialog($('#editor-dialog')); $('#editor-pin').focus();
@@ -82,21 +84,60 @@ async function fillImages(scope) {
   }));
 }
 function cover(path, title, loading = 'lazy') {
-  return `<div class="cover-placeholder" ${path ? 'hidden' : ''}><span>Somewhere good.</span><small>A STORY WAITING FOR ITS PHOTOS</small></div>${path ? `<img data-photo-path="${h(path)}" alt="${h(title)}" loading="${loading}" decoding="async" />` : ''}`;
+  return `<div class="cover-placeholder" ${path ? 'hidden' : ''}><span>No cover photo</span><small>TRIP ARCHIVE</small></div>${path ? `<img data-photo-path="${h(path)}" alt="${h(title)}" loading="${loading}" decoding="async" />` : ''}`;
 }
 function renderTrips() {
   const selectedYear = $('#year').value;
   const years = [...new Set(trips.map(t => t.startDate?.slice(0, 4)).filter(Boolean))].sort().reverse();
   $('#year').innerHTML = '<option value="">All years</option>' + years.map(y => `<option value="${h(y)}" ${y === selectedYear ? 'selected' : ''}>${h(y)}</option>`).join('');
+  syncYearMenu();
   visibleTrips = filterTrips(trips, $('#search').value, $('#year').value);
   const stats = tripStats(trips);
   $('#trip-count').textContent = String(stats.trips).padStart(2, '0'); $('#place-count').textContent = String(stats.places).padStart(2, '0'); $('#friend-count').textContent = String(stats.friends).padStart(2, '0');
-  $('#result-count').textContent = `${visibleTrips.length} ${visibleTrips.length === 1 ? 'memory' : 'memories'}`;
-  $('#trip-grid').innerHTML = visibleTrips.map((t, i) => `<article class="trip-card"><button class="card-image" data-open-trip="${h(t.id)}" aria-label="Open ${h(t.title)}">${cover(t.coverPath, t.title)}<span class="card-index">MEMORY ${String(i + 1).padStart(2, '0')}</span><span class="card-arrow">↗</span></button><div class="card-meta"><span>${h(t.locationLabel)}</span><span>${h(t.startDate?.slice(0, 4))}</span></div><button class="card-title" data-open-trip="${h(t.id)}">${h(t.title)}</button><p class="card-description">${h(t.description)}</p><div class="card-people"><span class="avatars">${t.people.slice(0, 4).map(n => `<span class="avatar" title="${h(n)}">${h(n.split(/\s+/).map(x => x[0]).slice(0, 2).join('').toUpperCase())}</span>`).join('')}</span><span>${h(t.people.slice(0, 3).join(', '))}${t.people.length > 3 ? ` +${t.people.length - 3}` : ''}</span></div></article>`).join('') || (trips.length ? '<div class="empty-state"><h3>No memories found.</h3><p>Try another name, place, or year.</p><button class="button" id="clear-filters">Clear filters</button></div>' : '<div class="empty-state"><span class="empty-icon">↗</span><h3>Every memory book starts somewhere.</h3><p>Our travel stories will appear here.</p><button class="button" data-new-trip hidden>Add our first trip ↗</button></div>');
+  $('#result-count').textContent = `${visibleTrips.length} ${visibleTrips.length === 1 ? 'trip' : 'trips'}`;
+  $('#trip-grid').innerHTML = visibleTrips.map((t, i) => `<article class="trip-card"><button class="card-image" data-open-trip="${h(t.id)}" aria-label="Open ${h(t.title)}">${cover(t.coverPath, t.title)}<span class="card-index">TRIP ${String(i + 1).padStart(2, '0')}</span><span class="card-arrow">↗</span></button><div class="card-meta"><span>${h(t.locationLabel)}</span><span>${h(t.startDate?.slice(0, 4))}</span></div><button class="card-title" data-open-trip="${h(t.id)}">${h(t.title)}</button><p class="card-description">${h(t.description)}</p><div class="card-people"><span class="avatars">${t.people.slice(0, 4).map(n => `<span class="avatar" title="${h(n)}">${h(n.split(/\s+/).map(x => x[0]).slice(0, 2).join('').toUpperCase())}</span>`).join('')}</span><span>${h(t.people.slice(0, 3).join(', '))}${t.people.length > 3 ? ` +${t.people.length - 3}` : ''}</span></div></article>`).join('') || (trips.length ? '<div class="empty-state"><h3>No trips found.</h3><p>Try another name, place, or year.</p><button class="button" id="clear-filters">Clear filters</button></div>' : '<div class="empty-state"><span class="empty-icon">↗</span><h3>No trips yet.</h3><p>Trips will appear here once added.</p><button class="button" data-new-trip hidden>Add trip</button></div>');
   $('#clear-filters')?.addEventListener('click', () => { $('#search').value = ''; $('#year').value = ''; renderTrips(); });
   document.querySelectorAll('[data-new-trip], [data-editor-only]').forEach(button => { button.hidden = !editing; });
   fillImages($('#trip-grid')); renderPins();
 }
+const yearTrigger = $('#year-trigger'), yearMenu = $('#year-options');
+function syncYearMenu() {
+  const value = $('#year').value, label = value || 'All years';
+  $('#year-label').textContent = label;
+  yearTrigger.setAttribute('aria-label', `Filter by year: ${label}`);
+  yearMenu.innerHTML = [...$('#year').options].map(option => `<button type="button" role="option" tabindex="-1" aria-selected="${option.value === value}" data-year="${h(option.value)}"><span>${h(option.textContent)}</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg></button>`).join('');
+}
+function closeYearMenu(restoreFocus = false) {
+  yearMenu.hidden = true; yearTrigger.setAttribute('aria-expanded', 'false');
+  if (restoreFocus) yearTrigger.focus();
+}
+function openYearMenu(last = false) {
+  yearMenu.hidden = false; yearTrigger.setAttribute('aria-expanded', 'true');
+  const options = [...yearMenu.querySelectorAll('[role="option"]')];
+  (last ? options.at(-1) : options.find(option => option.getAttribute('aria-selected') === 'true') || options[0])?.focus();
+}
+yearTrigger.addEventListener('click', () => yearMenu.hidden ? openYearMenu() : closeYearMenu());
+yearTrigger.addEventListener('keydown', event => {
+  if (['ArrowDown', 'ArrowUp'].includes(event.key)) { event.preventDefault(); openYearMenu(event.key === 'ArrowUp'); }
+});
+yearMenu.addEventListener('click', event => {
+  const option = event.target.closest('[data-year]'); if (!option) return;
+  $('#year').value = option.dataset.year; renderTrips(); closeYearMenu(true);
+});
+yearMenu.addEventListener('keydown', event => {
+  if (event.key === 'Escape') { event.preventDefault(); closeYearMenu(true); return; }
+  if (event.key === 'Tab') { closeYearMenu(true); return; }
+  const options = [...yearMenu.querySelectorAll('[role="option"]')], index = options.indexOf(document.activeElement);
+  let next;
+  if (event.key === 'ArrowDown') next = (index + 1) % options.length;
+  if (event.key === 'ArrowUp') next = (index - 1 + options.length) % options.length;
+  if (event.key === 'Home') next = 0;
+  if (event.key === 'End') next = options.length - 1;
+  if (next !== undefined) { event.preventDefault(); options[next]?.focus(); }
+});
+document.addEventListener('click', event => { if (!event.target.closest('.year-filter')) closeYearMenu(); });
+document.addEventListener('focusin', event => { if (!event.target.closest('.year-filter')) closeYearMenu(); });
+syncYearMenu();
 $('#search').addEventListener('input', renderTrips); $('#year').addEventListener('change', renderTrips);
 $('#trip-grid').addEventListener('click', e => { const button = e.target.closest('[data-open-trip]'); if (button) openTrip(button.dataset.openTrip); });
 function renderPins() {
@@ -156,8 +197,8 @@ function openForm(trip = null) {
   if (!api) return toast('The journal is still connecting. Try again in a moment.');
   form.reset(); editId = trip?.id || null; formSavedId = null; tripFiles = [];
   $('#form-error').textContent = ''; $('#form-progress').hidden = true; $('#location-results').textContent = ''; $('#initial-file-count').textContent = '';
-  $('#form-title').innerHTML = trip ? 'Keep the <em>story going.</em>' : 'Where did we <em>go?</em>';
-  $('#save-trip').textContent = trip ? 'Save changes ↗' : 'Save this memory ↗';
+  $('#form-title').innerHTML = trip ? 'Edit trip' : 'Add trip';
+  $('#save-trip').textContent = trip ? 'Save changes ↗' : 'Save trip';
   form.elements.authorName.value = storage.get('trip-contributor-name') || '';
   if (trip) for (const [name, value] of Object.entries(trip)) { if (form.elements[name] && !['people', 'excursions'].includes(name)) form.elements[name].value = value ?? ''; }
   if (trip) { form.elements.people.value = trip.people.join(', '); form.elements.excursions.value = trip.excursions.join('\n'); }
@@ -251,17 +292,17 @@ form.addEventListener('submit', async e => {
     await api.saveTrip(id, values, Boolean(formSavedId || editId)); formSavedId = id;
     storage.set('trip-contributor-name', values.authorName);
     await uploadQueue(id, tripFiles, values.authorName, '', $('#form-progress'), button, !editId && !trips.find(t => t.id === id)?.coverPath);
-    formBusy(button, false); formDialog.close(); toast(editId ? 'The story has been updated.' : 'One more memory, kept forever.'); openTrip(id);
+    formBusy(button, false); formDialog.close(); toast(editId ? 'The story has been updated.' : 'Trip added.'); openTrip(id);
   } catch (err) {
     $('#form-error').textContent = `${formSavedId ? 'The trip is saved. ' : ''}${friendlyError(err)}${tripFiles.length && formSavedId ? ` ${tripFiles.length} photo(s) are still waiting; retry to upload the remainder.` : ''}`;
-  } finally { formBusy(button, false); button.textContent = formSavedId ? 'Save changes & retry remaining photos ↗' : editId ? 'Save changes ↗' : 'Save this memory ↗'; }
+  } finally { formBusy(button, false); button.textContent = formSavedId ? 'Save changes & retry remaining photos ↗' : editId ? 'Save changes ↗' : 'Save trip'; }
 });
 function openTrip(id, updateHash = true) {
   if (!/^[a-zA-Z0-9_-]{1,100}$/.test(id) || !api) return;
   stopTrip?.(); stopPhotos?.(); selectedTrip = null; photos = []; photoLimit = 60;
-  $('#trip-detail').innerHTML = '<div class="detail-content"><p>Opening this memory…</p></div>'; showDialog(tripDialog);
+  $('#trip-detail').innerHTML = '<div class="detail-content"><p>Opening trip…</p></div>'; showDialog(tripDialog);
   if (updateHash) history.pushState(null, '', `${location.pathname}${location.search}#trip=${encodeURIComponent(id)}`);
-  stopTrip = api.watchTrip(id, trip => { selectedTrip = trip; if (!trip) { $('#trip-detail').innerHTML = '<div class="detail-content"><h2>That memory isn’t here.</h2><p>The link may be incorrect or the trip may have been removed.</p></div>'; return; } renderDetail(); }, err => { $('#trip-detail').innerHTML = `<div class="detail-content"><p class="error-message">${h(friendlyError(err))}</p></div>`; });
+  stopTrip = api.watchTrip(id, trip => { selectedTrip = trip; if (!trip) { $('#trip-detail').innerHTML = '<div class="detail-content"><h2>Trip not found.</h2><p>The link may be incorrect or the trip may have been removed.</p></div>'; return; } renderDetail(); }, err => { $('#trip-detail').innerHTML = `<div class="detail-content"><p class="error-message">${h(friendlyError(err))}</p></div>`; });
   watchGallery(id);
 
 }
@@ -271,7 +312,7 @@ function watchGallery(id) {
 function renderDetail() {
   const t = selectedTrip; if (!t) return;
   const own = editing;
-  $('#trip-detail').innerHTML = `<div class="detail-cover">${cover(t.coverPath, t.title, 'eager')}<span class="detail-cover-label">${h(dateLabel(t.startDate, t.endDate))}</span></div><div class="detail-content"><div class="detail-title-row"><h2 id="detail-title">${h(t.title)}</h2>${own ? '<button class="button small" id="edit-trip">Edit story ↗</button><button class="button small" id="delete-trip">Delete trip</button>' : ''}</div><p class="detail-location"><a href="https://www.openstreetmap.org/?mlat=${t.lat}&mlon=${t.lng}#map=13/${t.lat}/${t.lng}" target="_blank" rel="noopener noreferrer">${h(t.locationLabel)} ↗</a>${t.address ? ` · ${h(t.address)}` : ''}</p><div class="detail-info"><p class="detail-story">${h(t.description)}</p><aside><span class="eyebrow">THE GOOD COMPANY</span><div class="detail-friends">${t.people.map(n => `<span class="person-chip">${h(n)}</span>`).join('')}</div></aside></div>${t.excursions.length ? `<section class="excursions"><span class="eyebrow">THE LITTLE DETOURS</span><h3 style="margin-top:10px">Out & about.</h3><div class="excursion-list">${t.excursions.map((x, i) => `<div class="excursion"><span>${String(i + 1).padStart(2, '0')}</span><p>${h(x)}</p></div>`).join('')}</div></section>` : ''}<div class="gallery-heading"><div><h3>Through our lenses.</h3><p id="gallery-count">Drop photos onto this memory, or use Add photos.</p></div>${editing ? '<button class="button" id="add-photos">＋ Add photos</button>' : ''}</div><div id="gallery"></div><button class="text-button detail-load-more" id="more-gallery" hidden>Load more photos ↓</button><div class="detail-share"><span>STORY ADDED BY ${h(t.authorName.toUpperCase())}</span><button class="text-button" id="share-trip">Copy trip link ↗</button></div></div>`;
+  $('#trip-detail').innerHTML = `<div class="detail-cover">${cover(t.coverPath, t.title, 'eager')}<span class="detail-cover-label">${h(dateLabel(t.startDate, t.endDate))}</span></div><div class="detail-content"><div class="detail-title-row"><h2 id="detail-title">${h(t.title)}</h2>${own ? '<button class="button small" id="edit-trip">Edit story ↗</button><button class="button small" id="delete-trip">Delete trip</button>' : ''}</div><p class="detail-location"><a href="https://www.openstreetmap.org/?mlat=${t.lat}&mlon=${t.lng}#map=13/${t.lat}/${t.lng}" target="_blank" rel="noopener noreferrer">${h(t.locationLabel)} ↗</a>${t.address ? ` · ${h(t.address)}` : ''}</p><div class="detail-info"><p class="detail-story">${h(t.description)}</p><aside><span class="eyebrow">PEOPLE</span><div class="detail-friends">${t.people.map(n => `<span class="person-chip">${h(n)}</span>`).join('')}</div></aside></div>${t.excursions.length ? `<section class="excursions"><span class="eyebrow">ACTIVITIES</span><h3 style="margin-top:10px">On the itinerary</h3><div class="excursion-list">${t.excursions.map((x, i) => `<div class="excursion"><span>${String(i + 1).padStart(2, '0')}</span><p>${h(x)}</p></div>`).join('')}</div></section>` : ''}<div class="gallery-heading"><div><h3>Photos</h3><p id="gallery-count">Drop photos onto this memory, or use Add photos.</p></div>${editing ? '<button class="button" id="add-photos">＋ Add photos</button>' : ''}</div><div id="gallery"></div><button class="text-button detail-load-more" id="more-gallery" hidden>Load more photos ↓</button><div class="detail-share"><span>STORY ADDED BY ${h(t.authorName.toUpperCase())}</span><button class="text-button" id="share-trip">Copy trip link ↗</button></div></div>`;
   fillImages($('#trip-detail')); renderGallery();
   $('#edit-trip')?.addEventListener('click', () => openForm(t));
   $('#add-photos')?.addEventListener('click', () => openPhotoUpload(t.id));
@@ -290,7 +331,7 @@ function renderDetail() {
 }
 function renderGallery() {
   const gallery = $('#gallery'); if (!gallery || !selectedTrip) return;
-  $('#gallery-count').textContent = `${photos.length}${photos.length >= photoLimit ? '+' : ''} photos · Everyone’s point of view.`;
+  $('#gallery-count').textContent = `${photos.length}${photos.length >= photoLimit ? '+' : ''} photos · in this trip.`;
   gallery.className = photos.length ? 'gallery' : 'gallery-empty';
   gallery.innerHTML = photos.map((p, i) => `<figure class="gallery-photo"><button data-view-photo="${i}" aria-label="View photo ${i + 1} by ${h(p.uploaderName)}"><img data-photo-path="${h(p.storagePath)}" alt="${h(p.caption || `A moment from ${selectedTrip.title}, by ${p.uploaderName}`)}" width="${p.width}" height="${p.height}" loading="lazy" decoding="async" /></button><figcaption><span>${h(p.uploaderName)}</span><span>${editing ? `<button data-cover-photo="${i}">${selectedTrip.coverPath === p.storagePath ? 'Cover' : 'Set cover'}</button> ` : ''}${editing ? `<button data-remove-photo="${i}" aria-label="Remove photo ${i + 1}">Remove</button>` : ''}</span></figcaption></figure>`).join('') || 'No photos in this memory yet.';
   $('#more-gallery').hidden = photos.length < photoLimit;
@@ -339,12 +380,13 @@ $('#previous-photo').onclick = () => { lightboxIndex--; showPhoto(); }; $('#next
 $('#lightbox').addEventListener('keydown', e => { if (e.key === 'ArrowLeft') { e.preventDefault(); lightboxIndex--; showPhoto(); } if (e.key === 'ArrowRight') { e.preventDefault(); lightboxIndex++; showPhoto(); } });
 function route() { const match = location.hash.match(/^#trip=([a-zA-Z0-9_-]{1,100})$/); if (match) openTrip(match[1], false); else if (tripDialog.open) tripDialog.close(); }
 window.addEventListener('popstate', route); window.addEventListener('hashchange', route);
-window.addEventListener('beforeunload', e => { if (busy) { e.preventDefault(); e.returnValue = ''; } });
+window.addEventListener('beforeunload', e => { if (busy || collectionsUI?.isBusy()) { e.preventDefault(); e.returnValue = ''; } });
 window.addEventListener('offline', () => toast('You’re offline. Reconnect before saving a trip or adding photos.'));
 try { worldMap = createMap('world-map'); pinLayer = L.layerGroup().addTo(worldMap); } catch (err) { $('#map-status').textContent = err.message; }
 try {
   api = await import(demo ? './preview-data.js' : './firebase.js');
   if (demo) { $('#connection-status').hidden = false; $('#connection-status').textContent = 'DESIGN PREVIEW · These are sample trips, not Aiden’s travel history. Changes stay in this preview and are not uploaded to Firebase.'; }
+  collectionsUI = initCollections({ api, toast, showDialog });
   api.watchEditor(updateEditing);
   api.watchTrips(data => { trips = data; if (!demo) $('#connection-status').hidden = true; renderTrips(); }, connectionError);
   route();

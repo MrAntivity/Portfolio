@@ -26,7 +26,7 @@ export async function findPlaces(query) {
   const json = await response.json();
   const places = (json.features || []).map(f => {
     const p = f.properties || {}, [lng, lat] = f.geometry?.coordinates || [];
-    return { lat, lng, locationLabel: [p.name, p.city || p.state, p.country].filter((v, i, a) => v && a.indexOf(v) === i).join(', ').slice(0, 180), address: [p.housenumber, p.street, p.city, p.postcode, p.country].filter(Boolean).join(' ').slice(0, 300), country: (p.country || '').slice(0, 100) };
+    return { lat, lng, name: (p.name || p.city || p.street || '').slice(0, 180), locationLabel: [p.name, p.city || p.state, p.country].filter((v, i, a) => v && a.indexOf(v) === i).join(', ').slice(0, 180), address: [p.housenumber, p.street, p.city, p.postcode, p.country].filter(Boolean).join(' ').slice(0, 300), country: (p.country || '').slice(0, 100) };
   }).filter(p => Number.isFinite(p.lat) && Number.isFinite(p.lng) && Math.abs(p.lat) <= 85 && Math.abs(p.lng) <= 180);
   cache.set(text.toLowerCase(), places); return places;
 }
