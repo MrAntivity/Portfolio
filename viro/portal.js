@@ -160,7 +160,6 @@ let calendarLoadVersion = 0;
 let calendarSyncReady = false;
 let calendarWeekStart = startOfWeek(new Date());
 let calendarEvents = [];
-let calendarSummaryCache = null;
 let calendarList = [];
 let hiddenCalendarIds = new Set(JSON.parse(localStorage.getItem('viro-hidden-calendars') || '[]'));
 let knownPlaces = [];
@@ -267,6 +266,8 @@ onAuthStateChanged(auth, async (user) => {
   if (!user || user.email !== PORTAL_ACCOUNT_EMAIL) {
     lockVault();
     currentUser = null;
+    document.querySelector('.workspace-search-dialog[open]')?.close();
+    document.getElementById('universal-search-results')?.replaceChildren();
     portalEl.hidden = true;
     greetingLoader.hidden = true;
     modalBackdrop.hidden = true;
@@ -298,7 +299,6 @@ logoutBtn.addEventListener('click', async () => {
   calendarSyncReady = false;
   calendarEvents = [];
   calendarList = [];
-  calendarSummaryCache = null;
   googleAccessToken = null;
   calendarTokenRequest = null;
   vaultUnlocked = false;
@@ -397,7 +397,7 @@ function requestTabSwitch(tabName, onArrive) {
 const PORTAL_TAB_NAMES = ['overview', 'birthdays', 'todos', 'vault', 'files', 'budget', ...(NOTES_ENABLED ? ['drive'] : []), 'calendar', 'contacts'];
 document.querySelector('[data-tab="drive"]').hidden = !NOTES_ENABLED;
 const PORTAL_TAB_LABELS = { overview: 'Overview', birthdays: 'Birthdays', todos: 'Tasks', vault: 'Vault', files: 'Files', budget: 'Budget', drive: 'Notes', calendar: 'Calendar', contacts: 'Contacts' };
-document.getElementById('workspace-search-trigger').addEventListener('click', () => requestTabSwitch('overview', () => document.getElementById('universal-search-input').focus()));
+document.getElementById('workspace-search-trigger').addEventListener('click', openWorkspaceSearch);
 const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
 const portalHeader = document.querySelector('.portal-header');
 
@@ -420,7 +420,7 @@ document.addEventListener('keydown', (event) => {
   }
   if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k' && !event.altKey) {
     event.preventDefault();
-    requestTabSwitch('overview', () => document.getElementById('universal-search-input').focus());
+    openWorkspaceSearch();
   }
 });
 
@@ -3579,6 +3579,7 @@ const UNIVERSAL_TYPE_ICON = {
 };
 
 const UNIVERSAL_TYPE_LABEL = {
+  event: 'Calendar', budget: 'Budget', page: 'Page',
   todo: 'To-do',
   birthday: 'Birthday',
   contact: 'Contact',
@@ -3588,6 +3589,7 @@ const UNIVERSAL_TYPE_LABEL = {
 };
 
 const UNIVERSAL_TYPE_TAB = {
+  event: 'calendar', budget: 'budget', page: 'overview',
   todo: 'todos',
   birthday: 'birthdays',
   contact: 'contacts',
@@ -3650,6 +3652,10 @@ function buildGlobalSearchItems() {
     });
   });
 
+  PORTAL_TAB_NAMES.forEach(tab => items.push({id:`page:${tab}`, type:'page', title:PORTAL_TAB_LABELS[tab], subtitle:'Open page'}));
+  calendarEvents.forEach(event => items.push({id:`event:${event.calendarId}:${event.id}`, type:'event', title:event.summary || 'Untitled event', subtitle:event.location || '', date:eventDateIso(event)}));
+  items.push(...(document.getElementById('budget-root').budgetSearchItems || []));
+
   return items;
 }
 
@@ -3657,6 +3663,26 @@ const universalSearchInput = document.getElementById('universal-search-input');
 const universalSearchBtn = document.getElementById('universal-search-btn');
 const universalSearchStatus = document.getElementById('universal-search-status');
 const universalSearchResults = document.getElementById('universal-search-results');
+const searchPanel = universalSearchInput.closest('.universal-search');
+const searchHome = searchPanel.parentElement;
+const searchAnchor = document.createComment('search home');
+searchHome.insertBefore(searchAnchor, searchPanel);
+const searchDialog = document.createElement('dialog');
+searchDialog.className = 'workspace-search-dialog';
+searchDialog.setAttribute('aria-label', 'Search your workspace');
+searchDialog.innerHTML = '<header><strong>Search your workspace</strong><button type="button" aria-label="Close search">✕</button></header>';
+portalEl.append(searchDialog);
+searchDialog.querySelector('button').onclick = () => searchDialog.close();
+searchDialog.addEventListener('click', event => { if(event.target === searchDialog) searchDialog.close(); });
+searchDialog.addEventListener('close', () => searchAnchor.after(searchPanel));
+function openWorkspaceSearch() {
+  if (!hasPortalSession()) return;
+  if (!searchDialog.open) { searchDialog.append(searchPanel); searchDialog.showModal(); }
+  universalSearchInput.focus();
+  runUniversalSearch(universalSearchInput.value.trim());
+}
+universalSearchInput.addEventListener('input', () => runUniversalSearch(universalSearchInput.value.trim()));
+
 
 function renderUniversalResults(ids, items) {
   const byId = new Map(items.map((it) => [it.id, it]));
@@ -3672,7 +3698,7 @@ function renderUniversalResults(ids, items) {
   universalSearchResults.innerHTML = matched
     .map(
       (it) => `
-        <button type="button" class="universal-result" data-type="${it.type}" data-id="${it.id}" data-category="${it.category || ''}">
+        <button type="button" class="universal-result" data-type="${it.type}" data-id="${escapeHtml(it.id)}" data-category="${it.category || ''}">
           <span class="material-symbols-outlined" aria-hidden="true">${UNIVERSAL_TYPE_ICON[it.type] || 'search'}</span>
           <span class="universal-result-text">
             <span class="universal-result-title">${escapeHtml(it.title)}</span>
@@ -3689,9 +3715,10 @@ universalSearchResults.addEventListener('click', (event) => {
   const btn = event.target.closest('.universal-result');
   if (!btn) return;
   const { type, id } = btn.dataset;
-  const tab = UNIVERSAL_TYPE_TAB[type];
+  const tab = type === 'page' ? id.replace('page:', '') : UNIVERSAL_TYPE_TAB[type];
   if (!tab) return;
 
+  if (searchDialog.open) searchDialog.close();
   requestTabSwitch(tab, () => {
     if (type === 'note') {
       const note = notes.find((n) => n.id === id);
@@ -3706,15 +3733,13 @@ universalSearchResults.addEventListener('click', (event) => {
 });
 
 async function runUniversalSearch(query) {
-  universalSearchStatus.hidden = false;
-  universalSearchStatus.textContent = 'Searching…';
+  if (!hasPortalSession()) return;
   const items = buildGlobalSearchItems();
-  const result = await requestAi('smart_search', query, { items });
-  const ids = result?.ids || [];
-  renderUniversalResults(ids, items);
-  universalSearchStatus.textContent = ids.length
-    ? `Found ${ids.length} match${ids.length === 1 ? '' : 'es'}.`
-    : 'No matches found.';
+  const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+  const matches = items.filter(item => words.every(word => `${item.title} ${item.subtitle || ''} ${item.date || ''} ${UNIVERSAL_TYPE_LABEL[item.type] || ''}`.toLowerCase().includes(word)));
+  renderUniversalResults(matches.slice(0, 80).map(item => item.id), items);
+  universalSearchStatus.hidden = false;
+  universalSearchStatus.textContent = query ? `${matches.length} match${matches.length === 1 ? '' : 'es'}${matches.length > 80 ? ' · Showing first 80' : ''}` : 'Search pages, contacts, tasks, files, birthdays, notes, budget and loaded calendar events.';
 }
 
 // Loose title matching so "dry cleaner" finds a to-do/event titled "Pick Up
@@ -3967,7 +3992,8 @@ async function handleUniversalSubmit() {
 
   universalSearchBtn.disabled = true;
   try {
-    await runUniversalCommand(text);
+    if (/^(add|remind|create|schedule|delete|remove|complete|move|reschedule)\b/i.test(text)) await runUniversalCommand(text);
+    else await runUniversalSearch(text);
   } catch (err) {
     universalSearchStatus.hidden = false;
     universalSearchStatus.textContent = err.message || 'Something went wrong.';
@@ -4109,8 +4135,7 @@ document.getElementById('calendar-disconnect-btn').addEventListener('click', () 
     async () => {
       await callGoogleCalendarDisconnect();
       calendarEvents = [];
-      calendarSummaryCache = null;
-      googleAccessToken = null;
+          googleAccessToken = null;
       calendarLoadVersion++;
       calendarSyncReady = false;
     }
@@ -4247,8 +4272,6 @@ async function loadWeekEvents() {
   const user = currentUser;
   const isCurrent = () => version === calendarLoadVersion && user === currentUser && calendarConnected && week === calendarWeekStart.toISOString();
   calendarSyncReady = false;
-  calendarSummaryCache = null;
-  document.getElementById('calendar-summary-banner').hidden = true;
   calendarSyncStatus('Syncing your calendars…');
   const params = new URLSearchParams({
     timeMin: week, timeMax: addDays(calendarWeekStart, 7).toISOString(),
@@ -4546,55 +4569,37 @@ document.getElementById('calendar-grid').addEventListener('mousedown', (mousedow
   document.addEventListener('mouseup', onUp);
 });
 
-/* ==================== calendar: AI daily summary ==================== */
+/* ==================== calendar: schedule count ==================== */
 
 function updateOverviewScheduleCard(summary) {
   document.getElementById('overview-schedule-text').textContent = summary;
 }
 
-async function refreshCalendarSummary() {
-  if (!calendarSyncReady) return;
-  const version = calendarLoadVersion;
-  const todayIso = toIsoDate(new Date());
-  const todaysEvents = calendarEvents
-    .filter((e) => eventDateIso(e) === todayIso)
-    .map((e) => ({
-      title: e.summary || 'Untitled event',
-      start: e.start?.dateTime ? new Date(e.start.dateTime).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }) : '',
-      end: e.end?.dateTime ? new Date(e.end.dateTime).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }) : ''
-    }));
-
-  const banner = document.getElementById('calendar-summary-banner');
-  const textEl = document.getElementById('calendar-summary-text');
-  banner.hidden = false;
-  textEl.textContent = 'Thinking…';
-
-  try {
-    const summary = (await requestAi('calendar_summary', '', { events: todaysEvents })) || 'Nothing on your calendar today.';
-    if (version !== calendarLoadVersion || !calendarSyncReady) return;
-    textEl.textContent = summary;
-    calendarSummaryCache = summary;
-    updateOverviewScheduleCard(summary);
-  } catch (err) {
-    if (version !== calendarLoadVersion || !calendarSyncReady) return;
-    textEl.textContent = err.message || 'Could not summarize your day.';
-  }
-}
-
 function maybeLoadTodaySummary() {
   if (!calendarSyncReady) return;
-  const isCurrentWeek = toIsoDate(calendarWeekStart) === toIsoDate(startOfWeek(new Date()));
-  const banner = document.getElementById('calendar-summary-banner');
-  if (!isCurrentWeek) {
-    banner.hidden = true;
-    return;
-  }
-  if (calendarSummaryCache) {
-    banner.hidden = false;
-    document.getElementById('calendar-summary-text').textContent = calendarSummaryCache;
-    return;
-  }
-  refreshCalendarSummary();
+  if(toIsoDate(calendarWeekStart)!==toIsoDate(startOfWeek(new Date())))return;
+  const allowed = new Set(['aiden', 'school', 'naphi kappa chapter']);
+  const calendars = new Map(calendarList.filter(cal => allowed.has((cal.summaryOverride || cal.summary || '').trim().toLowerCase())).map(cal => [cal.id, cal.summaryOverride || cal.summary]));
+  const now = new Date(); now.setHours(0,0,0,0);
+  const end = addDays(now, 1);
+  const today = toIsoDate(now);
+  const events = calendarEvents.filter(event => {
+    if (!calendars.has(event.calendarId) || event.status === 'cancelled') return false;
+    if(event.start?.date) return event.start.date <= today && (event.end?.date || event.start.date) > today;
+    return new Date(event.start?.dateTime) < end && new Date(event.end?.dateTime || event.start?.dateTime) >= now;
+  }).sort((a,b) => (a.start.dateTime || a.start.date).localeCompare(b.start.dateTime || b.start.date));
+  const container = document.getElementById('overview-schedule-text');
+  container.replaceChildren();
+  if (!events.length) { container.textContent = 'No events today in Aiden, School, or NAPhi Kappa Chapter.'; return; }
+  events.forEach(event => {
+    const row = document.createElement('div'); row.className = 'overview-schedule-event';
+    const time = document.createElement('time');
+    time.textContent = event.start.date ? 'All day' : new Date(event.start.dateTime).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+    const detail = document.createElement('div');
+    const title = document.createElement('strong'); title.textContent = event.summary || 'Untitled event';
+    const source = document.createElement('small'); source.textContent = calendars.get(event.calendarId);
+    detail.append(title, source); row.append(time, detail); container.append(row);
+  });
 }
 
 /* ==================== calendar: location memory + Places search ==================== */

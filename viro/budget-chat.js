@@ -1,3 +1,12 @@
+export function formatBudgetCurrency(text){
+ const amount = '-?(?:\\d{1,3}(?:,\\d{3})+|\\d+)(?:\\.\\d+)?';
+ const duplicate = new RegExp('\\$(' + amount + ')\\s*\\((?:or\\s+)?(' + amount + ')\\s+cents?\\)', 'gi');
+ const dollars = new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'});
+ const number = value=>Number(value.replace(/,/g,''));
+ return text.replace(duplicate,(whole,usd,cents)=>Math.round(number(usd)*100)===number(cents)?dollars.format(number(usd)):whole)
+  .replace(new RegExp('(?<![\\w.])(' + amount + ')\\s+cents?\\b','gi'),(_,cents)=>dollars.format(number(cents)/100));
+}
+
 // Render a deliberately small Markdown subset with DOM nodes, never model HTML.
 export function renderBudgetAnswer(container,source){
  const doc=container.ownerDocument;
@@ -12,7 +21,7 @@ export function renderBudgetAnswer(container,source){
   parent.append(doc.createTextNode(text.slice(cursor)));
  }
  let list=null,paragraph=null,code=null;
- for(const line of source.replace(/\r\n?/g,'\n').split('\n')){
+ for(const line of formatBudgetCurrency(source).replace(/\r\n?/g,'\n').split('\n')){
   if(/^\s*```/.test(line)){if(code)code=null;else{list=null;paragraph=null;const pre=doc.createElement('pre');code=doc.createElement('code');pre.append(code);container.append(pre);}continue;}
   if(code){code.append(doc.createTextNode(line+'\n'));continue;}
   if(!line.trim()){list=null;paragraph=null;continue;}
@@ -29,7 +38,7 @@ export function renderBudgetAnswer(container,source){
 
 export function mountBudgetChat(root,ask){
  const dock=document.createElement('div');dock.className='budget-chat-dock';
- dock.innerHTML=`<button type="button" class="budget-chat-launch" aria-label="Open budget AI chat" aria-expanded="false" aria-controls="budget-ai-panel"><span aria-hidden="true">$</span><small>AI</small></button><section id="budget-ai-panel" class="budget-chat-panel" aria-label="Budget AI chat" hidden><header><div><strong>Budget AI</strong><small>Your money, explained</small></div><button type="button" data-clear title="New chat" aria-label="Start a new chat">↻</button><button type="button" data-close title="Close" aria-label="Close budget chat">×</button></header><p class="budget-chat-disclosure">Uses your saved budget with OpenAI. Read-only; no bank access. Chat clears when you sign out.</p><div class="budget-chat-messages" role="log" aria-label="Conversation" aria-live="polite"></div><div class="budget-chat-prompts"><button type="button">Where did my money go this month?</button><button type="button">What bills and subscriptions are coming up?</button><button type="button">Can I afford anything on my wishlist?</button></div><p class="budget-chat-status" role="status"></p><form><label class="budget-chat-label" for="budget-chat-input">Ask about your budget</label><textarea id="budget-chat-input" rows="2" maxlength="2000" placeholder="Ask about your expenses…" required></textarea><button type="submit" aria-label="Send message" title="Send">↑</button></form></section>`;
+ dock.innerHTML=`<button type="button" class="budget-chat-launch" aria-label="Open budget AI chat" aria-expanded="false" aria-controls="budget-ai-panel"><span aria-hidden="true">$</span></button><section id="budget-ai-panel" class="budget-chat-panel" aria-label="Budget AI chat" hidden><header><div><strong>Budget AI</strong><small>Your money, explained</small></div><button type="button" data-clear title="New chat" aria-label="Start a new chat">↻</button><button type="button" data-close title="Close" aria-label="Close budget chat">×</button></header><p class="budget-chat-disclosure">Uses your saved budget with OpenAI. Read-only; no bank access. Chat clears when you sign out.</p><div class="budget-chat-messages" role="log" aria-label="Conversation" aria-live="polite"></div><div class="budget-chat-prompts"><button type="button">Where did my money go this month?</button><button type="button">What bills and subscriptions are coming up?</button><button type="button">Can I afford anything on my wishlist?</button></div><p class="budget-chat-status" role="status"></p><form><label class="budget-chat-label" for="budget-chat-input">Ask about your budget</label><textarea id="budget-chat-input" rows="2" maxlength="2000" placeholder="Ask about your expenses…" required></textarea><button type="submit" aria-label="Send message" title="Send">↑</button></form></section>`;
  root.after(dock);
  const launch=dock.querySelector('.budget-chat-launch'),panel=dock.querySelector('section'),log=dock.querySelector('[role="log"]'),input=dock.querySelector('textarea'),form=dock.querySelector('form'),send=form.querySelector('button'),status=dock.querySelector('[role="status"]'),prompts=dock.querySelector('.budget-chat-prompts');
  let messages=[],busy=false,disposed=false,generation=0;

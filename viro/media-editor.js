@@ -5,16 +5,17 @@ const time = n => `${Math.floor(n / 60)}:${(n % 60).toFixed(2).padStart(5, '0')}
 export async function openMediaEditor({ initial, library = [], saveCopy }) {
   if (document.querySelector('dialog.media-editor')) return;
   const dialog = document.createElement('dialog'); dialog.className = 'media-editor'; dialog.setAttribute('aria-labelledby', 'media-title');
-  dialog.innerHTML = `<header class="me-header"><div><p class="me-eyebrow">FILES / MEDIA STUDIO</p><h2 id="media-title">Make the cut.</h2></div><button type="button" data-action="close" class="button ghost" aria-label="Close media editor">Close ✕</button></header>
-    <p class="me-hint">MP4 · MP3 · FLAC · WAV. Edits create a new copy. Original files stay intact.</p>
+  dialog.innerHTML = `<header class="me-header"><div><p class="me-eyebrow">FILES / MEDIA STUDIO</p><h2 id="media-title">Media editor</h2></div><button type="button" data-action="close" class="button ghost" aria-label="Close media editor">Close ✕</button></header>
+    <p class="me-hint">MP4 · MP3 · FLAC · WAV · Your originals stay intact.</p>
     <div class="me-import"><label class="button ghost">＋ Import media<input type="file" id="me-import" accept=".mp4,.mp3,.flac,.wav,video/mp4,audio/mpeg,audio/flac,audio/wav" multiple hidden></label>
     <select id="me-library" aria-label="Choose media from Files"><option value="">Choose from your Files…</option>${library.map((item,i)=>`<option value="${i}">${h(item.fileName)}</option>`).join('')}</select><button class="button ghost" data-action="library">Add selected file</button><span>or drop media here</span></div>
-    <div class="me-workspace"><section class="me-viewer"><video id="me-player" controls playsinline preload="metadata"></video><p id="me-source-label">Import a file to begin.</p>
+    <div class="me-workspace"><section class="me-viewer"><div id="me-empty" class="me-empty"><span aria-hidden="true">＋</span><h3>Add your first clip</h3><p>Drop audio or video here, or choose a file.</p><button type="button" data-action="import" class="button primary">Import media</button></div><video id="me-player" controls playsinline preload="metadata"></video><p id="me-source-label">Import a file to begin.</p>
     <div class="me-controls"><button class="button ghost" data-action="play-clip">Play selected clip</button><button class="button ghost" data-action="play-timeline">Play timeline</button><button class="button ghost" data-action="stop">Stop</button></div>
     <div class="me-controls"><button class="button ghost" data-action="mark-in">Set in at playhead</button><button class="button ghost" data-action="mark-out">Set out at playhead</button><button class="button ghost" data-action="split">Split at playhead</button></div><p class="me-hint">The player shows the source file. Clip preview applies your cuts, speed, volume and fades. Volume boosts above 100% apply on export. Export preview shows the finished result.</p></section>
     <aside class="me-export"><h3>Export a copy</h3><label>File name<input id="me-name" value="edited-clip" maxlength="150"></label><label>Format<select id="me-format"><option value="mp4">MP4 video · 720p</option><option value="mp3">MP3 audio · 192 kbps</option><option value="flac">FLAC audio</option><option value="wav" selected>WAV audio</option></select></label><p class="me-hint">Audio exports: 48 kHz stereo. Video: 720p, 30 fps, fit with padding. Export re-encodes edits.</p><button class="button primary" data-action="export">Render edited clip ↗</button><button class="button ghost" data-action="cancel" hidden>Cancel processing</button><div id="me-result" hidden><p id="me-result-label"></p><button class="button primary" data-action="download">Download edited copy</button><button class="button ghost" data-action="save">Save copy to Files</button><video id="me-output" controls playsinline></video></div></aside></div>
     <section class="me-timeline"><div class="me-timeline-heading"><h3>Timeline <span id="me-duration">0:00.00</span></h3><div class="me-controls"><button class="button ghost" data-action="undo">Undo</button><button class="button ghost" data-action="redo">Redo</button></div></div><div id="me-track" aria-label="Clip timeline"></div><div id="me-clips"></div></section>
     <p id="me-status" role="status" aria-live="polite">Import up to 200 MB total, 30 clips, and 20 minutes per export. Keep this tab open while processing.</p>`;
+  dialog.querySelector('.me-workspace').append(dialog.querySelector('.me-timeline'));
   document.body.append(dialog); dialog.showModal();
   const $ = selector => dialog.querySelector(selector), player = $('#me-player');
   let sources = [], clips = [], selected = null, history = [], future = [], busy = false, cancelled = false, disposed = false, output = null, outputURL = '', playMode = '', importController;
@@ -33,6 +34,8 @@ export async function openMediaEditor({ initial, library = [], saveCopy }) {
       <label>In (seconds)<input type="number" data-field="start" min="0" max="${getSource(c).duration}" step="0.01" value="${c.start.toFixed(2)}"></label><label>Out (seconds)<input type="number" data-field="end" min="0" max="${getSource(c).duration}" step="0.01" value="${c.end.toFixed(2)}"></label><label>Speed<select data-field="speed">${[.5,.75,1,1.25,1.5,2].map(v=>`<option value="${v}" ${c.speed===v?'selected':''}>${v}×</option>`).join('')}</select></label><label>Volume (%)<input type="number" data-field="volume" min="0" max="200" step="1" value="${Math.round(c.volume*100)}"></label><label>Audio fade in (sec)<input type="number" data-field="fadeIn" min="0" step="0.1" value="${c.fadeIn}"></label><label>Audio fade out (sec)<input type="number" data-field="fadeOut" min="0" step="0.1" value="${c.fadeOut}"></label></div></article>`).join('');
     $('[data-action="undo"]').disabled = !history.length || busy; $('[data-action="redo"]').disabled = !future.length || busy;
     $('#me-result').hidden = !output;
+    $('#me-empty').hidden=clips.length>0;player.hidden=!clips.length;
+    for(const action of ['play-clip','play-timeline','stop','mark-in','mark-out','split','export'])$('[data-action="'+action+'"]').disabled=busy||!clips.length;
     if (busy) dialog.querySelectorAll('button,input,select').forEach(el => { if (el.dataset.action !== 'cancel') el.disabled = true; });
   }
   function setBusy(value) {
@@ -123,6 +126,7 @@ export async function openMediaEditor({ initial, library = [], saveCopy }) {
     if(action==='cancel'){cancelled=true;importController?.abort();engine.cancel();return;}
     if(action==='close'){requestClose();return;}
     if(busy)return;
+    if(action==='import')return $('#me-import').click();
     if(action==='library')return run(()=>fromLibrary(library[Number($('#me-library').value)] && $('#me-library').value!=='' ? library[Number($('#me-library').value)] : null));
     if(action==='stop')return stop();
     if(action==='play-clip')return playClip();

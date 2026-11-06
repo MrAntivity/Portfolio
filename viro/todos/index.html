@@ -110,14 +110,14 @@
       </header>
 
       <div class="workspace-content">
-      <div class="workspace-topbar"><p>PERSONAL <span aria-hidden="true">/</span> <span id="workspace-current-page">Overview</span></p><div class="topbar-tools"><button type="button" class="workspace-search-trigger" id="workspace-search-trigger" aria-label="Search workspace"><span class="material-symbols-outlined" aria-hidden="true">search</span><span>Search anything</span><kbd>⌘ K</kbd></button><span class="workspace-private"><i></i> Private workspace</span><button class="icon-btn" type="button" id="theme-toggle" aria-label="Switch to light theme" title="Switch theme"><span class="material-symbols-outlined" aria-hidden="true">light_mode</span></button></div></div>
+      <div class="workspace-topbar"><p>PERSONAL <span aria-hidden="true">/</span> <span id="workspace-current-page">Overview</span></p><div class="topbar-tools"><button type="button" class="workspace-search-trigger" id="workspace-search-trigger" aria-label="Search workspace"><span class="material-symbols-outlined" aria-hidden="true">search</span><span>Search anything</span><kbd>⌘ K</kbd></button><button class="icon-btn" type="button" id="theme-toggle" aria-label="Switch to light theme" title="Switch theme"><span class="material-symbols-outlined" aria-hidden="true">light_mode</span></button></div></div>
       <main class="portal-main" id="portal-main" tabindex="-1">
         <!-- ---------- OVERVIEW ---------- -->
         <section class="portal-tab" aria-label="Overview" id="tab-overview" data-tab-panel="overview">
-          <div class="overview-heading"><div><p class="workspace-eyebrow">YOUR DAY, AT A GLANCE</p><h1 id="overview-greeting">Welcome back, Aiden.</h1><p>Your life, a little more organized.</p></div><a class="button ghost" href="/viro/todos" data-goto-tab="todos">Open tasks <span aria-hidden="true">↗</span></a></div>
+          <div class="overview-heading"><div><p class="workspace-eyebrow">YOUR DAY, AT A GLANCE</p><h1 id="overview-greeting">Welcome back, Aiden.</h1></div><a class="button ghost" href="/viro/todos" data-goto-tab="todos">Open tasks <span aria-hidden="true">↗</span></a></div>
           <div class="universal-search">
             <div class="universal-search-bar">
-              <span class="material-symbols-outlined" aria-hidden="true">auto_awesome</span>
+              <svg class="workspace-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5" stroke-linecap="round"/></svg>
               <input
                 type="text"
                 id="universal-search-input"
@@ -125,7 +125,7 @@
                 aria-label="Search everything, or tell it what to add"
               />
               <kbd class="search-shortcut" aria-hidden="true">⌘ / Ctrl K</kbd>
-              <button class="button primary" id="universal-search-btn" type="button">Go</button>
+              <button class="button primary" id="universal-search-btn" type="button" aria-label="Search or add task" title="Search or add task"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
             </div>
             <p class="search-helper">Try “remind me to study tomorrow” or search a name or file.</p>
             <p class="universal-search-status" id="universal-search-status" role="status" hidden></p>
@@ -182,9 +182,9 @@
                 <h2>Today’s schedule</h2>
                 <a data-goto-tab="calendar" href="/viro/calendar">View all</a>
               </div>
-              <p class="overview-schedule-text" id="overview-schedule-text">
-                <a data-goto-tab="calendar" href="/viro/calendar">Connect your Google Calendar</a> to see an AI summary of your day here.
-              </p>
+              <div class="overview-schedule-text" id="overview-schedule-text">
+                <a data-goto-tab="calendar" href="/viro/calendar">Connect your Google Calendar</a> to see your schedule here.
+              </div>
             </div>
           </div>
         </section>
@@ -192,7 +192,7 @@
         <!-- ---------- BIRTHDAYS ---------- -->
         <section class="portal-tab" aria-label="Birthdays" id="tab-birthdays" data-tab-panel="birthdays" hidden>
           <div class="tab-toolbar">
-            <div><h2>Birthdays</h2><p class="tab-description">The people and dates worth remembering.</p></div>
+            <div><h2>Birthdays</h2></div>
             <div class="tab-toolbar-actions">
               <input type="search" id="birthday-search" placeholder="Search by name…" aria-label="Search birthdays" />
               <button class="button primary" id="add-birthday-btn" type="button">+ Add</button>
@@ -206,7 +206,7 @@
         <!-- ---------- TO-DO ---------- -->
         <section class="portal-tab" aria-label="Tasks" id="tab-todos" data-tab-panel="todos" hidden>
           <div class="tab-toolbar">
-            <div><h2>Tasks</h2><p class="tab-description">School, personal, and business. One place to keep moving.</p></div>
+            <div><h2>Tasks</h2></div>
           </div>
           <div class="todo-columns">
             <div class="todo-column" data-category="school">
@@ -242,7 +242,7 @@
         <!-- ---------- VAULT ---------- -->
         <section class="portal-tab" aria-label="Vault" id="tab-vault" data-tab-panel="vault" hidden>
           <div class="tab-toolbar">
-            <div><h2>Vault</h2><p class="tab-description">Your saved credentials and private details.</p></div>
+            <div><h2>Vault</h2></div>
             <div class="tab-toolbar-actions">
               <input type="search" id="vault-search" placeholder="Search by name…" aria-label="Search saved entries" />
               <button class="button primary" id="add-vault-btn" type="button">+ Add</button>
@@ -259,7 +259,7 @@
         <!-- ---------- FILES ---------- -->
         <section class="portal-tab" aria-label="Files" id="tab-files" data-tab-panel="files" hidden>
           <div class="tab-toolbar">
-            <div><h2>Files</h2><p class="tab-description">Documents, uploads, and everything you need to find again.</p></div>
+            <div><h2>Files</h2></div>
             <div class="tab-toolbar-actions">
               <input type="search" id="file-search" placeholder="Search by name or description…" aria-label="Search files" />
               <button class="icon-btn icon-btn--ai" id="ai-search-btn" type="button" title="Smart search" aria-label="Smart search">
@@ -283,7 +283,7 @@
         <section class="portal-tab" aria-label="Notes" id="tab-drive" data-tab-panel="drive" hidden>
           <div id="drive-list-view">
             <div class="tab-toolbar">
-              <div><h2>Notes</h2><p class="tab-description">A place for ideas, plans, and work in progress.</p></div>
+              <div><h2>Notes</h2></div>
               <div class="tab-toolbar-actions">
                 <input type="search" id="note-search" placeholder="Search notes…" aria-label="Search notes" />
                 <button class="icon-btn icon-btn--ai" id="ai-note-search-btn" type="button" title="Smart search" aria-label="Smart search">
@@ -370,7 +370,7 @@
         <!-- ---------- CALENDAR ---------- -->
         <section class="portal-tab" aria-label="Calendar" id="tab-calendar" data-tab-panel="calendar" hidden>
           <div id="calendar-connect-view">
-            <div class="tab-toolbar"><div><h2>Calendar</h2><p class="tab-description">Make space for the week ahead.</p></div></div>
+            <div class="tab-toolbar"><div><h2>Calendar</h2></div></div>
             <div class="calendar-connect-card">
               <span class="material-symbols-outlined" aria-hidden="true">calendar_month</span>
               <h2>Connect Google Calendar</h2>
@@ -389,7 +389,7 @@
               <button class="button ghost" id="calendar-redirect-retry-btn" type="button" hidden>Use full-page sign-in</button>
             </div>
             <div class="tab-toolbar">
-              <div><h2>Calendar</h2><p class="tab-description">Make space for the week ahead.</p></div>
+              <div><h2>Calendar</h2></div>
               <div class="tab-toolbar-actions">
                 <button class="icon-btn" id="calendar-prev-week-btn" type="button" aria-label="Previous week">
                   <span class="material-symbols-outlined">chevron_left</span>
@@ -409,11 +409,6 @@
 
             <div class="calendar-filter-chips" id="calendar-filter-chips"></div>
 
-            <div class="calendar-summary-banner" id="calendar-summary-banner" hidden>
-              <span class="material-symbols-outlined" aria-hidden="true">auto_awesome</span>
-              <p id="calendar-summary-text"></p>
-            </div>
-
             <div class="calendar-grid-wrap" id="calendar-grid-wrap">
               <div class="calendar-grid" id="calendar-grid"></div>
             </div>
@@ -423,7 +418,7 @@
         <!-- ---------- CONTACTS ---------- -->
         <section class="portal-tab" aria-label="Contacts" id="tab-contacts" data-tab-panel="contacts" hidden>
           <div class="tab-toolbar">
-            <div><h2>Contacts</h2><p class="tab-description">Keep your people close at hand.</p></div>
+            <div><h2>Contacts</h2></div>
             <div class="tab-toolbar-actions">
               <input type="search" id="contact-search" placeholder="Search by name…" aria-label="Search contacts" />
               <button class="icon-btn icon-btn--ai" id="ai-contact-search-btn" type="button" title="Smart search" aria-label="Smart search">
@@ -438,7 +433,7 @@
           </div>
         </section>
       </main>
-      <footer class="workspace-footer"><span>AIDEN YUE / VIRO</span><span>A WORK IN PROGRESS. ALWAYS.</span></footer>
+      <footer class="workspace-footer"><span>AIDEN YUE / VIRO</span></footer>
       </div>
     </div>
 
