@@ -35,3 +35,17 @@
 [data-theme="light"] .budget-stats .budget-checking-value{color:#15803d}[data-theme="light"] .budget-stats .budget-debt-value{color:#b91c1c}[data-theme="light"] .budget-stats .budget-net-negative{color:#c24151}[data-theme="light"] .budget-stats .budget-net-positive{color:#167652}
 .budget-money-out{color:#f87171}.budget-money-in{color:#4ade80}[data-theme="light"] .budget-money-out{color:#b91c1c}[data-theme="light"] .budget-money-in{color:#15803d}
 .budget-panel>[hidden]{display:none!important}.budget-collapse-toggle{flex-shrink:0}.budget-collapse-toggle[aria-expanded="false"] svg{transform:rotate(-90deg)}.budget-subscription-total{margin:18px 0}.budget-subscription-total strong{font-size:1.65rem;font-variant-numeric:tabular-nums}.budget-subscription-total strong span{font-size:.85rem;color:var(--muted);font-weight:400}.budget-subscription-total small{display:block;color:var(--muted);font-size:.75rem;margin-top:5px}
+
+#tab-budget .budget-transaction-title{display:flex;align-items:center;gap:10px}
+#tab-budget .budget-transaction-brand{display:inline-flex;align-items:center;gap:6px;flex-shrink:0}
+#tab-budget .budget-transaction-brand .budget-brand{width:24px;height:24px;margin:0;object-fit:contain}
+#tab-budget .budget-income-icon{width:22px;height:22px;color:#39d98a;flex-shrink:0}
+body[data-theme="light"] #tab-budget .budget-income-icon{color:#15803d}
+
+.budget-confirm-dialog{max-width:440px;border-radius:20px;padding:26px}
+.budget-confirm-dialog::backdrop{background:#080c18aa;backdrop-filter:blur(5px)}
+.budget-warning-icon{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:#ff65651c;color:#ff7777;font-size:24px;font-weight:700;margin:16px 0}
+.budget-confirm-item{display:flex;justify-content:space-between;gap:20px;padding:14px;border:1px solid var(--border);border-radius:10px}
+.budget-confirm-dialog p{font-size:14px;line-height:1.65;color:var(--muted)}
+.budget-confirm-dialog .budget-danger{background:#da414b;color:#fff;border-color:#da414b}
+.budget-confirm-dialog .budget-danger:hover{background:#bc3039}

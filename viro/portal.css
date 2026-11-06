@@ -2544,3 +2544,9 @@ body[data-portal='true'][data-theme='light'] .form-error { color: #b42323; }
 /* Private contact photos retain initials until the image has loaded. */
 .contact-initials { position: relative; overflow: hidden; flex-shrink: 0; }
 .contact-initials > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+/* Equal outer columns keep every time centered regardless of city length. */
+.world-clock-card{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center}
+.world-clock-city{justify-self:start;overflow-wrap:anywhere}
+.world-clock-time{justify-self:center;text-align:center;font-variant-numeric:tabular-nums;white-space:nowrap}
+.world-clock-date{justify-self:end;text-align:right}
+@media(max-width:480px){.world-clock-card{gap:8px;padding:14px 12px}.world-clock-time{font-size:1.2rem}.world-clock-city,.world-clock-date{font-size:.75rem}}
