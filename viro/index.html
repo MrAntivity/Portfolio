@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <base href="/viro/" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Workspace · Aiden Yue</title>
     <meta name="robots" content="noindex, nofollow, noarchive" />
@@ -86,7 +87,7 @@
         </div>
       </div>
       <header class="portal-header">
-        <div class="sidebar-brand"><a class="workspace-wordmark" href="#overview" data-goto-tab="overview" aria-label="Portal overview">AY</a><span class="workspace-label">VIRO</span></div>
+        <div class="sidebar-brand"><a class="workspace-wordmark" href="/viro/overview" data-goto-tab="overview" aria-label="Portal overview">AY</a><span class="workspace-label">VIRO</span></div>
         <button class="icon-btn mobile-menu-toggle" id="mobile-menu-toggle" type="button" aria-controls="portal-nav" aria-expanded="false" aria-label="Open navigation"><span class="material-symbols-outlined" aria-hidden="true">menu</span></button>
         <nav class="portal-nav" id="portal-nav" aria-label="Portal">
           <span class="nav-group-label">Your day</span>
@@ -113,7 +114,7 @@
       <main class="portal-main" id="portal-main" tabindex="-1">
         <!-- ---------- OVERVIEW ---------- -->
         <section class="portal-tab" aria-label="Overview" id="tab-overview" data-tab-panel="overview">
-          <div class="overview-heading"><div><p class="workspace-eyebrow">YOUR DAY, AT A GLANCE</p><h1 id="overview-greeting">Welcome back, Aiden.</h1><p>Your life, a little more organized.</p></div><a class="button ghost" href="#todos" data-goto-tab="todos">Open tasks <span aria-hidden="true">↗</span></a></div>
+          <div class="overview-heading"><div><p class="workspace-eyebrow">YOUR DAY, AT A GLANCE</p><h1 id="overview-greeting">Welcome back, Aiden.</h1><p>Your life, a little more organized.</p></div><a class="button ghost" href="/viro/todos" data-goto-tab="todos">Open tasks <span aria-hidden="true">↗</span></a></div>
           <div class="universal-search">
             <div class="universal-search-bar">
               <span class="material-symbols-outlined" aria-hidden="true">auto_awesome</span>
@@ -135,10 +136,10 @@
             <div class="workspace-summary overview-card" aria-label="Workspace summary">
               <div class="overview-card-header"><h2>Your workspace</h2><span class="dashboard-chip">AT A GLANCE</span></div>
               <div class="workspace-metrics">
-                <a href="#todos" data-goto-tab="todos"><span class="metric-symbol mint material-symbols-outlined" aria-hidden="true">checklist</span><div><span>Open tasks</span><strong id="metric-tasks">—</strong></div></a>
-                <a href="#todos" data-goto-tab="todos"><span class="metric-symbol sky material-symbols-outlined" aria-hidden="true">task_alt</span><div><span>Completed</span><strong id="metric-completed">—</strong></div></a>
-                <a href="#files" data-goto-tab="files"><span class="metric-symbol blue material-symbols-outlined" aria-hidden="true">folder_open</span><div><span>Saved files</span><strong id="metric-files">—</strong></div></a>
-                <a href="#contacts" data-goto-tab="contacts"><span class="metric-symbol peach material-symbols-outlined" aria-hidden="true">group</span><div><span>Your people</span><strong id="metric-contacts">—</strong></div></a>
+                <a href="/viro/todos" data-goto-tab="todos"><span class="metric-symbol mint material-symbols-outlined" aria-hidden="true">checklist</span><div><span>Open tasks</span><strong id="metric-tasks">—</strong></div></a>
+                <a href="/viro/todos" data-goto-tab="todos"><span class="metric-symbol sky material-symbols-outlined" aria-hidden="true">task_alt</span><div><span>Completed</span><strong id="metric-completed">—</strong></div></a>
+                <a href="/viro/files" data-goto-tab="files"><span class="metric-symbol blue material-symbols-outlined" aria-hidden="true">folder_open</span><div><span>Saved files</span><strong id="metric-files">—</strong></div></a>
+                <a href="/viro/contacts" data-goto-tab="contacts"><span class="metric-symbol peach material-symbols-outlined" aria-hidden="true">group</span><div><span>Your people</span><strong id="metric-contacts">—</strong></div></a>
               </div>
             </div>
             <div class="overview-card overview-clock" id="overview-clock" role="button" tabindex="0" aria-label="View world clock">
@@ -155,13 +156,13 @@
             </div>
           </div>
 
-          <section class="workspace-focus overview-card"><div class="overview-card-header"><h2>A little progress, every day</h2><a href="#todos" data-goto-tab="todos">Manage tasks ↗</a></div><div id="workspace-focus-grid" class="workspace-focus-grid"><p class="entry-empty">Your task overview will appear when it syncs.</p></div></section>
+          <section class="workspace-focus overview-card"><div class="overview-card-header"><h2>A little progress, every day</h2><a href="/viro/todos" data-goto-tab="todos">Manage tasks ↗</a></div><div id="workspace-focus-grid" class="workspace-focus-grid"><p class="entry-empty">Your task overview will appear when it syncs.</p></div></section>
           <div class="overview-section-label"><span>On your radar</span><span>TODAY &amp; COMING UP</span></div>
           <div class="overview-grid">
             <div class="overview-card">
               <div class="overview-card-header">
                 <h2>Birthdays coming up</h2>
-                <a data-goto-tab="birthdays" href="#">View all</a>
+                <a data-goto-tab="birthdays" href="/viro/birthdays">View all</a>
               </div>
               <ul class="entry-list entry-list--compact" id="overview-birthdays">
                 <li class="entry-empty">Nothing in the next two weeks.</li>
@@ -170,7 +171,7 @@
             <div class="overview-card">
               <div class="overview-card-header">
                 <h2>Due soon</h2>
-                <a data-goto-tab="todos" href="#">View all</a>
+                <a data-goto-tab="todos" href="/viro/todos">View all</a>
               </div>
               <ul class="entry-list entry-list--compact" id="overview-todos">
                 <li class="entry-empty">Nothing due soon.</li>
@@ -179,10 +180,10 @@
             <div class="overview-card" id="overview-schedule-card">
               <div class="overview-card-header">
                 <h2>Today’s schedule</h2>
-                <a data-goto-tab="calendar" href="#">View all</a>
+                <a data-goto-tab="calendar" href="/viro/calendar">View all</a>
               </div>
               <p class="overview-schedule-text" id="overview-schedule-text">
-                <a data-goto-tab="calendar" href="#">Connect your Google Calendar</a> to see an AI summary of your day here.
+                <a data-goto-tab="calendar" href="/viro/calendar">Connect your Google Calendar</a> to see an AI summary of your day here.
               </p>
             </div>
           </div>

@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <base href="/viro/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Workspace · Aiden Yue</title>
+    <meta name="robots" content="noindex, nofollow, noarchive" />
+    <meta name="theme-color" content="#171923" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Space+Grotesk:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+    />
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="stylesheet" href="portal.css" />
+    <link rel="stylesheet" href="lectures.css" />
+    <link rel="icon" type="image/svg+xml" href="../assets/avatar.svg" />
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <link rel="stylesheet" href="./media-editor.css" />
+    <link rel="stylesheet" href="budget.css" />
+    <link rel="stylesheet" href="dashboard.css" />
+  </head>
+  <body data-portal="true">
+    <script>
+      try {
+        const theme = localStorage.getItem('aidenyue-theme-preference') === 'light' ? 'light' : 'dark';
+        document.body.dataset.theme = theme;
+        document.querySelector('meta[name="theme-color"]').content = theme === 'light' ? '#f3f5fa' : '#171923';
+      } catch { /* Use the default dark theme when storage is unavailable. */ }
+    </script>
+    <a class="skip-link" href="#portal-main">Skip to workspace</a>
+    <noscript><p class="startup-message">Enable JavaScript to sign in to your workspace. <a href="../">Back to portfolio</a></p></noscript>
+
+    <!-- ===================== LOGIN ===================== -->
+    <div id="login-screen" class="login-screen">
+      <a class="login-home workspace-wordmark" href="../" aria-label="Aiden Yue portfolio">AY<span>↗</span></a>
+      <div class="login-intro">
+        <p class="workspace-eyebrow">AIDEN YUE / PRIVATE WORKSPACE</p>
+        <h2>A little space.<br /><span>For everything.</span></h2>
+        <p>Your days, ideas, and the things you’re building.</p>
+        <a href="../" class="workspace-back">Back to portfolio <span aria-hidden="true">↗</span></a>
+      </div>
+      <form id="login-form" class="login-card" autocomplete="off" novalidate>
+        <span class="material-symbols-outlined login-lock" aria-hidden="true">lock</span>
+        <h1>Welcome back.</h1>
+        <p class="login-lede">Enter your PIN to open your workspace.</p>
+        <label class="pin-label" for="pin-input">Your PIN</label>
+        <input
+          id="pin-input"
+          aria-describedby="login-error"
+          class="pin-field"
+          type="password"
+          inputmode="numeric"
+          pattern="[0-9]*"
+          autocomplete="new-password"
+          data-lpignore="true"
+          data-1p-ignore
+          maxlength="16"
+          aria-label="PIN"
+          required
+        />
+        <p class="form-error" id="login-error" role="alert" hidden>Incorrect PIN. Try again.</p>
+        <button class="button primary" type="submit" id="login-submit">
+          <span id="login-submit-label">Unlock workspace</span>
+        </button>
+      </form>
+      <span class="login-footer">PERSONAL / VIRO</span>
+    </div>
+
+    <!-- ===================== GREETING LOADER ===================== -->
+    <div id="greeting-loader" class="greeting-loader" hidden aria-hidden="true">
+      <span class="loader-mark" id="greeting-text">Welcome</span>
+    </div>
+
+    <!-- ===================== PORTAL SHELL ===================== -->
+    <div id="portal" class="portal" hidden>
+      <div id="drop-overlay" class="drop-overlay" hidden aria-hidden="true">
+        <div class="drop-overlay-inner">
+          <span class="material-symbols-outlined" aria-hidden="true">upload_file</span>
+          <p>Drop to upload</p>
+        </div>
+      </div>
+      <header class="portal-header">
+        <div class="sidebar-brand"><a class="workspace-wordmark" href="/viro/overview" data-goto-tab="overview" aria-label="Portal overview">AY</a><span class="workspace-label">VIRO</span></div>
+        <button class="icon-btn mobile-menu-toggle" id="mobile-menu-toggle" type="button" aria-controls="portal-nav" aria-expanded="false" aria-label="Open navigation"><span class="material-symbols-outlined" aria-hidden="true">menu</span></button>
+        <nav class="portal-nav" id="portal-nav" aria-label="Portal">
+          <span class="nav-group-label">Your day</span>
+          <button type="button" class="is-active" data-tab="overview" aria-current="page" aria-label="Overview" title="Overview"><span class="material-symbols-outlined" aria-hidden="true">space_dashboard</span><span class="nav-label">Overview</span></button>
+          <button type="button" data-tab="todos" aria-label="Tasks" title="Tasks"><span class="material-symbols-outlined" aria-hidden="true">check_circle</span><span class="nav-label">Tasks</span></button>
+          <button type="button" data-tab="calendar" aria-label="Calendar" title="Calendar"><span class="material-symbols-outlined" aria-hidden="true">calendar_today</span><span class="nav-label">Calendar</span></button>
+          <span class="nav-group-label">Your people</span>
+          <button type="button" data-tab="birthdays" aria-label="Birthdays" title="Birthdays"><span class="material-symbols-outlined" aria-hidden="true">cake</span><span class="nav-label">Birthdays</span></button>
+          <button type="button" data-tab="contacts" aria-label="Contacts" title="Contacts"><span class="material-symbols-outlined" aria-hidden="true">group</span><span class="nav-label">Contacts</span></button>
+          <span class="nav-group-label">Your collection</span>
+          <button type="button" data-tab="files" aria-label="Files" title="Files"><span class="material-symbols-outlined" aria-hidden="true">folder_open</span><span class="nav-label">Files</span></button>
+          <button type="button" data-tab="budget" aria-label="Budget" title="Budget"><span class="material-symbols-outlined" aria-hidden="true">account_balance_wallet</span><span class="nav-label">Budget</span></button>
+          <button type="button" data-tab="drive" hidden aria-label="Notes" title="Notes"><span class="material-symbols-outlined" aria-hidden="true">edit_note</span><span class="nav-label">Notes</span></button>
+          <button type="button" data-tab="vault" aria-label="Vault" title="Vault"><span class="material-symbols-outlined" aria-hidden="true">lock</span><span class="nav-label">Vault</span></button>
+        </nav>
+        <div class="sidebar-footer">
+          <a class="portfolio-return" href="../">View portfolio <span aria-hidden="true">↗</span></a>
+          <div class="sidebar-account"><button class="icon-btn" type="button" id="logout-btn" aria-label="Log out" title="Log out"><span class="material-symbols-outlined" aria-hidden="true">logout</span></button></div>
+        </div>
+      </header>
+
+      <div class="workspace-content">
+      <div class="workspace-topbar"><p>PERSONAL <span aria-hidden="true">/</span> <span id="workspace-current-page">Overview</span></p><div class="topbar-tools"><button type="button" class="workspace-search-trigger" id="workspace-search-trigger" aria-label="Search workspace"><span class="material-symbols-outlined" aria-hidden="true">search</span><span>Search anything</span><kbd>⌘ K</kbd></button><span class="workspace-private"><i></i> Private workspace</span><button class="icon-btn" type="button" id="theme-toggle" aria-label="Switch to light theme" title="Switch theme"><span class="material-symbols-outlined" aria-hidden="true">light_mode</span></button></div></div>
+      <main class="portal-main" id="portal-main" tabindex="-1">
+        <!-- ---------- OVERVIEW ---------- -->
+        <section class="portal-tab" aria-label="Overview" id="tab-overview" data-tab-panel="overview">
+          <div class="overview-heading"><div><p class="workspace-eyebrow">YOUR DAY, AT A GLANCE</p><h1 id="overview-greeting">Welcome back, Aiden.</h1><p>Your life, a little more organized.</p></div><a class="button ghost" href="/viro/todos" data-goto-tab="todos">Open tasks <span aria-hidden="true">↗</span></a></div>
+          <div class="universal-search">
+            <div class="universal-search-bar">
+              <span class="material-symbols-outlined" aria-hidden="true">auto_awesome</span>
+              <input
+                type="text"
+                id="universal-search-input"
+                placeholder="Search your workspace or add a task…"
+                aria-label="Search everything, or tell it what to add"
+              />
+              <kbd class="search-shortcut" aria-hidden="true">⌘ / Ctrl K</kbd>
+              <button class="button primary" id="universal-search-btn" type="button">Go</button>
+            </div>
+            <p class="search-helper">Try “remind me to study tomorrow” or search a name or file.</p>
+            <p class="universal-search-status" id="universal-search-status" role="status" hidden></p>
+            <div class="universal-search-results" id="universal-search-results" hidden></div>
+          </div>
+
+          <div class="overview-top">
+            <div class="workspace-summary overview-card" aria-label="Workspace summary">
+              <div class="overview-card-header"><h2>Your workspace</h2><span class="dashboard-chip">AT A GLANCE</span></div>
+              <div class="workspace-metrics">
+                <a href="/viro/todos" data-goto-tab="todos"><span class="metric-symbol mint material-symbols-outlined" aria-hidden="true">checklist</span><div><span>Open tasks</span><strong id="metric-tasks">—</strong></div></a>
+                <a href="/viro/todos" data-goto-tab="todos"><span class="metric-symbol sky material-symbols-outlined" aria-hidden="true">task_alt</span><div><span>Completed</span><strong id="metric-completed">—</strong></div></a>
+                <a href="/viro/files" data-goto-tab="files"><span class="metric-symbol blue material-symbols-outlined" aria-hidden="true">folder_open</span><div><span>Saved files</span><strong id="metric-files">—</strong></div></a>
+                <a href="/viro/contacts" data-goto-tab="contacts"><span class="metric-symbol peach material-symbols-outlined" aria-hidden="true">group</span><div><span>Your people</span><strong id="metric-contacts">—</strong></div></a>
+              </div>
+            </div>
+            <div class="overview-card overview-clock" id="overview-clock" role="button" tabindex="0" aria-label="View world clock">
+              <p class="overview-date" id="overview-date">—</p>
+              <p class="overview-time" id="overview-time">—</p>
+              <span class="card-footnote">Local time <span>World clocks ↗</span></span>
+            </div>
+            <div class="overview-card overview-weather" id="overview-weather" role="button" tabindex="0" aria-label="View this week's weather">
+              <p class="weather-loc" id="weather-loc">Locating…</p>
+              <span class="material-symbols-outlined weather-icon" id="weather-icon" aria-hidden="true"></span>
+              <p class="weather-temp" id="weather-temp">--°</p>
+              <p class="weather-desc" id="weather-desc">Fetching weather…</p>
+              <p class="weather-advice" id="weather-advice"></p>
+            </div>
+          </div>
+
+          <section class="workspace-focus overview-card"><div class="overview-card-header"><h2>A little progress, every day</h2><a href="/viro/todos" data-goto-tab="todos">Manage tasks ↗</a></div><div id="workspace-focus-grid" class="workspace-focus-grid"><p class="entry-empty">Your task overview will appear when it syncs.</p></div></section>
+          <div class="overview-section-label"><span>On your radar</span><span>TODAY &amp; COMING UP</span></div>
+          <div class="overview-grid">
+            <div class="overview-card">
+              <div class="overview-card-header">
+                <h2>Birthdays coming up</h2>
+                <a data-goto-tab="birthdays" href="/viro/birthdays">View all</a>
+              </div>
+              <ul class="entry-list entry-list--compact" id="overview-birthdays">
+                <li class="entry-empty">Nothing in the next two weeks.</li>
+              </ul>
+            </div>
+            <div class="overview-card">
+              <div class="overview-card-header">
+                <h2>Due soon</h2>
+                <a data-goto-tab="todos" href="/viro/todos">View all</a>
+              </div>
+              <ul class="entry-list entry-list--compact" id="overview-todos">
+                <li class="entry-empty">Nothing due soon.</li>
+              </ul>
+            </div>
+            <div class="overview-card" id="overview-schedule-card">
+              <div class="overview-card-header">
+                <h2>Today’s schedule</h2>
+                <a data-goto-tab="calendar" href="/viro/calendar">View all</a>
+              </div>
+              <p class="overview-schedule-text" id="overview-schedule-text">
+                <a data-goto-tab="calendar" href="/viro/calendar">Connect your Google Calendar</a> to see an AI summary of your day here.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ---------- BIRTHDAYS ---------- -->
+        <section class="portal-tab" aria-label="Birthdays" id="tab-birthdays" data-tab-panel="birthdays" hidden>
+          <div class="tab-toolbar">
+            <div><h2>Birthdays</h2><p class="tab-description">The people and dates worth remembering.</p></div>
+            <div class="tab-toolbar-actions">
+              <input type="search" id="birthday-search" placeholder="Search by name…" aria-label="Search birthdays" />
+              <button class="button primary" id="add-birthday-btn" type="button">+ Add</button>
+            </div>
+          </div>
+          <div class="entry-list" id="birthday-list">
+            <p class="entry-empty">No birthdays saved yet.</p>
+          </div>
+        </section>
+
+        <!-- ---------- TO-DO ---------- -->
+        <section class="portal-tab" aria-label="Tasks" id="tab-todos" data-tab-panel="todos" hidden>
+          <div class="tab-toolbar">
+            <div><h2>Tasks</h2><p class="tab-description">School, personal, and business. One place to keep moving.</p></div>
+          </div>
+          <div class="todo-columns">
+            <div class="todo-column" data-category="school">
+              <div class="todo-column-header">
+                <h3>School</h3>
+                <button class="button ghost small" data-add-todo="school" type="button">+ Add</button>
+              </div>
+              <div class="entry-list" data-todo-list="school">
+                <p class="entry-empty">Nothing here yet.</p>
+              </div>
+            </div>
+            <div class="todo-column" data-category="personal">
+              <div class="todo-column-header">
+                <h3>Personal</h3>
+                <button class="button ghost small" data-add-todo="personal" type="button">+ Add</button>
+              </div>
+              <div class="entry-list" data-todo-list="personal">
+                <p class="entry-empty">Nothing here yet.</p>
+              </div>
+            </div>
+            <div class="todo-column" data-category="business">
+              <div class="todo-column-header">
+                <h3>Business</h3>
+                <button class="button ghost small" data-add-todo="business" type="button">+ Add</button>
+              </div>
+              <div class="entry-list" data-todo-list="business">
+                <p class="entry-empty">Nothing here yet.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ---------- VAULT ---------- -->
+        <section class="portal-tab" aria-label="Vault" id="tab-vault" data-tab-panel="vault" hidden>
+          <div class="tab-toolbar">
+            <div><h2>Vault</h2><p class="tab-description">Your saved credentials and private details.</p></div>
+            <div class="tab-toolbar-actions">
+              <input type="search" id="vault-search" placeholder="Search by name…" aria-label="Search saved entries" />
+              <button class="button primary" id="add-vault-btn" type="button">+ Add</button>
+            </div>
+          </div>
+          <p class="vault-hint">Vault access requires your workspace PIN. Secret fields are encrypted in your browser before they are saved.</p>
+          <div class="entry-list" id="vault-list">
+            <p class="entry-empty">Nothing saved yet.</p>
+          </div>
+        </section>
+
+        <section class="portal-tab" aria-label="Budget" id="tab-budget" data-tab-panel="budget" hidden><div id="budget-root"></div></section>
+
+        <!-- ---------- FILES ---------- -->
+        <section class="portal-tab" aria-label="Files" id="tab-files" data-tab-panel="files" hidden>
+          <div class="tab-toolbar">
+            <div><h2>Files</h2><p class="tab-description">Documents, uploads, and everything you need to find again.</p></div>
+            <div class="tab-toolbar-actions">
+              <input type="search" id="file-search" placeholder="Search by name or description…" aria-label="Search files" />
+              <button class="icon-btn icon-btn--ai" id="ai-search-btn" type="button" title="Smart search" aria-label="Smart search">
+                <span class="material-symbols-outlined">auto_awesome</span>
+              </button>
+              <button class="button ghost" id="media-editor-btn" type="button">Media editor</button>
+              <button class="button ghost" id="manage-shares-btn" type="button">Shared links</button>
+              <button class="button ghost" id="add-folder-btn" type="button">+ Folder</button>
+              <button class="button primary" id="add-file-btn" type="button">+ Upload</button>
+            </div>
+          </div>
+          <p class="ai-search-status" id="ai-search-status" hidden></p>
+          <div class="folder-breadcrumb" id="folder-breadcrumb"></div>
+          <div class="folder-grid" id="folder-grid" hidden></div>
+          <div class="file-grid" id="file-list">
+            <p class="entry-empty">No files yet.</p>
+          </div>
+        </section>
+
+        <!-- ---------- DRIVE ---------- -->
+        <section class="portal-tab" aria-label="Notes" id="tab-drive" data-tab-panel="drive" hidden>
+          <div id="drive-list-view">
+            <div class="tab-toolbar">
+              <div><h2>Notes</h2><p class="tab-description">A place for ideas, plans, and work in progress.</p></div>
+              <div class="tab-toolbar-actions">
+                <input type="search" id="note-search" placeholder="Search notes…" aria-label="Search notes" />
+                <button class="icon-btn icon-btn--ai" id="ai-note-search-btn" type="button" title="Smart search" aria-label="Smart search">
+                  <span class="material-symbols-outlined">auto_awesome</span>
+                </button>
+                <button class="button ghost" id="add-note-folder-btn" type="button">+ Folder</button>
+                <button class="button primary" id="add-note-btn" type="button">+ New note</button>
+              </div>
+            </div>
+            <section id="lecture-studio" aria-label="Lecture recorder"></section>
+            <p class="ai-search-status" id="ai-note-search-status" hidden></p>
+            <div class="folder-breadcrumb" id="note-folder-breadcrumb"></div>
+            <div class="folder-grid" id="note-folder-grid" hidden></div>
+            <div class="note-grid" id="note-list">
+              <p class="entry-empty">No notes yet.</p>
+            </div>
+          </div>
+
+          <div id="drive-editor-view" hidden>
+            <div class="editor-header">
+              <button class="icon-btn" id="editor-back-btn" type="button" aria-label="Back to notes">
+                <span class="material-symbols-outlined">arrow_back</span>
+              </button>
+              <input type="text" id="editor-title" placeholder="Untitled note" aria-label="Note title" />
+              <select id="editor-folder-select" aria-label="Note folder"></select>
+              <button class="icon-btn" id="editor-delete-btn" type="button" aria-label="Delete note">
+                <span class="material-symbols-outlined">delete</span>
+              </button>
+            </div>
+
+            <div class="editor-toolbar" id="editor-toolbar">
+              <button type="button" data-cmd="bold" title="Bold"><span class="material-symbols-outlined">format_bold</span></button>
+              <button type="button" data-cmd="underline" title="Underline"><span class="material-symbols-outlined">format_underlined</span></button>
+              <span class="toolbar-divider"></span>
+              <button type="button" data-cmd="insertUnorderedList" title="Bullet list"><span class="material-symbols-outlined">format_list_bulleted</span></button>
+              <button type="button" data-cmd="insertOrderedList" title="Numbered list"><span class="material-symbols-outlined">format_list_numbered</span></button>
+              <span class="toolbar-divider"></span>
+              <button type="button" data-cmd="justifyLeft" title="Align left"><span class="material-symbols-outlined">format_align_left</span></button>
+              <button type="button" data-cmd="justifyCenter" title="Align center"><span class="material-symbols-outlined">format_align_center</span></button>
+              <button type="button" data-cmd="justifyRight" title="Align right"><span class="material-symbols-outlined">format_align_right</span></button>
+              <span class="toolbar-divider"></span>
+              <div class="color-picker">
+                <button type="button" id="text-color-btn" title="Text color" aria-label="Text color">
+                  <span class="material-symbols-outlined">format_color_text</span>
+                  <span class="color-picker-swatch" id="text-color-swatch"></span>
+                </button>
+                <div class="color-picker-popover" id="text-color-popover" hidden></div>
+              </div>
+              <div class="color-picker">
+                <button type="button" id="highlight-color-btn" title="Highlight color" aria-label="Highlight color">
+                  <span class="material-symbols-outlined">format_color_fill</span>
+                  <span class="color-picker-swatch" id="highlight-color-swatch"></span>
+                </button>
+                <div class="color-picker-popover" id="highlight-color-popover" hidden></div>
+              </div>
+              <input type="number" id="font-size-input" class="font-size-input" min="8" max="96" step="1" value="16" title="Text size" aria-label="Text size in pixels" />
+              <span class="toolbar-divider"></span>
+              <button type="button" id="editor-link-btn" title="Insert link"><span class="material-symbols-outlined">link</span></button>
+              <button type="button" id="editor-comment-btn" title="Add comment"><span class="material-symbols-outlined">add_comment</span></button>
+              <button type="button" id="editor-insert-image-btn" title="Insert image"><span class="material-symbols-outlined">image</span></button>
+              <input type="file" id="editor-image-input" accept="image/*,.heic,.heif" hidden />
+              <span class="toolbar-divider"></span>
+              <button type="button" id="editor-print-btn" title="Print"><span class="material-symbols-outlined">print</span></button>
+              <button type="button" id="editor-download-btn" title="Download"><span class="material-symbols-outlined">download</span></button>
+              <span class="toolbar-divider"></span>
+              <div class="ai-menu">
+                <button type="button" class="icon-btn icon-btn--ai" id="ai-menu-btn" title="AI tools" aria-label="AI tools">
+                  <span class="material-symbols-outlined">auto_awesome</span>
+                </button>
+                <div class="ai-menu-dropdown" id="ai-menu-dropdown" hidden>
+                  <button type="button" data-ai-task="continue">Continue writing</button>
+                  <button type="button" data-ai-task="improve">Make it sound better</button>
+                  <button type="button" data-ai-task="grammar">Fix grammar</button>
+                  <button type="button" data-ai-task="format">Format better</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="editor-surface" id="editor-surface" contenteditable="true" spellcheck="true" role="textbox" aria-label="Note content" aria-multiline="true"></div>
+            <p class="editor-status" id="editor-status" role="status"></p>
+          </div>
+        </section>
+
+        <!-- ---------- CALENDAR ---------- -->
+        <section class="portal-tab" aria-label="Calendar" id="tab-calendar" data-tab-panel="calendar" hidden>
+          <div id="calendar-connect-view">
+            <div class="tab-toolbar"><div><h2>Calendar</h2><p class="tab-description">Make space for the week ahead.</p></div></div>
+            <div class="calendar-connect-card">
+              <span class="material-symbols-outlined" aria-hidden="true">calendar_month</span>
+              <h2>Connect Google Calendar</h2>
+              <p>See your week at a glance, get an AI summary of your day, and add events here that sync straight to your real calendar.</p>
+              <button class="button primary" id="calendar-connect-btn" type="button">Connect Google Calendar</button>
+              <p class="form-error" id="calendar-connect-error" hidden></p>
+            </div>
+          </div>
+
+          <div id="calendar-connected-view" hidden>
+            <div id="calendar-sync-status" class="calendar-sync-status" role="status" hidden>
+              <span></span>
+              <button type="button" class="button ghost" id="calendar-retry-btn" hidden>Retry</button>
+              <button type="button" class="button ghost" id="calendar-reconnect-btn" hidden>Reconnect Google</button>
+            </div>
+            <div class="tab-toolbar">
+              <div><h2>Calendar</h2><p class="tab-description">Make space for the week ahead.</p></div>
+              <div class="tab-toolbar-actions">
+                <button class="icon-btn" id="calendar-prev-week-btn" type="button" aria-label="Previous week">
+                  <span class="material-symbols-outlined">chevron_left</span>
+                </button>
+                <button class="button ghost small" id="calendar-today-btn" type="button">Today</button>
+                <button class="icon-btn" id="calendar-next-week-btn" type="button" aria-label="Next week">
+                  <span class="material-symbols-outlined">chevron_right</span>
+                </button>
+                <button class="button primary" id="calendar-add-event-btn" type="button">+ Add event</button>
+                <button class="icon-btn" id="calendar-disconnect-btn" type="button" aria-label="Disconnect Google Calendar" title="Disconnect Google Calendar">
+                  <span class="material-symbols-outlined">link_off</span>
+                </button>
+              </div>
+            </div>
+
+            <p class="calendar-week-label" id="calendar-week-label"></p>
+
+            <div class="calendar-filter-chips" id="calendar-filter-chips"></div>
+
+            <div class="calendar-summary-banner" id="calendar-summary-banner" hidden>
+              <span class="material-symbols-outlined" aria-hidden="true">auto_awesome</span>
+              <p id="calendar-summary-text"></p>
+            </div>
+
+            <div class="calendar-grid-wrap" id="calendar-grid-wrap">
+              <div class="calendar-grid" id="calendar-grid"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ---------- CONTACTS ---------- -->
+        <section class="portal-tab" aria-label="Contacts" id="tab-contacts" data-tab-panel="contacts" hidden>
+          <div class="tab-toolbar">
+            <div><h2>Contacts</h2><p class="tab-description">Keep your people close at hand.</p></div>
+            <div class="tab-toolbar-actions">
+              <input type="search" id="contact-search" placeholder="Search by name…" aria-label="Search contacts" />
+              <button class="icon-btn icon-btn--ai" id="ai-contact-search-btn" type="button" title="Smart search" aria-label="Smart search">
+                <span class="material-symbols-outlined">auto_awesome</span>
+              </button>
+              <button class="button primary" id="add-contact-btn" type="button">+ Add</button>
+            </div>
+          </div>
+          <p class="ai-search-status" id="ai-contact-search-status" hidden></p>
+          <div class="entry-list" id="contact-list">
+            <p class="entry-empty">No contacts saved yet.</p>
+          </div>
+        </section>
+      </main>
+      <footer class="workspace-footer"><span>AIDEN YUE / VIRO</span><span>A WORK IN PROGRESS. ALWAYS.</span></footer>
+      </div>
+    </div>
+
+    <!-- ===================== MODAL ===================== -->
+    <div id="modal-backdrop" class="modal-backdrop" hidden>
+      <div class="modal" id="modal" role="dialog" aria-modal="true">
+        <button class="modal-close" id="modal-close" type="button" aria-label="Close">
+          <span class="material-symbols-outlined" aria-hidden="true">close</span>
+        </button>
+        <div id="modal-content"></div>
+      </div>
+    </div>
+
+    <script type="module">
+      import('./portal.js').catch((error) => {
+        console.error('Workspace could not start', error);
+        const message = document.getElementById('login-error');
+        message.textContent = 'The workspace couldn’t load. Check your connection and refresh to try again.';
+        message.hidden = false;
+        document.getElementById('login-submit').disabled = true;
+      });
+    </script>
+  </body>
+</html>

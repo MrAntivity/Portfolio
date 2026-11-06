@@ -263,20 +263,23 @@ async function loginWithPin(pin) {
 onAuthStateChanged(auth, async (user) => {
   if (manualLoginInProgress) return;
 
-  if (!user) {
+  if (!user || user.email !== PORTAL_ACCOUNT_EMAIL) {
     lockVault();
     currentUser = null;
     portalEl.hidden = true;
+    greetingLoader.hidden = true;
+    modalBackdrop.hidden = true;
+    modalContent.innerHTML = '';
+    document.body.classList.remove('modal-open');
+    portalEl.inert = false;
+    stopBudget?.(); stopBudget = null;
+    unsubscribers.splice(0).forEach((unsubscribe) => unsubscribe());
     loginScreen.hidden = false;
+    if (user) await signOut(auth);
     return;
   }
 
-  if (currentUser) return;
-  if (user.email !== PORTAL_ACCOUNT_EMAIL) {
-    await signOut(auth);
-    loginScreen.hidden = false;
-    return;
-  }
+  if (currentUser?.uid === user.uid) return;
   currentUser = user;
   encryptionKey = null;
   enterPortal();
@@ -316,6 +319,8 @@ function getGreeting() {
 }
 
 function enterPortal() {
+  if (!hasPortalSession()) return;
+  const enteringUser = currentUser;
   loginScreen.hidden = true;
   document.getElementById('overview-greeting').textContent = `${getGreeting()}.`;
   greetingText.textContent = getGreeting();
@@ -325,6 +330,7 @@ function enterPortal() {
   const minWait = prefersReducedMotion ? 0 : 450;
 
   window.setTimeout(() => {
+    if (!hasPortalSession() || currentUser !== enteringUser) return;
     greetingLoader.classList.add('is-exiting');
     portalEl.hidden = false;
     startPortal();
@@ -336,11 +342,12 @@ function enterPortal() {
 }
 
 function startPortal() {
+  if (!hasPortalSession()) return;
   summaryLoaded.clear();
   renderWorkspaceSummary();
   stopBudget?.();
   stopBudget = mountBudget(document.getElementById('budget-root'), createBudgetStore(db, currentUser.uid));
-  applyTabFromHash(true);
+  applyTabFromLocation(true);
   startClock();
   startWeather();
   updateCalendarWeekLabel();
@@ -359,6 +366,12 @@ portalNav.addEventListener('click', (event) => {
   requestTabSwitch(btn.dataset.tab);
 });
 
+document.querySelector('.skip-link').addEventListener('click', (event) => {
+  event.preventDefault();
+  if (hasPortalSession()) document.getElementById('portal-main').focus();
+  else pinInput.focus();
+});
+
 document.addEventListener('click', (event) => {
   const link = event.target.closest('[data-goto-tab]');
   if (!link) return;
@@ -367,6 +380,7 @@ document.addEventListener('click', (event) => {
 });
 
 function requestTabSwitch(tabName, onArrive) {
+  if (!hasPortalSession()) return;
   if (tabName === 'vault' && !vaultUnlocked) {
     openVaultUnlockPrompt(() => {
       pushTab('vault');
@@ -378,9 +392,7 @@ function requestTabSwitch(tabName, onArrive) {
   onArrive?.();
 }
 
-// Each tab switch gets its own history entry (via the URL hash) so the
-// browser's back/forward buttons step between tabs instead of leaving the
-// portal entirely after the very first switch.
+// Real paths support bookmarks, refreshes, and browser back/forward.
 const PORTAL_TAB_NAMES = ['overview', 'birthdays', 'todos', 'vault', 'files', 'budget', ...(NOTES_ENABLED ? ['drive'] : []), 'calendar', 'contacts'];
 document.querySelector('[data-tab="drive"]').hidden = !NOTES_ENABLED;
 const PORTAL_TAB_LABELS = { overview: 'Overview', birthdays: 'Birthdays', todos: 'Tasks', vault: 'Vault', files: 'Files', budget: 'Budget', drive: 'Notes', calendar: 'Calendar', contacts: 'Contacts' };
@@ -411,28 +423,42 @@ document.addEventListener('keydown', (event) => {
   }
 });
 
+function portalPath(tabName) {
+  return `/viro/${tabName}`;
+}
+
+function hasPortalSession() {
+  return !!currentUser && currentUser.email === PORTAL_ACCOUNT_EMAIL
+    && auth.currentUser?.uid === currentUser.uid
+    && auth.currentUser?.email === PORTAL_ACCOUNT_EMAIL;
+}
+
 function pushTab(tabName) {
-  if (!PORTAL_TAB_NAMES.includes(tabName)) return;
-  if (location.hash.slice(1) !== tabName) {
-    history.pushState({ tab: tabName }, '', `#${tabName}`);
+  if (!hasPortalSession() || !PORTAL_TAB_NAMES.includes(tabName)) return;
+  if (location.pathname !== portalPath(tabName) || location.hash) {
+    history.pushState({ tab: tabName }, '', portalPath(tabName));
   }
   switchTab(tabName);
 }
 
-function applyTabFromHash(replace) {
-  const requested = location.hash.slice(1);
+function applyTabFromLocation(replace) {
+  if (!hasPortalSession()) return;
+  const legacy = location.hash.slice(1);
+  const requested = PORTAL_TAB_NAMES.includes(legacy) ? legacy
+    : location.pathname.replace(/^\/viro\/?/, '').replace(/\/$/, '');
   const tabName = PORTAL_TAB_NAMES.includes(requested) ? requested : 'overview';
   if (tabName === 'vault' && !vaultUnlocked) {
     // Never land straight on Vault from history/a refresh without unlocking it again.
-    history.replaceState({ tab: 'overview' }, '', '#overview');
+    history.replaceState({ tab: 'overview' }, '', portalPath('overview'));
     switchTab('overview');
     return;
   }
-  if (replace) history.replaceState({ tab: tabName }, '', `#${tabName}`);
+  if (replace || location.hash) history.replaceState({ tab: tabName }, '', portalPath(tabName));
   switchTab(tabName);
 }
 
-window.addEventListener('popstate', () => applyTabFromHash(false));
+window.addEventListener('popstate', () => applyTabFromLocation(false));
+window.addEventListener('hashchange', () => applyTabFromLocation(true));
 
 // Briefly flashes and scrolls to the card for `id` - used when jumping to a
 // result from the Overview universal search, since that search spans every
@@ -507,6 +533,7 @@ function lockVault() {
 }
 
 function switchTab(tabName) {
+  if (!hasPortalSession()) return;
   if (tabName !== 'vault') lockVault();
   document.querySelectorAll('.portal-tab').forEach((panel) => {
     panel.hidden = panel.dataset.tabPanel !== tabName;
