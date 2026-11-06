@@ -21,3 +21,6 @@ export async function setCover(id, path) { trips.find(t => t.id === id).coverPat
 export const imageUrl = async path => path;
 export async function uploadPhoto(id, blob, info, progress) { progress(.5); const photo = { id: crypto.randomUUID(), uploaderId: uid, uploaderName: info.name, caption: info.caption, width: info.width, height: info.height, storagePath: URL.createObjectURL(blob) }; if (!galleries.has(id)) galleries.set(id, []); galleries.get(id).push(photo); progress(1); emit(); return photo; }
 export async function removePhoto(id, photo) { galleries.set(id, galleries.get(id).filter(p => p.id !== photo.id)); emit(); }
+
+export const watchEditor = callback => { callback(null); return () => {}; };
+export const lockEditor = async () => {};

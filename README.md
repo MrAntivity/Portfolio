@@ -32,4 +32,4 @@ Portal → Notes includes microphone recording, saved audio, incremental AI tran
 
 ## Shared travel journal
 
-`trip/` is the standalone, unlisted **Somewhere together** travel journal. It includes a world map, trip stories/attendees/excursions, and collaborative Firebase photo galleries. It is not linked from the main portfolio. See [activation and validation](docs/trip-setup.md) before enabling guest contributions or merging the frontend. A `?demo=1` preview uses labeled sample data only and never writes to Firebase.
+`trips/` is the standalone, unlisted **Somewhere together** travel journal. It includes a world map, trip stories/attendees/excursions, and public Firebase photo galleries with owner-only editing. It is not linked from the main portfolio. Legacy `/trip/` links redirect to `/trips/`; shared application assets remain in `trip/`. See [activation and validation](docs/trip-setup.md) for PIN-protected editing and deployment. A `?demo=1` preview uses labeled sample data only and never writes to Firebase.

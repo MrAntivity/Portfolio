@@ -1,24 +1,29 @@
-import { firebaseConfig } from '../viro/firebase-config.js';
+import { firebaseConfig, PORTAL_ACCOUNT_EMAIL } from '../viro/firebase-config.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js';
-import { initializeAuth, browserLocalPersistence, inMemoryPersistence, signInAnonymously } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js';
-import { getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, getDoc, onSnapshot, query, orderBy, limit, where, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js';
+import { initializeAuth, inMemoryPersistence, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js';
+import { getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, getDoc, getDocs, onSnapshot, query, orderBy, limit, where, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-storage.js';
 import { photoPath } from './model.js';
 
-// A separate named app prevents guest sessions from replacing the private portal login.
-// Avoid IndexedDB auth persistence, which can fail on devices with a broken local store.
-const app = initializeApp(firebaseConfig, 'travel-journal');
-const auth = initializeAuth(app, { persistence: [browserLocalPersistence, inMemoryPersistence] });
+// Isolated, memory-only editor login: the portal session is never replaced or persisted here.
+const app = initializeApp(firebaseConfig, 'travel-journal-editor');
+const auth = initializeAuth(app, { persistence: inMemoryPersistence });
 const db = getFirestore(app), storage = getStorage(app);
 function normalizeTrip(data, id) {
   return { ...data, id, people: Array.isArray(data.people) ? data.people.filter(n => typeof n === 'string').map(n => n.slice(0, 60)) : [], excursions: Array.isArray(data.excursions) ? data.excursions.filter(n => typeof n === 'string').map(n => n.slice(0, 300)) : [] };
 }
-let signingIn;
-export async function guest() {
+export const isEditor = user => user?.email === PORTAL_ACCOUNT_EMAIL;
+export async function unlockEditor(pin) {
+  const result = await signInWithEmailAndPassword(auth, PORTAL_ACCOUNT_EMAIL, pin);
+  if (!isEditor(result.user)) { await signOut(auth); throw new Error('Owner access required.'); }
+  return result.user;
+}
+export const lockEditor = () => signOut(auth);
+export const watchEditor = callback => onAuthStateChanged(auth, user => callback(isEditor(user) ? user : null));
+export async function requireEditor() {
   await auth.authStateReady();
-  if (auth.currentUser) return auth.currentUser;
-  if (!signingIn) signingIn = signInAnonymously(auth).then(r => r.user).finally(() => { signingIn = null; });
-  return signingIn;
+  if (!isEditor(auth.currentUser)) throw new Error('Unlock editing mode first.');
+  return auth.currentUser;
 }
 export async function currentGuest() { await auth.authStateReady(); return auth.currentUser; }
 export const newTripId = () => doc(collection(db, 'trips')).id;
@@ -33,11 +38,11 @@ export function watchPhotos(id, count, success, failure) {
   return onSnapshot(query(collection(db, 'trips', id, 'photos'), where('status', '==', 'ready'), limit(count)), s => success(s.docs.map(d => ({ ...d.data(), id: d.id })).sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0))), failure);
 }
 export async function saveTrip(id, values, existing = false) {
-  const user = await guest();
+  const user = await requireEditor();
   if (existing) await updateDoc(doc(db, 'trips', id), { ...values, updatedAt: serverTimestamp() });
   else await setDoc(doc(db, 'trips', id), { ...values, createdBy: user.uid, createdAt: serverTimestamp(), updatedAt: serverTimestamp(), coverPath: '' });
 }
-export async function setCover(tripId, storagePath) { await updateDoc(doc(db, 'trips', tripId), { coverPath: storagePath, updatedAt: serverTimestamp() }); }
+export async function setCover(tripId, storagePath) { await requireEditor(); await updateDoc(doc(db, 'trips', tripId), { coverPath: storagePath, updatedAt: serverTimestamp() }); }
 const urls = new Map();
 export async function imageUrl(path) {
   if (!/^tripPhotos\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+\.jpg$/.test(path || '')) throw new Error('Invalid photo path.');
@@ -45,7 +50,7 @@ export async function imageUrl(path) {
   return urls.get(path);
 }
 export async function uploadPhoto(tripId, blob, info, onProgress) {
-  const user = await guest(), photo = doc(collection(db, 'trips', tripId, 'photos'));
+  const user = await requireEditor(), photo = doc(collection(db, 'trips', tripId, 'photos'));
   const path = photoPath(tripId, user.uid, photo.id), file = ref(storage, path);
   await setDoc(photo, { uploaderId: user.uid, uploaderName: info.name, caption: info.caption, storagePath: path, width: info.width, height: info.height, createdAt: serverTimestamp(), status: 'pending' });
   try {
@@ -64,8 +69,16 @@ export async function uploadPhoto(tripId, blob, info, onProgress) {
   }
 }
 export async function removePhoto(tripId, photo) {
-  await guest();
+  await requireEditor();
   try { await deleteObject(ref(storage, photo.storagePath)); } catch (err) { if (err.code !== 'storage/object-not-found') throw err; }
   await deleteDoc(doc(db, 'trips', tripId, 'photos', photo.id));
   urls.delete(photo.storagePath);
+}
+
+export async function removeTrip(tripId) {
+  await requireEditor();
+  // Remove all photos, including pending uploads and entries beyond the visible gallery page.
+  const snapshot = await getDocs(collection(db, 'trips', tripId, 'photos'));
+  for (const photo of snapshot.docs) await removePhoto(tripId, { ...photo.data(), id: photo.id });
+  await deleteDoc(doc(db, 'trips', tripId));
 }

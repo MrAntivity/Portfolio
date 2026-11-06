@@ -40,10 +40,10 @@ service cloud.firestore {
     }
     match /trips/{tripId} {
       allow read: if true;
-      allow create: if signedIn() && validTrip(request.resource.data, tripId)
+      allow create: if portalOwner() && validTrip(request.resource.data, tripId)
         && request.resource.data.createdBy == request.auth.uid && request.resource.data.createdAt == request.time
         && request.resource.data.coverPath == '';
-      allow update: if signedIn() && (resource.data.createdBy == request.auth.uid || portalOwner())
+      allow update: if portalOwner()
         && validTrip(request.resource.data, tripId)
         && request.resource.data.createdBy == resource.data.createdBy
         && request.resource.data.createdAt == resource.data.createdAt;
@@ -52,7 +52,7 @@ service cloud.firestore {
       match /photos/{photoId} {
         function photoFields() { return ['uploaderId', 'uploaderName', 'caption', 'storagePath', 'width', 'height', 'createdAt', 'status']; }
         allow read: if true;
-        allow create: if signedIn() && exists(/databases/$(database)/documents/trips/$(tripId))
+        allow create: if portalOwner() && exists(/databases/$(database)/documents/trips/$(tripId))
           && request.resource.data.keys().hasAll(photoFields()) && request.resource.data.keys().hasOnly(photoFields())
           && request.resource.data.uploaderId == request.auth.uid
           && request.resource.data.uploaderName is string && request.resource.data.uploaderName.size() > 0 && request.resource.data.uploaderName.size() <= 60
@@ -61,10 +61,10 @@ service cloud.firestore {
           && request.resource.data.width is int && request.resource.data.width > 0 && request.resource.data.width <= 2400
           && request.resource.data.height is int && request.resource.data.height > 0 && request.resource.data.height <= 2400
           && request.resource.data.status == 'pending' && request.resource.data.createdAt == request.time;
-        allow update: if signedIn() && resource.data.uploaderId == request.auth.uid
+        allow update: if portalOwner() && resource.data.uploaderId == request.auth.uid
           && resource.data.status == 'pending' && request.resource.data.status == 'ready'
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']);
-        allow delete: if signedIn() && (resource.data.uploaderId == request.auth.uid || portalOwner());
+        allow delete: if portalOwner();
       }
     }
   }

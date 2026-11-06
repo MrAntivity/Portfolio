@@ -1,15 +1,15 @@
 const { test, before, after } = require('node:test');
 const fs = require('node:fs');
 const { initializeTestEnvironment, assertSucceeds, assertFails } = require('@firebase/rules-unit-testing');
-const { doc, setDoc, getDoc, updateDoc, serverTimestamp } = require('firebase/firestore');
-const { ref, uploadBytes, getBytes } = require('firebase/storage');
+const { doc, setDoc, getDoc, updateDoc, deleteDoc, serverTimestamp } = require('firebase/firestore');
+const { ref, uploadBytes, getBytes, deleteObject } = require('firebase/storage');
 let env;
 const projectId = 'demo-travel-journal';
 const memory = (uid = 'guest-a') => ({ title:'Weekend',authorName:'Alex',locationLabel:'Boston',address:'',country:'United States',lat:42.36,lng:-71.06,startDate:'2026-09-01',endDate:'',people:['Alex','Aiden'],description:'A weekend away.',excursions:['Harbor walk'],createdBy:uid,createdAt:serverTimestamp(),updatedAt:serverTimestamp(),coverPath:'' });
 before(async () => { env = await initializeTestEnvironment({ projectId, firestore: { rules:fs.readFileSync('trip/firestore.rules','utf8') }, storage: { rules:fs.readFileSync('trip/storage.rules','utf8') } }); });
 after(async () => { await env?.cleanup(); });
-test('public reads and authenticated guest trip creation; stranger cannot edit', async () => {
- const a = env.authenticatedContext('guest-a').firestore(), b = env.authenticatedContext('guest-b').firestore(), publicDb = env.unauthenticatedContext().firestore();
+test('public reads; only the portal owner can create or edit trips', async () => {
+ const a = env.authenticatedContext('guest-a',{email:'aiden@viro.local'}).firestore(), b = env.authenticatedContext('guest-b').firestore(), publicDb = env.unauthenticatedContext().firestore();
  await assertSucceeds(setDoc(doc(a,'trips','one'),memory()));
  await assertSucceeds(getDoc(doc(publicDb,'trips','one')));
  await assertFails(setDoc(doc(publicDb,'trips','public-write'),memory()));
@@ -17,7 +17,7 @@ test('public reads and authenticated guest trip creation; stranger cannot edit',
  await assertSucceeds(updateDoc(doc(a,'trips','one'),{title:'A new title',updatedAt:serverTimestamp()}));
 });
 test('identity spoofing, unknown fields, invalid pins and hostile cover paths fail', async () => {
- const db = env.authenticatedContext('guest-a').firestore();
+ const db = env.authenticatedContext('guest-a',{email:'aiden@viro.local'}).firestore();
  await assertFails(setDoc(doc(db,'trips','spoof'),memory('guest-b')));
  await assertFails(setDoc(doc(db,'trips','extra'),{...memory(),admin:true}));
  await assertFails(setDoc(doc(db,'trips','bad-location'),{...memory(),lat:99}));
@@ -34,7 +34,7 @@ test('guests cannot read or write private portal collections; owner still can', 
  await assertFails(setDoc(doc(owner,'users','owner','lectures','lecture','sections','0'),{notes:'Override AI'}));
 });
 test('photo ownership, reservations and immutable metadata protect shared uploads', async () => {
- const a = env.authenticatedContext('guest-a'), b = env.authenticatedContext('guest-b');
+ const a = env.authenticatedContext('guest-a',{email:'aiden@viro.local'}), b = env.authenticatedContext('guest-b');
  const photoRef = doc(a.firestore(),'trips','one','photos','photo-a');
  const metadata = {uploaderId:'guest-a',uploaderName:'Alex',caption:'Sunset',storagePath:'tripPhotos/one/guest-a/photo-a.jpg',width:100,height:100,createdAt:serverTimestamp(),status:'pending'};
  await assertSucceeds(setDoc(photoRef,metadata));
@@ -56,4 +56,25 @@ test('browser cannot extract Google refresh tokens or forge connection status',a
  await assertFails(setDoc(doc(owner,'users','owner','googleCalendar','connection'),{refreshToken:'forged'}));
  await assertSucceeds(getDoc(doc(owner,'users','owner','googleCalendar','status')));
  await assertFails(updateDoc(doc(owner,'users','owner','googleCalendar','status'),{connected:false}));
+});
+
+test('anonymous and unrelated signed-in users cannot mutate legacy trips or photos', async () => {
+ for (const context of [env.unauthenticatedContext(),env.authenticatedContext('guest-a'),env.authenticatedContext('stranger',{email:'stranger@example.com'})]) {
+  const db=context.firestore();
+  await assertSucceeds(getDoc(doc(db,'trips','one')));
+  await assertFails(setDoc(doc(db,'trips','unauthorized'),memory('guest-a')));
+  await assertFails(updateDoc(doc(db,'trips','one'),{title:'Hijack',updatedAt:serverTimestamp()}));
+  await assertFails(deleteDoc(doc(db,'trips','one')));
+  await assertFails(deleteDoc(doc(db,'trips','one','photos','photo-a')));
+  await assertFails(setDoc(doc(db,'trips','one','photos','forged'),{uploaderId:'guest-a'}));
+  await assertFails(deleteObject(ref(context.storage(),'tripPhotos/one/guest-a/photo-a.jpg')));
+ }
+});
+test('portal owner can edit and remove memories and photos created by past guests', async () => {
+ await env.withSecurityRulesDisabled(async context => { await setDoc(doc(context.firestore(),'trips','legacy'),memory('past-guest')); });
+ const owner=env.authenticatedContext('owner',{email:'aiden@viro.local'});
+ await assertSucceeds(updateDoc(doc(owner.firestore(),'trips','legacy'),{title:'Updated by owner',updatedAt:serverTimestamp()}));
+ await assertSucceeds(deleteObject(ref(owner.storage(),'tripPhotos/one/guest-a/photo-a.jpg')));
+ await assertSucceeds(deleteDoc(doc(owner.firestore(),'trips','one','photos','photo-a')));
+ await assertSucceeds(deleteDoc(doc(owner.firestore(),'trips','legacy')));
 });

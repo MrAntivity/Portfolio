@@ -5,3 +5,8 @@
 /* File drop targets retain their normal layout while highlighted. */
 .drag-over{outline:3px dashed var(--text);outline-offset:-6px;box-shadow:inset 0 0 0 8px var(--line)}
 .trip-card.drag-over{border-radius:12px}
+
+/* Keep owner controls hidden regardless of button layout styles. */
+[hidden] { display: none !important; }
+#editor-dialog p { margin-bottom: 20px; }
+.nav-actions { flex-wrap: wrap; }

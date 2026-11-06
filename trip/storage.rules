@@ -17,10 +17,10 @@ service firebase.storage {
       function metadata() { return firestore.get(/databases/(default)/documents/trips/$(tripId)/photos/$(photoId())).data; }
       // Public gallery reads; client-created paths must have a matching reservation.
       allow read: if metadata().status == 'ready';
-      allow create, update: if signedIn() && request.auth.uid == uid
+      allow create, update: if portalOwner() && request.auth.uid == uid
         && fileName.matches('[a-zA-Z0-9_-]+[.]jpg') && metadata().uploaderId == uid && metadata().status == 'pending'
         && request.resource.contentType == 'image/jpeg' && request.resource.size > 0 && request.resource.size <= 8 * 1024 * 1024;
-      allow delete: if signedIn() && (request.auth.uid == uid || portalOwner());
+      allow delete: if portalOwner();
     }
   }
 }

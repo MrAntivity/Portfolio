@@ -5,6 +5,7 @@ import { preparePhoto } from './photos.js';
 const $ = selector => document.querySelector(selector);
 const form = $('#trip-form'), formDialog = $('#form-dialog'), tripDialog = $('#trip-dialog');
 const demo = new URLSearchParams(location.search).get('demo') === '1';
+let editing = false;
 let api, trips = [], visibleTrips = [], selectedTrip = null, photos = [], user = null;
 let worldMap, pinLayer, pickerMap, pickerPin, locationResults = [];
 let stopTrip, stopPhotos, photoLimit = 60, lightboxIndex = 0, busy = false, toastTimer;
@@ -24,6 +25,30 @@ for (const dialog of document.querySelectorAll('dialog')) {
 document.addEventListener('click', e => {
   const close = e.target.closest('[data-close]'); if (close) closeDialog(document.getElementById(close.dataset.close));
   if (e.target.closest('[data-new-trip]')) openForm();
+});
+function updateEditing(nextUser) {
+  user = nextUser; editing = Boolean(nextUser);
+  $('#editor-toggle').textContent = editing ? 'Exit editing' : 'Editing mode';
+  $('#editor-toggle').setAttribute('aria-pressed', String(editing));
+  document.querySelectorAll('[data-new-trip], [data-editor-only]').forEach(button => { button.hidden = !editing; });
+  if (selectedTrip) renderDetail();
+  if (!editing) { formDialog.close(); $('#upload-dialog').close(); }
+}
+$('#editor-toggle').onclick = async () => {
+  if (!api) return toast('The journal is still connecting.');
+  if (busy) return toast('Wait for the current change to finish.');
+  if (editing) { try { await api.lockEditor(); updateEditing(null); toast('Editing locked.'); } catch (err) { toast(friendlyError(err)); } return; }
+  if (demo) return toast('This preview is read-only. Open the live journal to unlock editing.');
+  $('#editor-form').reset(); $('#editor-error').textContent = ''; showDialog($('#editor-dialog')); $('#editor-pin').focus();
+};
+$('#editor-form').addEventListener('submit', async event => {
+  event.preventDefault();
+  const button = $('#editor-submit'); if (button.disabled || !api || demo) return;
+  button.disabled = true; $('#editor-error').textContent = '';
+  const pin = $('#editor-pin').value.trim(); $('#editor-pin').value = '';
+  try { updateEditing(await api.unlockEditor(pin)); $('#editor-dialog').close(); toast('Editing unlocked.'); }
+  catch (err) { $('#editor-error').textContent = err.code === 'auth/too-many-requests' ? 'Too many attempts. Please try again later.' : err.code === 'auth/network-request-failed' ? 'Check your connection and try again.' : 'That PIN couldn’t be verified. Try again.'; }
+  finally { button.disabled = false; }
 });
 function setTheme(theme) {
   document.body.dataset.theme = theme; storage.set('aidenyue-theme-preference', theme);
@@ -67,8 +92,9 @@ function renderTrips() {
   const stats = tripStats(trips);
   $('#trip-count').textContent = String(stats.trips).padStart(2, '0'); $('#place-count').textContent = String(stats.places).padStart(2, '0'); $('#friend-count').textContent = String(stats.friends).padStart(2, '0');
   $('#result-count').textContent = `${visibleTrips.length} ${visibleTrips.length === 1 ? 'memory' : 'memories'}`;
-  $('#trip-grid').innerHTML = visibleTrips.map((t, i) => `<article class="trip-card"><button class="card-image" data-open-trip="${h(t.id)}" aria-label="Open ${h(t.title)}">${cover(t.coverPath, t.title)}<span class="card-index">MEMORY ${String(i + 1).padStart(2, '0')}</span><span class="card-arrow">↗</span></button><div class="card-meta"><span>${h(t.locationLabel)}</span><span>${h(t.startDate?.slice(0, 4))}</span></div><button class="card-title" data-open-trip="${h(t.id)}">${h(t.title)}</button><p class="card-description">${h(t.description)}</p><div class="card-people"><span class="avatars">${t.people.slice(0, 4).map(n => `<span class="avatar" title="${h(n)}">${h(n.split(/\s+/).map(x => x[0]).slice(0, 2).join('').toUpperCase())}</span>`).join('')}</span><span>${h(t.people.slice(0, 3).join(', '))}${t.people.length > 3 ? ` +${t.people.length - 3}` : ''}</span></div></article>`).join('') || (trips.length ? '<div class="empty-state"><h3>No memories found.</h3><p>Try another name, place, or year.</p><button class="button" id="clear-filters">Clear filters</button></div>' : '<div class="empty-state"><span class="empty-icon">↗</span><h3>Every memory book starts somewhere.</h3><p>Add the first trip. The people, the photos, and the little things you don’t want to forget.</p><button class="button" data-new-trip>Add our first trip ↗</button></div>');
+  $('#trip-grid').innerHTML = visibleTrips.map((t, i) => `<article class="trip-card"><button class="card-image" data-open-trip="${h(t.id)}" aria-label="Open ${h(t.title)}">${cover(t.coverPath, t.title)}<span class="card-index">MEMORY ${String(i + 1).padStart(2, '0')}</span><span class="card-arrow">↗</span></button><div class="card-meta"><span>${h(t.locationLabel)}</span><span>${h(t.startDate?.slice(0, 4))}</span></div><button class="card-title" data-open-trip="${h(t.id)}">${h(t.title)}</button><p class="card-description">${h(t.description)}</p><div class="card-people"><span class="avatars">${t.people.slice(0, 4).map(n => `<span class="avatar" title="${h(n)}">${h(n.split(/\s+/).map(x => x[0]).slice(0, 2).join('').toUpperCase())}</span>`).join('')}</span><span>${h(t.people.slice(0, 3).join(', '))}${t.people.length > 3 ? ` +${t.people.length - 3}` : ''}</span></div></article>`).join('') || (trips.length ? '<div class="empty-state"><h3>No memories found.</h3><p>Try another name, place, or year.</p><button class="button" id="clear-filters">Clear filters</button></div>' : '<div class="empty-state"><span class="empty-icon">↗</span><h3>Every memory book starts somewhere.</h3><p>Our travel stories will appear here.</p><button class="button" data-new-trip hidden>Add our first trip ↗</button></div>');
   $('#clear-filters')?.addEventListener('click', () => { $('#search').value = ''; $('#year').value = ''; renderTrips(); });
+  document.querySelectorAll('[data-new-trip], [data-editor-only]').forEach(button => { button.hidden = !editing; });
   fillImages($('#trip-grid')); renderPins();
 }
 $('#search').addEventListener('input', renderTrips); $('#year').addEventListener('change', renderTrips);
@@ -126,6 +152,7 @@ $('#find-location').onclick = async () => {
 $('#location-query').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('#find-location').click(); } });
 $('#location-results').onclick = e => { const button = e.target.closest('[data-place]'); if (!button) return; const p = locationResults[Number(button.dataset.place)]; for (const name of ['locationLabel', 'address', 'country']) form.elements[name].value = p[name]; setPin(p.lat, p.lng, true); $('#location-results').textContent = 'Location selected. Adjust the pin if needed.'; };
 function openForm(trip = null) {
+  if (!editing) return;
   if (!api) return toast('The journal is still connecting. Try again in a moment.');
   form.reset(); editId = trip?.id || null; formSavedId = null; tripFiles = [];
   $('#form-error').textContent = ''; $('#form-progress').hidden = true; $('#location-results').textContent = ''; $('#initial-file-count').textContent = '';
@@ -145,6 +172,7 @@ function selectedFiles(input, label, assign) {
 $('#initial-photos').onchange = e => selectedFiles(e.target, $('#initial-file-count'), files => { tripFiles = files; });
 $('#more-photos').onchange = e => selectedFiles(e.target, $('#more-file-count'), files => { moreFiles = files; });
 function openPhotoUpload(id) {
+  if (!editing) return;
   uploadTarget = id; $('#photo-form').reset(); moreFiles = [];
   $('#upload-error').textContent = ''; $('#more-file-count').textContent = '';
   $('#upload-progress').hidden = true;
@@ -153,6 +181,7 @@ function openPhotoUpload(id) {
 }
 function hasDraggedFiles(event) { return [...(event.dataTransfer?.types || [])].includes('Files'); }
 function dropZone(target) {
+  if (!editing) return null;
   if ($('#lightbox').open) return null;
   if ($('#upload-dialog').open) return target.closest('#upload-dialog');
   if (formDialog.open) return target.closest('#form-dialog');
@@ -212,12 +241,12 @@ async function uploadQueue(id, queue, name, caption, progress, label, canSetCove
 }
 function formBusy(button, value) { busy = value; button.disabled = value; for (const el of button.form.elements) if (el !== button) el.disabled = value; }
 form.addEventListener('submit', async e => {
-  e.preventDefault(); if (busy) return;
+  e.preventDefault(); if (busy || !editing) return;
   const button = $('#save-trip'); $('#form-error').textContent = '';
   try {
     const values = validateTrip(Object.fromEntries(new FormData(form))); validateFiles(tripFiles);
     formBusy(button, true); button.textContent = 'Saving the story…';
-    user = await api.guest();
+    user = await api.requireEditor();
     const id = formSavedId || editId || api.newTripId();
     await api.saveTrip(id, values, Boolean(formSavedId || editId)); formSavedId = id;
     storage.set('trip-contributor-name', values.authorName);
@@ -234,18 +263,25 @@ function openTrip(id, updateHash = true) {
   if (updateHash) history.pushState(null, '', `${location.pathname}${location.search}#trip=${encodeURIComponent(id)}`);
   stopTrip = api.watchTrip(id, trip => { selectedTrip = trip; if (!trip) { $('#trip-detail').innerHTML = '<div class="detail-content"><h2>That memory isn’t here.</h2><p>The link may be incorrect or the trip may have been removed.</p></div>'; return; } renderDetail(); }, err => { $('#trip-detail').innerHTML = `<div class="detail-content"><p class="error-message">${h(friendlyError(err))}</p></div>`; });
   watchGallery(id);
-  api.currentGuest().then(u => { user = u; if (selectedTrip?.id === id) renderDetail(); }).catch(() => {});
+
 }
 function watchGallery(id) {
   stopPhotos?.(); stopPhotos = api.watchPhotos(id, photoLimit, data => { photos = data; if (selectedTrip?.id === id) renderGallery(); }, err => { const gallery = $('#gallery'); if (gallery) gallery.innerHTML = `<p class="error-message">${h(friendlyError(err))}</p>`; });
 }
 function renderDetail() {
   const t = selectedTrip; if (!t) return;
-  const own = t.createdBy === user?.uid;
-  $('#trip-detail').innerHTML = `<div class="detail-cover">${cover(t.coverPath, t.title, 'eager')}<span class="detail-cover-label">${h(dateLabel(t.startDate, t.endDate))}</span></div><div class="detail-content"><div class="detail-title-row"><h2 id="detail-title">${h(t.title)}</h2>${own ? '<button class="button small" id="edit-trip">Edit story ↗</button>' : ''}</div><p class="detail-location"><a href="https://www.openstreetmap.org/?mlat=${t.lat}&mlon=${t.lng}#map=13/${t.lat}/${t.lng}" target="_blank" rel="noopener noreferrer">${h(t.locationLabel)} ↗</a>${t.address ? ` · ${h(t.address)}` : ''}</p><div class="detail-info"><p class="detail-story">${h(t.description)}</p><aside><span class="eyebrow">THE GOOD COMPANY</span><div class="detail-friends">${t.people.map(n => `<span class="person-chip">${h(n)}</span>`).join('')}</div></aside></div>${t.excursions.length ? `<section class="excursions"><span class="eyebrow">THE LITTLE DETOURS</span><h3 style="margin-top:10px">Out & about.</h3><div class="excursion-list">${t.excursions.map((x, i) => `<div class="excursion"><span>${String(i + 1).padStart(2, '0')}</span><p>${h(x)}</p></div>`).join('')}</div></section>` : ''}<div class="gallery-heading"><div><h3>Through our lenses.</h3><p id="gallery-count">Drop photos onto this memory, or use Add photos.</p></div><button class="button" id="add-photos">＋ Add photos</button></div><div id="gallery"></div><button class="text-button detail-load-more" id="more-gallery" hidden>Load more photos ↓</button><div class="detail-share"><span>STORY ADDED BY ${h(t.authorName.toUpperCase())}</span><button class="text-button" id="share-trip">Copy trip link ↗</button></div></div>`;
+  const own = editing;
+  $('#trip-detail').innerHTML = `<div class="detail-cover">${cover(t.coverPath, t.title, 'eager')}<span class="detail-cover-label">${h(dateLabel(t.startDate, t.endDate))}</span></div><div class="detail-content"><div class="detail-title-row"><h2 id="detail-title">${h(t.title)}</h2>${own ? '<button class="button small" id="edit-trip">Edit story ↗</button><button class="button small" id="delete-trip">Delete trip</button>' : ''}</div><p class="detail-location"><a href="https://www.openstreetmap.org/?mlat=${t.lat}&mlon=${t.lng}#map=13/${t.lat}/${t.lng}" target="_blank" rel="noopener noreferrer">${h(t.locationLabel)} ↗</a>${t.address ? ` · ${h(t.address)}` : ''}</p><div class="detail-info"><p class="detail-story">${h(t.description)}</p><aside><span class="eyebrow">THE GOOD COMPANY</span><div class="detail-friends">${t.people.map(n => `<span class="person-chip">${h(n)}</span>`).join('')}</div></aside></div>${t.excursions.length ? `<section class="excursions"><span class="eyebrow">THE LITTLE DETOURS</span><h3 style="margin-top:10px">Out & about.</h3><div class="excursion-list">${t.excursions.map((x, i) => `<div class="excursion"><span>${String(i + 1).padStart(2, '0')}</span><p>${h(x)}</p></div>`).join('')}</div></section>` : ''}<div class="gallery-heading"><div><h3>Through our lenses.</h3><p id="gallery-count">Drop photos onto this memory, or use Add photos.</p></div>${editing ? '<button class="button" id="add-photos">＋ Add photos</button>' : ''}</div><div id="gallery"></div><button class="text-button detail-load-more" id="more-gallery" hidden>Load more photos ↓</button><div class="detail-share"><span>STORY ADDED BY ${h(t.authorName.toUpperCase())}</span><button class="text-button" id="share-trip">Copy trip link ↗</button></div></div>`;
   fillImages($('#trip-detail')); renderGallery();
   $('#edit-trip')?.addEventListener('click', () => openForm(t));
-  $('#add-photos').onclick = () => openPhotoUpload(t.id);
+  $('#add-photos')?.addEventListener('click', () => openPhotoUpload(t.id));
+  $('#delete-trip')?.addEventListener('click', async () => {
+    if (!editing || busy || !confirm('Delete this trip and all its photos? This cannot be undone.')) return;
+    busy = true; $('#delete-trip').disabled = true;
+    try { await api.removeTrip(t.id); tripDialog.close(); toast('Trip deleted.'); }
+    catch (err) { toast(friendlyError(err)); if ($('#delete-trip')) $('#delete-trip').disabled = false; }
+    finally { busy = false; }
+  });
   $('#share-trip').onclick = async () => {
     const url = `${location.origin}${location.pathname}${demo ? '?demo=1' : ''}#trip=${encodeURIComponent(t.id)}`;
     try { await navigator.clipboard.writeText(url); toast('Trip link copied. Send it to the group.'); } catch { toast('Copy this page’s address from your browser to share the trip.'); }
@@ -256,12 +292,13 @@ function renderGallery() {
   const gallery = $('#gallery'); if (!gallery || !selectedTrip) return;
   $('#gallery-count').textContent = `${photos.length}${photos.length >= photoLimit ? '+' : ''} photos · Everyone’s point of view.`;
   gallery.className = photos.length ? 'gallery' : 'gallery-empty';
-  gallery.innerHTML = photos.map((p, i) => `<figure class="gallery-photo"><button data-view-photo="${i}" aria-label="View photo ${i + 1} by ${h(p.uploaderName)}"><img data-photo-path="${h(p.storagePath)}" alt="${h(p.caption || `A moment from ${selectedTrip.title}, by ${p.uploaderName}`)}" width="${p.width}" height="${p.height}" loading="lazy" decoding="async" /></button><figcaption><span>${h(p.uploaderName)}</span><span>${selectedTrip.createdBy === user?.uid ? `<button data-cover-photo="${i}">${selectedTrip.coverPath === p.storagePath ? 'Cover' : 'Set cover'}</button> ` : ''}${p.uploaderId === user?.uid ? `<button data-remove-photo="${i}" aria-label="Remove your photo ${i + 1}">Remove</button>` : ''}</span></figcaption></figure>`).join('') || 'The best photos might still be on someone’s phone. Add the first ones.';
+  gallery.innerHTML = photos.map((p, i) => `<figure class="gallery-photo"><button data-view-photo="${i}" aria-label="View photo ${i + 1} by ${h(p.uploaderName)}"><img data-photo-path="${h(p.storagePath)}" alt="${h(p.caption || `A moment from ${selectedTrip.title}, by ${p.uploaderName}`)}" width="${p.width}" height="${p.height}" loading="lazy" decoding="async" /></button><figcaption><span>${h(p.uploaderName)}</span><span>${editing ? `<button data-cover-photo="${i}">${selectedTrip.coverPath === p.storagePath ? 'Cover' : 'Set cover'}</button> ` : ''}${editing ? `<button data-remove-photo="${i}" aria-label="Remove photo ${i + 1}">Remove</button>` : ''}</span></figcaption></figure>`).join('') || 'No photos in this memory yet.';
   $('#more-gallery').hidden = photos.length < photoLimit;
   fillImages(gallery);
 }
 $('#trip-detail').addEventListener('click', async e => {
   const view = e.target.closest('[data-view-photo]'); if (view) { lightboxIndex = Number(view.dataset.viewPhoto); showPhoto(); return; }
+  if (!editing || busy) return;
   const set = e.target.closest('[data-cover-photo]');
   if (set) { set.disabled = true; try { await api.setCover(selectedTrip.id, photos[Number(set.dataset.coverPhoto)].storagePath); toast('Cover photo updated.'); } catch (err) { toast(friendlyError(err)); set.disabled = false; } }
   const remove = e.target.closest('[data-remove-photo]');
@@ -269,18 +306,18 @@ $('#trip-detail').addEventListener('click', async e => {
     const photo = photos[Number(remove.dataset.removePhoto)], trip = selectedTrip;
     if (!confirm('Remove this photo from the shared gallery? This cannot be undone.')) return;
     remove.disabled = true;
-    try { await api.removePhoto(trip.id, photo); if (trip.coverPath === photo.storagePath && trip.createdBy === user?.uid) await api.setCover(trip.id, ''); toast('Your photo was removed.'); }
+    try { await api.removePhoto(trip.id, photo); if (trip.coverPath === photo.storagePath && editing) await api.setCover(trip.id, ''); toast('Your photo was removed.'); }
     catch (err) { toast(friendlyError(err)); remove.disabled = false; }
   }
 });
 $('#photo-form').addEventListener('submit', async e => {
-  e.preventDefault(); if (busy || !uploadTarget) return;
+  e.preventDefault(); if (busy || !editing || !uploadTarget) return;
   const button = $('#upload-submit'), values = Object.fromEntries(new FormData(e.target)); $('#upload-error').textContent = '';
   try {
     if (!moreFiles.length) throw new Error('Choose at least one photo.'); validateFiles(moreFiles);
     const name = values.uploaderName.trim(), caption = values.caption.trim(); if (!name) throw new Error('Add your name for the photo credit.');
-    formBusy(button, true); user = await api.guest(); storage.set('trip-contributor-name', name);
-    await uploadQueue(uploadTarget, moreFiles, name, caption, $('#upload-progress'), button, selectedTrip?.id === uploadTarget && selectedTrip.createdBy === user.uid && !selectedTrip.coverPath);
+    formBusy(button, true); user = await api.requireEditor(); storage.set('trip-contributor-name', name);
+    await uploadQueue(uploadTarget, moreFiles, name, caption, $('#upload-progress'), button, selectedTrip?.id === uploadTarget && editing && !selectedTrip.coverPath);
     formBusy(button, false); $('#upload-dialog').close();
     if (!tripDialog.open || selectedTrip?.id !== uploadTarget) openTrip(uploadTarget);
     else renderGallery();
@@ -308,6 +345,7 @@ try { worldMap = createMap('world-map'); pinLayer = L.layerGroup().addTo(worldMa
 try {
   api = await import(demo ? './preview-data.js' : './firebase.js');
   if (demo) { $('#connection-status').hidden = false; $('#connection-status').textContent = 'DESIGN PREVIEW · These are sample trips, not Aiden’s travel history. Changes stay in this preview and are not uploaded to Firebase.'; }
+  api.watchEditor(updateEditing);
   api.watchTrips(data => { trips = data; if (!demo) $('#connection-status').hidden = true; renderTrips(); }, connectionError);
   route();
 } catch (err) { connectionError(err); }

@@ -5,8 +5,8 @@ const {JSDOM} = require('jsdom');
 const vm = require('node:vm');
 const fs = require('node:fs');
 const path = require('node:path');
-async function page({failSecondUpload = false} = {}) {
- const dom = new JSDOM(fs.readFileSync('trip/index.html','utf8'),{url:'https://preview.invalid/trip/?demo=1',runScripts:'outside-only',pretendToBeVisual:true});
+async function page({failSecondUpload = false, editor = true} = {}) {
+ const dom = new JSDOM(fs.readFileSync('trips/index.html','utf8'),{url:'https://preview.invalid/trips/?demo=1',runScripts:'outside-only',pretendToBeVisual:true});
  const w = dom.window, context = dom.getInternalVMContext();
  w.HTMLDialogElement.prototype.showModal = function() { this.open = true; };
  w.HTMLDialogElement.prototype.close = function() { this.open = false; this.dispatchEvent(new w.Event('close')); };
@@ -19,8 +19,18 @@ async function page({failSecondUpload = false} = {}) {
   }
   const m = new vm.SourceTextModule(fs.readFileSync(file,'utf8'),{context,identifier:file,importModuleDynamically:async (specifier, parent) => {
    const imported = await load(path.resolve(path.dirname(parent.identifier),specifier)); if (imported.status === 'linked') await imported.evaluate();
-   if (specifier === './preview-data.js' && failSecondUpload) {
-    const wrapped = new vm.SyntheticModule(Object.keys(imported.namespace),function(){for (const key of Object.keys(imported.namespace)) this.setExport(key,key === 'uploadPhoto' ? async (...args)=>{if (++uploads === 2) throw new Error('Simulated interrupted upload'); return imported.namespace.uploadPhoto(...args);} : imported.namespace[key]);},{context}); await wrapped.link(()=>{}); await wrapped.evaluate(); return wrapped;
+   if (specifier === './preview-data.js') {
+    let editorCallback;
+    const extra = {
+      watchEditor: callback => { editorCallback = callback; callback(editor ? { uid: 'preview-guest' } : null); return () => {}; },
+      lockEditor: async () => editorCallback(null),
+      requireEditor: async () => { if (!editor) throw new Error('Locked'); return {uid:'preview-guest'}; },
+      removeTrip: async () => {}
+    };
+    const wrapped = new vm.SyntheticModule([...new Set([...Object.keys(imported.namespace), ...Object.keys(extra)])],function(){
+      for (const key of Object.keys(imported.namespace)) this.setExport(key,key === 'uploadPhoto' && failSecondUpload ? async (...args)=>{if (++uploads === 2) throw new Error('Simulated interrupted upload'); return imported.namespace.uploadPhoto(...args);} : imported.namespace[key]);
+      for (const [key,value] of Object.entries(extra)) this.setExport(key,value);
+    },{context}); await wrapped.link(()=>{}); await wrapped.evaluate(); return wrapped;
    }
    return imported;
   }}); modules.set(file,m); await m.link((specifier,parent)=>load(path.resolve(path.dirname(parent.identifier),specifier))); return m;
@@ -100,5 +110,29 @@ test('new-memory drops append files and invalid drops preserve the selected phot
   assert.match(p.doc.querySelector('#initial-file-count').textContent,/2 photos/);
   form.dispatchEvent(new p.w.Event('submit',{cancelable:true})); await p.flush();
   assert.equal(p.doc.querySelectorAll('.gallery-photo').length,2);
+ } finally {p.dom.window.close();}
+});
+
+test('public visitors can browse photos but cannot open editor forms or mutate trips', async () => {
+ const p=await page({editor:false}); try {
+  assert.equal(p.doc.querySelector('#editor-toggle').getAttribute('aria-pressed'),'false');
+  assert([...p.doc.querySelectorAll('[data-new-trip]')].every(b=>b.hidden));
+  p.doc.querySelector('[data-new-trip]').click(); assert.equal(p.doc.querySelector('#form-dialog').open,false);
+  p.doc.querySelector('[data-open-trip]').click(); await p.flush();
+  assert(p.doc.querySelector('#trip-dialog').open);
+  for(const selector of ['#edit-trip','#delete-trip','#add-photos','[data-cover-photo]','[data-remove-photo]']) assert.equal(p.doc.querySelector(selector),null);
+  p.doc.querySelector('[data-view-photo]').click(); await p.flush(); assert(p.doc.querySelector('#lightbox').open);
+  const count=p.doc.querySelectorAll('.trip-card').length;
+  fillTrip(p,'Unauthorized').dispatchEvent(new p.w.Event('submit',{cancelable:true})); await p.flush();
+  assert.equal(p.doc.querySelectorAll('.trip-card').length,count);
+ } finally {p.dom.window.close();}
+});
+test('exiting editing removes all mutation controls while keeping browsing available', async () => {
+ const p=await page(); try {
+  p.doc.querySelector('[data-open-trip]').click(); await p.flush(); assert(p.doc.querySelector('#delete-trip'));
+  p.doc.querySelector('#editor-toggle').click(); await p.flush();
+  assert.equal(p.doc.querySelector('#edit-trip'),null); assert.equal(p.doc.querySelector('#delete-trip'),null);
+  assert.equal(p.doc.querySelector('#add-photos'),null); assert(p.doc.querySelector('[data-view-photo]'));
+  assert([...p.doc.querySelectorAll('[data-new-trip]')].every(b=>b.hidden));
  } finally {p.dom.window.close();}
 });
