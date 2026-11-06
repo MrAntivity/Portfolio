@@ -4020,7 +4020,9 @@ const calendarConnectBtn = document.getElementById('calendar-connect-btn');
 const calendarConnectError = document.getElementById('calendar-connect-error');
 
 calendarConnectBtn.addEventListener('click', () => {
+  if (!hasPortalSession()) return;
   calendarConnectError.hidden = true;
+  const connectingUser = currentUser;
 
   if (typeof google === 'undefined' || !google.accounts?.oauth2) {
     calendarConnectError.hidden = false;
@@ -4036,16 +4038,25 @@ calendarConnectBtn.addEventListener('click', () => {
     ux_mode: 'popup',
     access_type: 'offline',
     prompt: 'consent',
+    error_callback: () => {
+      calendarConnectError.hidden = false;
+      calendarConnectError.textContent = 'Google sign-in was closed or blocked. Allow the popup and click Reconnect Google again.';
+      if (calendarConnected) calendarSyncStatus(calendarConnectError.textContent, true);
+    },
     callback: async (response) => {
+      if (!hasPortalSession() || currentUser !== connectingUser) return;
       if (response.error) {
         calendarConnectError.hidden = false;
         calendarConnectError.textContent = 'Google sign-in was cancelled or failed. Try again.';
+        if (calendarConnected) calendarSyncStatus(calendarConnectError.textContent, true);
         return;
       }
       calendarConnectBtn.disabled = true;
       try {
-        await callGoogleCalendarConnect({ code: response.code });
-        googleAccessToken = null;
+        const { data } = await callGoogleCalendarConnect({ code: response.code, redirectUri: location.origin });
+        if (!hasPortalSession() || currentUser !== connectingUser) return;
+        googleAccessToken = data.accessToken || null;
+        googleAccessTokenExpiryMs = Date.now() + (data.expiresIn || 3600) * 1000;
         calendarTokenRequest = null;
         calendarConnected = true;
         updateCalendarConnectionUI();

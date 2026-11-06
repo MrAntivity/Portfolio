@@ -5,7 +5,7 @@
     "node": ">=24"
   },
   "scripts": {
-    "test": "cd .. && node --test tests/portal-routing.test.cjs tests/calendar-sync.test.cjs tests/media-model.test.cjs tests/trip-model.test.cjs tests/lectures.test.cjs tests/file-sharing.test.cjs && node --experimental-vm-modules --test tests/security.test.cjs tests/budget.test.cjs tests/budget-ui.test.cjs tests/media-ui.test.cjs tests/trip-ui.test.cjs tests/file-sharing-ui.test.cjs tests/original-files.test.cjs",
+    "test": "cd .. && node --test tests/calendar-oauth.test.cjs tests/portal-routing.test.cjs tests/calendar-sync.test.cjs tests/media-model.test.cjs tests/trip-model.test.cjs tests/lectures.test.cjs tests/file-sharing.test.cjs && node --experimental-vm-modules --test tests/security.test.cjs tests/budget.test.cjs tests/budget-ui.test.cjs tests/media-ui.test.cjs tests/trip-ui.test.cjs tests/file-sharing-ui.test.cjs tests/original-files.test.cjs",
     "rules": "cd .. && firebase emulators:exec --only firestore,storage --project demo-travel-journal --config firebase.trip.json \"node --test tests/trip-rules.test.cjs\"",
     "media:wasm": "cd .. && node --experimental-vm-modules --test tests/media-wasm.test.cjs"
   },

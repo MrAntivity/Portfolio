@@ -2,7 +2,7 @@
   "name": "viro-functions",
   "description": "Server-side AI proxy for the /viro portal. Keeps the OpenAI key off the client.",
   "engines": {
-    "node": "20"
+    "node": "22"
   },
   "main": "index.js",
   "dependencies": {
