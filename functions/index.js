@@ -1,3 +1,4 @@
+const { tokenFailure, refreshGoogleToken } = require('./calendar-oauth');
 const { assertPortalOwner } = require('./portal-auth');
 const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { setGlobalOptions } = require('firebase-functions/v2');
@@ -264,7 +265,7 @@ async function exchangeGoogleCode(code, redirectUri) {
       code,
       client_id: GOOGLE_CLIENT_ID,
       client_secret: googleClientSecret.value(),
-      redirect_uri: redirectUri || 'postmessage',
+      redirect_uri: redirectUri || 'https://aidenyue.com',
       grant_type: 'authorization_code'
     })
   });
@@ -276,10 +277,14 @@ exports.googleCalendarConnect = onCall({ secrets: [googleClientSecret], cors: tr
   const { code, redirectUri } = request.data || {};
   if (!code) throw new HttpsError('invalid-argument', 'Missing authorization code.');
 
-  const { ok, data } = await exchangeGoogleCode(code, redirectUri);
+  const popupOrigin = redirectUri || 'https://aidenyue.com';
+  if (!['https://aidenyue.com', 'https://www.aidenyue.com', 'https://mrantivity.github.io'].includes(popupOrigin)) {
+    throw new HttpsError('invalid-argument', 'Unsupported calendar sign-in origin.');
+  }
+  const { ok, data } = await exchangeGoogleCode(code, popupOrigin);
   if (!ok || !data.refresh_token) {
-    console.error('Google token exchange failed', data);
-    throw new HttpsError('internal', 'Could not connect to Google Calendar. Try again.');
+    const failure = tokenFailure(400, data.error);
+    throw new HttpsError(failure.code, !ok ? failure.message : 'Google did not return offline access. Remove this app from your Google account connections, then reconnect and approve access.', {reason:failure.reason});
   }
 
   let email = '';
@@ -304,7 +309,7 @@ exports.googleCalendarConnect = onCall({ secrets: [googleClientSecret], cors: tr
   batch.set(admin.firestore().doc(`users/${uid}/googleCalendar/status`), { connected: true, email });
   await batch.commit();
 
-  return { email };
+  return { email, accessToken: data.access_token, expiresIn: data.expires_in };
 });
 
 exports.googleCalendarToken = onCall({ secrets: [googleClientSecret], cors: true }, async (request) => {
@@ -317,20 +322,11 @@ exports.googleCalendarToken = onCall({ secrets: [googleClientSecret], cors: true
     throw new HttpsError('failed-precondition', 'Google Calendar is not connected.');
   }
 
-  const res = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      refresh_token: refreshToken,
-      client_id: GOOGLE_CLIENT_ID,
-      client_secret: googleClientSecret.value(),
-      grant_type: 'refresh_token'
-    })
-  });
-  const data = await res.json();
-  if (!res.ok || !data.access_token) {
-    console.error('Google token refresh failed', data);
-    throw new HttpsError('internal', 'Could not refresh Google Calendar access. Try reconnecting.');
+  let data;
+  try {
+    data = await refreshGoogleToken({ refreshToken, clientId: GOOGLE_CLIENT_ID, clientSecret: googleClientSecret.value() });
+  } catch (error) {
+    throw new HttpsError(error.code || 'internal', error.message, {reason: error.reason || 'oauth-error'});
   }
 
   return { accessToken: data.access_token, expiresIn: data.expires_in, email: snap.data().email || '' };
