@@ -30,3 +30,8 @@ test('recipient PIN challenge, safe file rendering and revoked download clear th
   w.document.querySelector('#files button').click();await flush();assert.equal(w.document.querySelector('#files').textContent,'');assert.match(w.document.querySelector('#status').textContent,/revoked/);
  }finally{w.close();}
 });
+test('public shares open automatically without a button or PIN',async()=>{
+ const id='c'.repeat(64),dom=new JSDOM(fs.readFileSync('share/index.html','utf8'),{url:`https://aidenyue.com/share/#${id}`,runScripts:'outside-only'}),w=dom.window,calls=[];
+ w.fetch=async(url,opts)=>{const d=JSON.parse(opts.body);calls.push(d.action);return{ok:true,status:200,json:async()=>d.action==='unlock'?{session:'public-session'}:{name:'Public report',folders:[],files:[{id:'r',name:'Report',pages:[{index:0,name:'report.pdf',size:2048}]}]}}};
+ const context=dom.getInternalVMContext(),config=new vm.SyntheticModule(['firebaseConfig'],function(){this.setExport('firebaseConfig',{projectId:'test'});},{context});await config.link(()=>{});const m=new vm.SourceTextModule(fs.readFileSync('share/share.js','utf8'),{context});await m.link(()=>config);await m.evaluate();await flush();assert.deepEqual(calls,['unlock','list']);assert.equal(w.document.querySelector('#unlock').hidden,true);assert.match(w.document.querySelector('#files').textContent,/Report/);w.close();
+});
