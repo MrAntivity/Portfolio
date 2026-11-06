@@ -1,3 +1,32 @@
+// Render a deliberately small Markdown subset with DOM nodes, never model HTML.
+export function renderBudgetAnswer(container,source){
+ const doc=container.ownerDocument;
+ function inline(parent,text){
+  const pattern=/\*\*([^*\n]+)\*\*|__([^_\n]+)__|`([^`\n]+)`|\*([^*\n]+)\*/g;
+  let cursor=0;
+  for(const match of text.matchAll(pattern)){
+   parent.append(doc.createTextNode(text.slice(cursor,match.index)));
+   const node=doc.createElement(match[1]!==undefined||match[2]!==undefined?'strong':match[3]!==undefined?'code':'em');
+   node.textContent=match[1]??match[2]??match[3]??match[4];parent.append(node);cursor=match.index+match[0].length;
+  }
+  parent.append(doc.createTextNode(text.slice(cursor)));
+ }
+ let list=null,paragraph=null,code=null;
+ for(const line of source.replace(/\r\n?/g,'\n').split('\n')){
+  if(/^\s*```/.test(line)){if(code)code=null;else{list=null;paragraph=null;const pre=doc.createElement('pre');code=doc.createElement('code');pre.append(code);container.append(pre);}continue;}
+  if(code){code.append(doc.createTextNode(line+'\n'));continue;}
+  if(!line.trim()){list=null;paragraph=null;continue;}
+  const heading=line.match(/^\s{0,3}#{1,6}\s+(.+?)(?:\s+#+)?\s*$/);
+  if(heading){list=null;paragraph=null;const node=doc.createElement('h4');inline(node,heading[1]);container.append(node);continue;}
+  if(/^\s*(?:---+|\*\*\*+)\s*$/.test(line)){list=null;paragraph=null;container.append(doc.createElement('hr'));continue;}
+  const item=line.match(/^\s*(?:([-*+])|\d+[.)])\s+(.+)$/);
+  if(item){paragraph=null;const tag=item[1]?'UL':'OL';if(!list||list.tagName!==tag){list=doc.createElement(tag.toLowerCase());container.append(list);}const node=doc.createElement('li');inline(node,item[2]);list.append(node);continue;}
+  list=null;
+  if(!paragraph){paragraph=doc.createElement('p');container.append(paragraph);}else paragraph.append(doc.createElement('br'));
+  inline(paragraph,line);
+ }
+}
+
 export function mountBudgetChat(root,ask){
  const dock=document.createElement('div');dock.className='budget-chat-dock';
  dock.innerHTML=`<button type="button" class="budget-chat-launch" aria-label="Open budget AI chat" aria-expanded="false" aria-controls="budget-ai-panel"><span aria-hidden="true">$</span><small>AI</small></button><section id="budget-ai-panel" class="budget-chat-panel" aria-label="Budget AI chat" hidden><header><div><strong>Budget AI</strong><small>Your money, explained</small></div><button type="button" data-clear title="New chat" aria-label="Start a new chat">↻</button><button type="button" data-close title="Close" aria-label="Close budget chat">×</button></header><p class="budget-chat-disclosure">Uses your saved budget with OpenAI. Read-only; no bank access. Chat clears when you sign out.</p><div class="budget-chat-messages" role="log" aria-label="Conversation" aria-live="polite"></div><div class="budget-chat-prompts"><button type="button">Where did my money go this month?</button><button type="button">What bills and subscriptions are coming up?</button><button type="button">Can I afford anything on my wishlist?</button></div><p class="budget-chat-status" role="status"></p><form><label class="budget-chat-label" for="budget-chat-input">Ask about your budget</label><textarea id="budget-chat-input" rows="2" maxlength="2000" placeholder="Ask about your expenses…" required></textarea><button type="submit" aria-label="Send message" title="Send">↑</button></form></section>`;
@@ -7,7 +36,7 @@ export function mountBudgetChat(root,ask){
  const setOpen=open=>{panel.hidden=!open;launch.setAttribute('aria-expanded',String(open));if(open)input.focus();else launch.focus();};
  launch.onclick=()=>setOpen(panel.hidden);dock.querySelector('[data-close]').onclick=()=>setOpen(false);
  dock.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();setOpen(false);}});
- const append=(role,content)=>{const article=document.createElement('div');article.className='budget-chat-message '+role;const label=document.createElement('small');label.textContent=role==='user'?'You':'Budget AI';const text=document.createElement('p');text.textContent=content;article.append(label,text);log.append(article);log.scrollTop=log.scrollHeight;return article;};
+ const append=(role,content)=>{const article=document.createElement('div');article.className='budget-chat-message '+role;const label=document.createElement('small');label.textContent=role==='user'?'You':'Budget AI';const text=document.createElement(role==='assistant'?'div':'p');if(role==='assistant'){text.className='budget-chat-answer';renderBudgetAnswer(text,content);}else text.textContent=content;article.append(label,text);log.append(article);log.scrollTop=log.scrollHeight;return article;};
  const controls=()=>{send.disabled=busy;input.disabled=busy;prompts.querySelectorAll('button').forEach(b=>b.disabled=busy);panel.setAttribute('aria-busy',String(busy));};
  dock.querySelector('[data-clear]').onclick=()=>{generation++;busy=false;messages=[];log.replaceChildren();status.textContent='';prompts.hidden=false;controls();input.value='';input.focus();};
  prompts.querySelectorAll('button').forEach(b=>b.onclick=()=>{input.value=b.textContent;form.requestSubmit();});
