@@ -62,3 +62,13 @@ export function wishlistStatus(items,summary) {
   return [...items].filter(i=>!i.archived&&!i.purchaseId).sort((a,b)=>a.priority-b.priority||a.id.localeCompare(b.id)).map(i=>{const shortfall=Math.max(0,i.amount-available),comfortable=shortfall===0;available-=i.amount;return{...i,comfortable,shortfall};});
 }
 export function refundedAmount(id,entries){return entries.filter(e=>e.kind==='refund'&&e.originalId===id&&!e.voided).reduce((n,e)=>n+e.amount,0);}
+
+// Actual logged day-to-day purchases only; no forecast or opening aggregates.
+export function spendingSeries(entries,month,now=today()) {
+  const [year,monthNumber]=month.split('-').map(Number);
+  const days=new Date(year,monthNumber,0).getDate();
+  const end=month===now.slice(0,7)?Number(now.slice(8)):month>now.slice(0,7)?0:days;
+  const daily=Array.from({length:end},()=>0);
+  for(const e of entries)if(e.kind==='expense'&&!e.voided&&!e.deleted&&!e.expected&&e.category!=='Rent & fees'&&e.date.slice(0,7)===month){const index=Number(e.date.slice(8))-1;if(index>=0&&index<end)daily[index]+=e.amount;}
+  let total=0;return {days,daily,points:daily.map(amount=>(total+=amount)),total:daily.reduce((a,b)=>a+b,0)};
+}

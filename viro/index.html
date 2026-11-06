@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Workspace · Aiden Yue</title>
     <meta name="robots" content="noindex, nofollow, noarchive" />
-    <meta name="theme-color" content="#090909" />
+    <meta name="theme-color" content="#171923" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -23,13 +23,14 @@
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <link rel="stylesheet" href="./media-editor.css" />
     <link rel="stylesheet" href="budget.css" />
+    <link rel="stylesheet" href="dashboard.css" />
   </head>
   <body data-portal="true">
     <script>
       try {
         const theme = localStorage.getItem('aidenyue-theme-preference') === 'light' ? 'light' : 'dark';
         document.body.dataset.theme = theme;
-        document.querySelector('meta[name="theme-color"]').content = theme === 'light' ? '#f3f2ee' : '#090909';
+        document.querySelector('meta[name="theme-color"]').content = theme === 'light' ? '#f3f5fa' : '#171923';
       } catch { /* Use the default dark theme when storage is unavailable. */ }
     </script>
     <a class="skip-link" href="#portal-main">Skip to workspace</a>
@@ -85,21 +86,21 @@
         </div>
       </div>
       <header class="portal-header">
-        <div class="sidebar-brand"><a class="workspace-wordmark" href="../" aria-label="Aiden Yue portfolio">AY<span>↗</span></a><span class="workspace-label">Workspace</span></div>
+        <div class="sidebar-brand"><a class="workspace-wordmark" href="../" aria-label="Aiden Yue portfolio">AY<span>↗</span></a><span class="workspace-label">VIRO</span></div>
         <button class="icon-btn mobile-menu-toggle" id="mobile-menu-toggle" type="button" aria-controls="portal-nav" aria-expanded="false" aria-label="Open navigation"><span class="material-symbols-outlined" aria-hidden="true">menu</span></button>
         <nav class="portal-nav" id="portal-nav" aria-label="Portal">
           <span class="nav-group-label">Your day</span>
-          <button type="button" class="is-active" data-tab="overview" aria-current="page"><span class="material-symbols-outlined" aria-hidden="true">space_dashboard</span>Overview</button>
-          <button type="button" data-tab="todos"><span class="material-symbols-outlined" aria-hidden="true">check_circle</span>Tasks</button>
-          <button type="button" data-tab="calendar"><span class="material-symbols-outlined" aria-hidden="true">calendar_today</span>Calendar</button>
+          <button type="button" class="is-active" data-tab="overview" aria-current="page" aria-label="Overview" title="Overview"><span class="material-symbols-outlined" aria-hidden="true">space_dashboard</span><span class="nav-label">Overview</span></button>
+          <button type="button" data-tab="todos" aria-label="Tasks" title="Tasks"><span class="material-symbols-outlined" aria-hidden="true">check_circle</span><span class="nav-label">Tasks</span></button>
+          <button type="button" data-tab="calendar" aria-label="Calendar" title="Calendar"><span class="material-symbols-outlined" aria-hidden="true">calendar_today</span><span class="nav-label">Calendar</span></button>
           <span class="nav-group-label">Your people</span>
-          <button type="button" data-tab="birthdays"><span class="material-symbols-outlined" aria-hidden="true">cake</span>Birthdays</button>
-          <button type="button" data-tab="contacts"><span class="material-symbols-outlined" aria-hidden="true">group</span>Contacts</button>
+          <button type="button" data-tab="birthdays" aria-label="Birthdays" title="Birthdays"><span class="material-symbols-outlined" aria-hidden="true">cake</span><span class="nav-label">Birthdays</span></button>
+          <button type="button" data-tab="contacts" aria-label="Contacts" title="Contacts"><span class="material-symbols-outlined" aria-hidden="true">group</span><span class="nav-label">Contacts</span></button>
           <span class="nav-group-label">Your collection</span>
-          <button type="button" data-tab="files"><span class="material-symbols-outlined" aria-hidden="true">folder_open</span>Files</button>
-          <button type="button" data-tab="budget"><span class="material-symbols-outlined" aria-hidden="true">account_balance_wallet</span>Budget</button>
-          <button type="button" data-tab="drive" hidden><span class="material-symbols-outlined" aria-hidden="true">edit_note</span>Notes</button>
-          <button type="button" data-tab="vault"><span class="material-symbols-outlined" aria-hidden="true">lock</span>Vault</button>
+          <button type="button" data-tab="files" aria-label="Files" title="Files"><span class="material-symbols-outlined" aria-hidden="true">folder_open</span><span class="nav-label">Files</span></button>
+          <button type="button" data-tab="budget" aria-label="Budget" title="Budget"><span class="material-symbols-outlined" aria-hidden="true">account_balance_wallet</span><span class="nav-label">Budget</span></button>
+          <button type="button" data-tab="drive" hidden aria-label="Notes" title="Notes"><span class="material-symbols-outlined" aria-hidden="true">edit_note</span><span class="nav-label">Notes</span></button>
+          <button type="button" data-tab="vault" aria-label="Vault" title="Vault"><span class="material-symbols-outlined" aria-hidden="true">lock</span><span class="nav-label">Vault</span></button>
         </nav>
         <div class="sidebar-footer">
           <a class="portfolio-return" href="../">View portfolio <span aria-hidden="true">↗</span></a>
@@ -108,11 +109,11 @@
       </header>
 
       <div class="workspace-content">
-      <div class="workspace-topbar"><p>PERSONAL <span aria-hidden="true">/</span> <span id="workspace-current-page">Overview</span></p><button class="icon-btn" type="button" id="theme-toggle" aria-label="Switch to light theme" title="Switch theme"><span class="material-symbols-outlined" aria-hidden="true">light_mode</span></button></div>
+      <div class="workspace-topbar"><p>PERSONAL <span aria-hidden="true">/</span> <span id="workspace-current-page">Overview</span></p><div class="topbar-tools"><button type="button" class="workspace-search-trigger" id="workspace-search-trigger" aria-label="Search workspace"><span class="material-symbols-outlined" aria-hidden="true">search</span><span>Search anything</span><kbd>⌘ K</kbd></button><span class="workspace-private"><i></i> Private workspace</span><button class="icon-btn" type="button" id="theme-toggle" aria-label="Switch to light theme" title="Switch theme"><span class="material-symbols-outlined" aria-hidden="true">light_mode</span></button></div></div>
       <main class="portal-main" id="portal-main" tabindex="-1">
         <!-- ---------- OVERVIEW ---------- -->
         <section class="portal-tab" aria-label="Overview" id="tab-overview" data-tab-panel="overview">
-          <div class="overview-heading"><div><p class="workspace-eyebrow">YOUR DAY, AT A GLANCE</p><h1 id="overview-greeting">Welcome back, Aiden.</h1><p>Make room for what matters today.</p></div><a class="button ghost" href="#todos" data-goto-tab="todos">Open tasks <span aria-hidden="true">↗</span></a></div>
+          <div class="overview-heading"><div><p class="workspace-eyebrow">YOUR DAY, AT A GLANCE</p><h1 id="overview-greeting">Welcome back, Aiden.</h1><p>Your life, a little more organized.</p></div><a class="button ghost" href="#todos" data-goto-tab="todos">Open tasks <span aria-hidden="true">↗</span></a></div>
           <div class="universal-search">
             <div class="universal-search-bar">
               <span class="material-symbols-outlined" aria-hidden="true">auto_awesome</span>
@@ -131,6 +132,15 @@
           </div>
 
           <div class="overview-top">
+            <div class="workspace-summary overview-card" aria-label="Workspace summary">
+              <div class="overview-card-header"><h2>Your workspace</h2><span class="dashboard-chip">AT A GLANCE</span></div>
+              <div class="workspace-metrics">
+                <a href="#todos" data-goto-tab="todos"><span class="metric-symbol mint material-symbols-outlined" aria-hidden="true">checklist</span><div><span>Open tasks</span><strong id="metric-tasks">—</strong></div></a>
+                <a href="#todos" data-goto-tab="todos"><span class="metric-symbol lilac material-symbols-outlined" aria-hidden="true">task_alt</span><div><span>Completed</span><strong id="metric-completed">—</strong></div></a>
+                <a href="#files" data-goto-tab="files"><span class="metric-symbol blue material-symbols-outlined" aria-hidden="true">folder_open</span><div><span>Saved files</span><strong id="metric-files">—</strong></div></a>
+                <a href="#contacts" data-goto-tab="contacts"><span class="metric-symbol peach material-symbols-outlined" aria-hidden="true">group</span><div><span>Your people</span><strong id="metric-contacts">—</strong></div></a>
+              </div>
+            </div>
             <div class="overview-card overview-clock" id="overview-clock" role="button" tabindex="0" aria-label="View world clock">
               <p class="overview-date" id="overview-date">—</p>
               <p class="overview-time" id="overview-time">—</p>
@@ -145,6 +155,7 @@
             </div>
           </div>
 
+          <section class="workspace-focus overview-card"><div class="overview-card-header"><h2>A little progress, every day</h2><a href="#todos" data-goto-tab="todos">Manage tasks ↗</a></div><div id="workspace-focus-grid" class="workspace-focus-grid"><p class="entry-empty">Your task overview will appear when it syncs.</p></div></section>
           <div class="overview-section-label"><span>On your radar</span><span>TODAY &amp; COMING UP</span></div>
           <div class="overview-grid">
             <div class="overview-card">
