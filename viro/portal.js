@@ -4019,14 +4019,24 @@ function updateCalendarConnectionUI() {
 const calendarConnectBtn = document.getElementById('calendar-connect-btn');
 const calendarConnectError = document.getElementById('calendar-connect-error');
 
-calendarConnectBtn.addEventListener('click', () => {
+let activeCalendarCodeClient = null;
+
+function calendarPopupErrorMessage(type) {
+  if (type === 'popup_failed_to_open') return 'Google popup could not open (popup_failed_to_open). Allow popups for aidenyue.com, then reconnect.';
+  if (type === 'popup_closed') return 'Google closed before returning authorization (popup_closed). The calendar was not reconnected. If Google showed an error in the popup, that message identifies the cause.';
+  return 'Google sign-in could not return authorization (unknown popup error). The calendar was not reconnected.';
+}
+
+function startCalendarConnection() {
   if (!hasPortalSession()) return;
   calendarConnectError.hidden = true;
   const connectingUser = currentUser;
+  let receivedOAuthResponse = false;
 
   if (typeof google === 'undefined' || !google.accounts?.oauth2) {
     calendarConnectError.hidden = false;
     calendarConnectError.textContent = 'Google sign-in script hasn’t loaded yet — check your connection and try again.';
+    if (calendarConnected) calendarSyncStatus(calendarConnectError.textContent, true);
     return;
   }
 
@@ -4036,15 +4046,16 @@ calendarConnectBtn.addEventListener('click', () => {
     // and read every calendar you have, not only the primary one.
     scope: 'https://www.googleapis.com/auth/calendar',
     ux_mode: 'popup',
-    access_type: 'offline',
-    prompt: 'consent',
-    error_callback: () => {
+    select_account: true,
+    error_callback: (error) => {
+      if (receivedOAuthResponse || activeCalendarCodeClient !== codeClient || currentUser !== connectingUser || !hasPortalSession()) return;
       calendarConnectError.hidden = false;
-      calendarConnectError.textContent = 'Google sign-in was closed or blocked. Allow the popup and click Reconnect Google again.';
+      calendarConnectError.textContent = calendarPopupErrorMessage(error?.type);
       if (calendarConnected) calendarSyncStatus(calendarConnectError.textContent, true);
     },
     callback: async (response) => {
-      if (!hasPortalSession() || currentUser !== connectingUser) return;
+      if (activeCalendarCodeClient !== codeClient || !hasPortalSession() || currentUser !== connectingUser) return;
+      receivedOAuthResponse = true;
       if (response.error) {
         calendarConnectError.hidden = false;
         calendarConnectError.textContent = 'Google sign-in was cancelled or failed. Try again.';
@@ -4070,8 +4081,11 @@ calendarConnectBtn.addEventListener('click', () => {
       }
     }
   });
+  activeCalendarCodeClient = codeClient;
   codeClient.requestCode();
-});
+}
+
+calendarConnectBtn.addEventListener('click', startCalendarConnection);
 
 document.getElementById('calendar-disconnect-btn').addEventListener('click', () => {
   confirmAction(
@@ -4210,7 +4224,7 @@ function calendarSyncStatus(message, failed = false) {
 }
 
 document.getElementById('calendar-retry-btn').addEventListener('click', loadWeekEvents);
-document.getElementById('calendar-reconnect-btn').addEventListener('click', () => calendarConnectBtn.click());
+document.getElementById('calendar-reconnect-btn').addEventListener('click', startCalendarConnection);
 
 async function loadWeekEvents() {
   if (!calendarConnected) return;
