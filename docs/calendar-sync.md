@@ -22,3 +22,20 @@ If the error instead says OAuth configuration needs attention, verify GOOGLE_CLI
 References:
 - https://developers.google.com/identity/oauth2/web/guides/use-code-model
 - https://developers.google.com/identity/protocols/oauth2
+
+## Full-page sign-in fallback
+
+When the Google popup closes without returning authorization, use **Use full-page sign-in**. This preserves existing events and uses a dedicated callback with one-time, 15-minute, user-bound session state. The callback removes its query string before loading Firebase and exchanges the code only for the signed-in portal owner. Tokens are never persisted in browser storage.
+
+Before using it:
+1. Open https://console.cloud.google.com/auth/clients?project=aidenyue and select the Web application client matching GOOGLE_CLIENT_ID in viro/firebase-config.js.
+2. Under **Authorized redirect URIs** (not JavaScript origins), add exactly `https://aidenyue.com/viro/calendar-connect/` including the trailing slash. Keep existing entries. Save.
+3. Pull this commit and deploy `googleCalendarConnect`:
+
+```sh
+git pull --ff-only
+npm --prefix functions ci
+npx firebase-tools deploy --only functions:googleCalendarConnect --project aidenyue
+```
+
+Then reload Calendar and click **Use full-page sign-in**. Select the Google account and approve Calendar access. Google returns to the callback and then Calendar. Verify events load and Retry succeeds. A `redirect_uri_mismatch` means step 2 is missing or does not match exactly. This deployment does not itself reconnect the user's Google account; interactive consent is required.
