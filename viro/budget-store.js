@@ -26,6 +26,8 @@ export function createBudgetStore(db,uid){
    if((old.revision||0)!==expectedRevision)throw Error('This transaction changed elsewhere. Close and reopen Edit to load the latest version.');
    if(value.kind!==old.kind)throw Error('The transaction type cannot be changed.');
    const fields={title:value.title,amount:value.amount,date:value.date,account:value.account,category:value.category,notes:value.notes};
+   if(old.kind==='income')fields.expected=value.expected===true;
+   if(old.kind==='adjustment')fields.direction=value.direction;
    if(old.kind==='payment')fields.billId=value.billId||'';
    let original,originalRef;
    if(old.kind==='expense'&&(old.refunded||0)>0){

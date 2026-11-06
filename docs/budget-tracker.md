@@ -48,3 +48,12 @@ Active entries have an Edit button with their existing title, amount, date, acco
 Every edit archives its previous version in `users/{uid}/budgetEntries/{id}/revisions/{revisionNumber}`, accessible through **Edit history**. Existing private-owner rules cover these paths. A revision check prevents an older edit form overwriting changes from another tab. Revisions remain separate from the ordinary log export.
 
 **Delete** hides an accidental transaction from the visible log and reverses its effect exactly once. The underlying entry is marked deleted/voided and remains in the private JSON export, including its edit revisions in the backend. Delete associated refunds first before deleting their original purchase. Deleting an already-voided entry only hides it; it does not reverse its effects twice. Deleting a wishlist purchase restores that wishlist item.
+
+
+## Expected income and corrections
+
+Money in now offers Received or Expected. Expected entries may have future dates and appear in a separate list across all months; they never increase cash, monthly income, or wishlist affordability. Mark received opens the same entry for the actual date and amount, preserving revision history and preventing stale duplicate receipt.
+
+Correct balance accepts the current checking balance or card debt (including negative balances/card credits). It records the difference from the loaded ledger as a dated adjustment, without changing income/spending totals or statement reminders. Corrections can be edited, voided, or deleted. No Firebase rule changes are required.
+
+The obsolete earlier-spending button is removed; existing prior-spending data is preserved. Loading text clears once data arrives. Compact controls retain labels/tooltips and touch targets. Bank logos embedded in the UI are derived from Chase and American Express official website favicons.
