@@ -1,3 +1,4 @@
+import { mountContactPhotos } from './contact-photos.js';
 import { safeResourceUrl, sanitizeRichHtml } from './content-security.js';
 import { originalUploadMetadata, downloadOriginal } from '../shared/original-files.js';
 import { initFileSharing } from './file-sharing.js';
@@ -1432,7 +1433,7 @@ function renderContacts() {
             ${hasDetails ? 'role="button" tabindex="0"' : ''}
             aria-expanded="${expanded}"
           >
-            <span class="contact-initials" aria-hidden="true">${escapeHtml(c.name.trim().split(/\s+/).slice(0,2).map(p=>p[0]||'').join('').toUpperCase())}</span><div class="entry-main">
+            <span class="contact-initials" data-contact-photo="${escapeHtml(c.id)}" aria-hidden="true">${escapeHtml(c.name.trim().split(/\s+/).slice(0,2).map(p=>p[0]||'').join('').toUpperCase())}</span><div class="entry-main">
               <div class="entry-title">
                 ${escapeHtml(c.name)}
                 ${c.company ? `<span class="entry-meta contact-company">${escapeHtml(c.company)}</span>` : ''}
@@ -1456,6 +1457,7 @@ function renderContacts() {
       `;
     })
     .join('');
+  mountContactPhotos(list, items);
 }
 
 const aiContactSearchBtn = document.getElementById('ai-contact-search-btn');
