@@ -1,3 +1,4 @@
+import { beginCalendarRedirect } from './calendar-redirect.js';
 import { mountContactPhotos } from './contact-photos.js';
 import { safeResourceUrl, sanitizeRichHtml } from './content-security.js';
 import { originalUploadMetadata, downloadOriginal } from '../shared/original-files.js';
@@ -4016,6 +4017,19 @@ function updateCalendarConnectionUI() {
   document.getElementById('calendar-connected-view').hidden = !calendarConnected;
 }
 
+function startCalendarRedirect() {
+  if (!hasPortalSession()) return;
+  try {
+    location.assign(beginCalendarRedirect({origin:location.origin, uid:currentUser.uid, clientId:GOOGLE_CLIENT_ID, storage:sessionStorage, crypto:window.crypto}));
+  } catch (error) {
+    const message = error.message || 'Full-page sign-in could not start.';
+    calendarConnectError.hidden = false;
+    calendarConnectError.textContent = message;
+    if (calendarConnected) calendarSyncStatus(message, true);
+  }
+}
+document.getElementById('calendar-redirect-btn').addEventListener('click', startCalendarRedirect);
+document.getElementById('calendar-redirect-retry-btn').addEventListener('click', startCalendarRedirect);
 const calendarConnectBtn = document.getElementById('calendar-connect-btn');
 const calendarConnectError = document.getElementById('calendar-connect-error');
 

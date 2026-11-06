@@ -278,7 +278,7 @@ exports.googleCalendarConnect = onCall({ secrets: [googleClientSecret], cors: tr
   if (!code) throw new HttpsError('invalid-argument', 'Missing authorization code.');
 
   const popupOrigin = redirectUri || 'https://aidenyue.com';
-  if (!['https://aidenyue.com', 'https://www.aidenyue.com', 'https://mrantivity.github.io'].includes(popupOrigin)) {
+  if (!['https://aidenyue.com', 'https://www.aidenyue.com', 'https://mrantivity.github.io', 'https://aidenyue.com/viro/calendar-connect/', 'https://www.aidenyue.com/viro/calendar-connect/', 'https://mrantivity.github.io/viro/calendar-connect/'].includes(popupOrigin)) {
     throw new HttpsError('invalid-argument', 'Unsupported calendar sign-in origin.');
   }
   const { ok, data } = await exchangeGoogleCode(code, popupOrigin);
