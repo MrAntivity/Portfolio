@@ -1,10 +1,14 @@
+import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-functions.js';
 import { collection, doc, getDocs, onSnapshot, runTransaction, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js';
 import { validateSettings, validateEntry, validateBill } from './budget-model.js';
 export function createBudgetStore(db,uid){
+ const manageSubscriptions=httpsCallable(getFunctions(db.app,'us-central1'),'manageBudgetSubscriptions');
  const settings=doc(db,'users',uid,'budget','settings');
  const entries=collection(db,'users',uid,'budgetEntries'),wishes=collection(db,'users',uid,'budgetWishlist');
  return {
-  subscribe(callback,error){let state={settings:undefined,entries:undefined,wishes:undefined};const update=(k,v)=>{state[k]=v;if(Object.values(state).every(v=>v!==undefined))callback({...state});};const stops=[onSnapshot(settings,s=>update('settings',s.exists()?s.data():null),error),onSnapshot(entries,s=>update('entries',s.docs.map(d=>({...d.data(),id:d.id}))),error),onSnapshot(wishes,s=>update('wishes',s.docs.map(d=>({...d.data(),id:d.id}))),error)];return()=>stops.forEach(f=>f());},
+  async subscription(value,id,revision=0){await manageSubscriptions({action:"save",value,id,revision});},
+  async syncSubscriptions(){await manageSubscriptions({action:"sync"});},
+  subscribe(callback,error){let state={settings:undefined,entries:undefined,wishes:undefined,subscriptions:undefined};const update=(k,v)=>{state[k]=v;if(Object.values(state).every(v=>v!==undefined))callback({...state});};const stops=[onSnapshot(collection(db,'users',uid,'budgetSubscriptions'),s=>update('subscriptions',s.docs.map(d=>({...d.data(),id:d.id}))),error),onSnapshot(settings,s=>update('settings',s.exists()?s.data():null),error),onSnapshot(entries,s=>update('entries',s.docs.map(d=>({...d.data(),id:d.id}))),error),onSnapshot(wishes,s=>update('wishes',s.docs.map(d=>({...d.data(),id:d.id}))),error)];return()=>stops.forEach(f=>f());},
   async setup(value){validateSettings(value);await runTransaction(db,async tx=>{const snap=await tx.get(settings);if(snap.exists())throw Error('A budget already exists. Use Plan settings instead.');tx.set(settings,{...value,createdAt:serverTimestamp()});});},
   async plan(values){await runTransaction(db,async tx=>{const snap=await tx.get(settings);if(!snap.exists())throw Error('Set up your budget first.');const next={...snap.data(),...values};validateSettings(next);tx.update(settings,{monthlyIncome:next.monthlyIncome,livingBudget:next.livingBudget,rentBudget:next.rentBudget,rentFee:next.rentFee,cushion:next.cushion});});},
   async earlierSpending(values){await runTransaction(db,async tx=>{const snap=await tx.get(settings);if(!snap.exists())throw Error('Set up your budget first.');const next={...snap.data(),priorRent:values.priorRent,priorLiving:values.priorLiving};validateSettings(next);tx.update(settings,{priorRent:next.priorRent,priorLiving:next.priorLiving,earlierSpendingUpdatedAt:serverTimestamp()});});},

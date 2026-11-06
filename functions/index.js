@@ -360,3 +360,6 @@ exports.transcribeLecture = require('./lectures').transcribeLecture;
 
 exports.manageFileShares = require('./file-sharing').manageFileShares;
 exports.fileShareAccess = require('./file-sharing').fileShareAccess;
+
+exports.manageBudgetSubscriptions = require('./budget-subscriptions').manageBudgetSubscriptions;
+exports.recordSubscriptionRenewals = require('./budget-subscriptions').recordSubscriptionRenewals;
