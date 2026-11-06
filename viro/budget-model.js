@@ -3,8 +3,10 @@ export const CATEGORIES = ['Food', 'Groceries', 'School', 'Transport', 'Shopping
 export const money = n => new Intl.NumberFormat('en-US', {style:'currency',currency:'USD'}).format(n/100);
 export const today = () => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
 export function cents(value) {
-  const text=String(value).trim();
-  if(!/^\d+(\.\d{1,2})?$/.test(text)) throw Error('Enter a positive dollar amount with at most two decimal places.');
+  let text=String(value).trim().replace(/^\$\s*/, '');
+  if(!/^(?:(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d{0,2})?|\.\d{1,2})$/.test(text)) throw Error('Use a dollar amount such as 1400, 1,400.00, or $1,400.00 (at most two decimal places).');
+  text=text.replace(/,/g, '');
+  if(text.startsWith('.'))text='0'+text;
   const [a,b='']=text.split('.'),n=Number(a)*100+Number(b.padEnd(2,'0'));
   if(!Number.isSafeInteger(n)||n>1000000000) throw Error('Amount is too large.');
   return n;
