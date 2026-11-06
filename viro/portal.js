@@ -1,7 +1,10 @@
 import { originalUploadMetadata, downloadOriginal } from '../shared/original-files.js';
 import { initFileSharing } from './file-sharing.js';
 import { convertHeicPhoto, isHeicPhoto } from '../shared/heic.js';
-import { initLectures } from './lectures.js';
+import { mountBudget } from './budget.js';
+import { createBudgetStore } from './budget-store.js';
+// Hidden at the owner's request; existing notes and recordings are retained.
+const NOTES_ENABLED = false;
 import { firebaseConfig, PORTAL_ACCOUNT_EMAIL, GOOGLE_CLIENT_ID, GOOGLE_PLACES_API_KEY } from './firebase-config.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js';
 import {
@@ -39,7 +42,8 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 const functions = getFunctions(app);
-const lectureStudio = initLectures({ auth, db, storage, functions });
+const lectureStudio = NOTES_ENABLED ? (await import('./lectures.js')).initLectures({ auth, db, storage, functions }) : { isBusy: () => false };
+let stopBudget = null;
 const callAiAssist = httpsCallable(functions, 'aiAssist');
 const callGoogleCalendarConnect = httpsCallable(functions, 'googleCalendarConnect');
 const callGoogleCalendarToken = httpsCallable(functions, 'googleCalendarToken');
@@ -319,6 +323,7 @@ onAuthStateChanged(auth, async (user) => {
 
 logoutBtn.addEventListener('click', async () => {
   if (lectureStudio.isBusy()) { alert('Finish the lecture and wait for audio sync and AI processing before signing out.'); return; }
+  stopBudget?.(); stopBudget = null;
   unsubscribers.forEach((unsub) => unsub());
   unsubscribers.length = 0;
   encryptionKey = null;
@@ -362,6 +367,8 @@ function enterPortal() {
 }
 
 function startPortal() {
+  stopBudget?.();
+  stopBudget = mountBudget(document.getElementById('budget-root'), createBudgetStore(db, currentUser.uid));
   applyTabFromHash(true);
   startClock();
   startWeather();
@@ -403,8 +410,9 @@ function requestTabSwitch(tabName, onArrive) {
 // Each tab switch gets its own history entry (via the URL hash) so the
 // browser's back/forward buttons step between tabs instead of leaving the
 // portal entirely after the very first switch.
-const PORTAL_TAB_NAMES = ['overview', 'birthdays', 'todos', 'vault', 'files', 'drive', 'calendar', 'contacts'];
-const PORTAL_TAB_LABELS = { overview: 'Overview', birthdays: 'Birthdays', todos: 'Tasks', vault: 'Vault', files: 'Files', drive: 'Notes', calendar: 'Calendar', contacts: 'Contacts' };
+const PORTAL_TAB_NAMES = ['overview', 'birthdays', 'todos', 'vault', 'files', 'budget', ...(NOTES_ENABLED ? ['drive'] : []), 'calendar', 'contacts'];
+document.querySelector('[data-tab="drive"]').hidden = !NOTES_ENABLED;
+const PORTAL_TAB_LABELS = { overview: 'Overview', birthdays: 'Birthdays', todos: 'Tasks', vault: 'Vault', files: 'Files', budget: 'Budget', drive: 'Notes', calendar: 'Calendar', contacts: 'Contacts' };
 const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
 const portalHeader = document.querySelector('.portal-header');
 
@@ -798,7 +806,7 @@ function subscribeCollections() {
     })
   );
 
-  unsubscribers.push(
+  if (NOTES_ENABLED) unsubscribers.push(
     onSnapshot(userCollection('noteFolders'), (snap) => {
       noteFolders = snap.docs
         .map((d) => ({ id: d.id, ...d.data() }))
@@ -808,7 +816,7 @@ function subscribeCollections() {
     })
   );
 
-  unsubscribers.push(
+  if (NOTES_ENABLED) unsubscribers.push(
     onSnapshot(userCollection('notes'), (snap) => {
       notes = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       renderNotes();
@@ -3622,7 +3630,7 @@ function buildGlobalSearchItems() {
     });
   });
 
-  notes.forEach((n) => {
+  if (NOTES_ENABLED) notes.forEach((n) => {
     items.push({
       id: n.id,
       type: 'note',
