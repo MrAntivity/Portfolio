@@ -39,3 +39,5 @@ export function dateLabel(start, end = '') {
   try { return end && end !== start ? `${format(start)} — ${format(end)}` : format(start); } catch { return 'Date not added'; }
 }
 export function photoPath(tripId, uid, photoId) { return `tripPhotos/${tripId}/${uid}/${photoId}.jpg`; }
+
+export function googleMapsUrl(lat, lng) { return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${Number(lat)},${Number(lng)}`)}`; }

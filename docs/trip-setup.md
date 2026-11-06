@@ -74,3 +74,5 @@ Relevance matches every search word and prioritizes name matches, then address m
 Data lives in `placeCollections/{collectionId}`, its `places/{placeId}` subcollection, and each place's `photos/{photoId}` subcollection. Image objects live in `collectionPhotos/{collectionId}/{placeId}/{uid}/{photoId}.jpg`. Firestore and Storage enforce owner-only writes, reserved uploads, and public reading of completed photos. Removing a place or collection cleans up its photo objects and child documents before deleting the parent. Existing trip and private portal policies are preserved.
 
 Collection links use `#collection=<id>` and the collection list uses `#collections`. Do not publish local test fixtures or preview login stubs.
+
+Collection place editors accept multiple dropped photos anywhere in the open editor, as well as file-picker selections. Batches append up to the existing 20-photo limit; invalid batches preserve the current queue. All trip and collection location links open Google Maps using the saved coordinates.

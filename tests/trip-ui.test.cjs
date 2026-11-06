@@ -51,7 +51,7 @@ test('journal filters, opens details, shows excursions, navigates photos and the
   assert.equal(cover.hidden,true); assert.equal(cover.parentElement.querySelector('.cover-placeholder').hidden,false);
   const search=p.doc.querySelector('#search'); search.value='Kyoto'; search.dispatchEvent(new p.w.Event('input')); assert.equal(p.doc.querySelectorAll('.trip-card').length,1);
   p.doc.querySelector('[data-open-trip]').click(); await p.flush();
-  assert.match(p.doc.querySelector('#detail-title').textContent,/long way/); assert.equal(p.doc.querySelectorAll('.excursion').length,2);
+  assert.match(p.doc.querySelector('#detail-title').textContent,/long way/); const mapLink=new URL(p.doc.querySelector('.detail-location a').href); assert.equal(mapLink.hostname,'www.google.com'); assert.equal(mapLink.searchParams.get('query'),'35.0116,135.7681'); assert.equal(p.doc.querySelectorAll('.excursion').length,2);
   p.doc.querySelector('[data-view-photo]').click(); await p.flush(); assert.equal(p.doc.querySelector('#lightbox').open,true); assert.equal(p.doc.querySelector('#photo-position').textContent,'1 / 4');
   p.doc.querySelector('#next-photo').click(); await p.flush(); assert.equal(p.doc.querySelector('#photo-position').textContent,'2 / 4');
   p.doc.querySelector('#theme-toggle').click(); assert.equal(p.doc.body.dataset.theme,'light');

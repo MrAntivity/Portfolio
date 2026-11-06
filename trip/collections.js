@@ -1,4 +1,4 @@
-import { escapeHtml as h, validateFiles } from './model.js';
+import { escapeHtml as h, validateFiles, googleMapsUrl } from './model.js';
 import { validateCollection, validatePlace, sortPlaces } from './collections-model.js';
 import { createMap, pinIcon, findPlaces } from './map.js';
 import { preparePhoto } from './photos.js';
@@ -93,7 +93,7 @@ export function initCollections({ api, toast, showDialog }) {
   function renderPlace() {
     if(!activePlace) return;const p=activePlace;
     $('#place-title').textContent=p.name;
-    $('#place-info').innerHTML=`<p class="place-rating">${p.rating?`${p.rating} / 5 ★`:'Not rated yet'}</p><p class="place-address">${h(p.address)}</p><a class="place-map-link" href="https://www.openstreetmap.org/?mlat=${p.lat}&mlon=${p.lng}#map=16/${p.lat}/${p.lng}" target="_blank" rel="noopener noreferrer">Open location ↗</a><p class="place-full-notes">${h(p.notes || 'No notes yet.')}</p>`;editorControls();
+    $('#place-info').innerHTML=`<p class="place-rating">${p.rating?`${p.rating} / 5 ★`:'Not rated yet'}</p><p class="place-address">${h(p.address)}</p><a class="place-map-link" href="${h(googleMapsUrl(p.lat,p.lng))}" target="_blank" rel="noopener noreferrer">Open location ↗</a><p class="place-full-notes">${h(p.notes || 'No notes yet.')}</p>`;editorControls();
   }
   function renderGallery() {
     $('#place-gallery-status').textContent=gallery.length?`${gallery.length} photos`:'No photos yet.';
@@ -118,7 +118,7 @@ export function initCollections({ api, toast, showDialog }) {
     if(fly)picker.setView([lat,lng],15);
   }
   function openPlaceForm(p=null) {
-    if(!editing || busy || !selected)return;placeForm.reset();files=[];placeEditId=p?.id || null;savedPlaceId=null;searchGeneration++;
+    if(!editing || busy || !selected)return;placeForm.reset();files=[];renderPendingPhotos();placeEditId=p?.id || null;savedPlaceId=null;searchGeneration++;
     $('#place-form-title').textContent=p?'Edit place':'Add place';$('#place-form-error').textContent='';$('#place-progress').hidden=true;$('#collection-location-query').value='';$('#collection-location-results').textContent='';
     if(p)for(const key of ['name','address','notes','lat','lng','rating'])placeForm.elements[key].value=p[key] ?? '';
     showDialog($('#place-form-dialog'));
@@ -133,7 +133,35 @@ export function initCollections({ api, toast, showDialog }) {
   };
   $('#collection-location-query').onkeydown=event=>{if(event.key==='Enter'){event.preventDefault();$('#collection-location-find').click();}};
   $('#collection-location-results').onclick=event=>{const button=event.target.closest('[data-location-result]');if(!button || !editing || busy)return;const p=results[Number(button.dataset.locationResult)];if(!p)return;placeForm.elements.name.value=p.name || p.locationLabel;placeForm.elements.address.value=p.address;setPin(p.lat,p.lng,true);$('#collection-location-results').textContent='Location selected. Adjust the name, pin, rating, or notes, then save.';};
-  $('#place-files').onchange=event=>{try{const chosen=[...event.target.files];validateFiles(chosen);files=chosen;$('#place-form-error').textContent='';}catch(error){event.target.value='';files=[];$('#place-form-error').textContent=fail(error);}};
+  const placeFormDialog=$('#place-form-dialog'), uploadBox=$('#place-upload-box');
+  function renderPendingPhotos() {
+    $('#place-file-count').textContent=files.length ? `${files.length} photo${files.length===1?'':'s'} ready to upload: ${files.map(file=>file.name).join(', ')}` : 'Drop multiple photos here or anywhere in this editor. You can add more before saving.';
+  }
+  function appendPhotos(incoming) {
+    if(!editing || busy) return;
+    try {
+      if(!incoming.length) throw new Error('Drop photo files, rather than a folder or link.');
+      const combined=[...files,...incoming];validateFiles(combined);files=combined;
+      $('#place-form-error').textContent='';renderPendingPhotos();
+    }catch(error){$('#place-form-error').textContent=fail(error);}
+  }
+  $('#place-files').onchange=event=>{const chosen=[...event.target.files];if(chosen.length)appendPhotos(chosen);event.target.value='';};
+  const hasFiles=event=>[...(event.dataTransfer?.types || [])].includes('Files');
+  placeFormDialog.addEventListener('dragover',event=>{
+    if(!hasFiles(event))return;event.preventDefault();event.stopPropagation();
+    const allowed=editing && !busy && placeFormDialog.open;
+    uploadBox.classList.toggle('drag-over',allowed);event.dataTransfer.dropEffect=allowed?'copy':'none';
+  });
+  placeFormDialog.addEventListener('dragleave',event=>{if(!event.relatedTarget || !placeFormDialog.contains(event.relatedTarget))uploadBox.classList.remove('drag-over');});
+  placeFormDialog.addEventListener('drop',event=>{
+    if(!hasFiles(event))return;event.preventDefault();event.stopPropagation();uploadBox.classList.remove('drag-over');
+    if(!placeFormDialog.open || !editing)return;
+    if(busy){toast('Wait for the current upload to finish.');return;}
+    appendPhotos([...event.dataTransfer.files]);
+  });
+  document.addEventListener('dragend',()=>uploadBox.classList.remove('drag-over'));
+  placeFormDialog.addEventListener('close',()=>uploadBox.classList.remove('drag-over'));
+  renderPendingPhotos();
   placeForm.onsubmit=async event=>{
     event.preventDefault();if(!editing || busy || !selected)return;const button=$('#place-save'),id=selected.id;
     try{
@@ -141,7 +169,7 @@ export function initCollections({ api, toast, showDialog }) {
       for(const el of placeForm.elements)el.disabled=true;
       const placeId=savedPlaceId || placeEditId || api.newPlaceId(id);await api.savePlace(id,placeId,values,Boolean(savedPlaceId || placeEditId));savedPlaceId=placeId;
       const total=files.length;let done=0;$('#place-progress').hidden=!total;
-      while(files.length){button.textContent=`Uploading ${done+1} of ${total}…`;const photo=await preparePhoto(files[0]);await api.uploadPlacePhoto(id,placeId,photo.blob,photo,fraction=>{$('#place-progress').value=(done+fraction)/total*100;});files.shift();done++;}
+      while(files.length){button.textContent=`Uploading ${done+1} of ${total}…`;const photo=await preparePhoto(files[0]);await api.uploadPlacePhoto(id,placeId,photo.blob,photo,fraction=>{$('#place-progress').value=(done+fraction)/total*100;});files.shift();done++;renderPendingPhotos();}
       $('#place-form-dialog').close();toast('Place saved.');
     }catch(error){$('#place-form-error').textContent=`${savedPlaceId?'Place saved. ':''}${fail(error)}${files.length && savedPlaceId?' Retry to upload the remaining photos.':''}`;}
     finally{busy=false;for(const el of placeForm.elements)el.disabled=false;button.textContent='Save place';$('#place-progress').hidden=true;}
