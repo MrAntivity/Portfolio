@@ -5024,7 +5024,7 @@ async function startWeather() {
       try {
         const [weatherRes, placeRes] = await Promise.all([
           fetch(
-            `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=fahrenheit&timezone=auto`
+            `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&hourly=temperature_2m,apparent_temperature,weather_code,precipitation_probability,wind_speed_10m,wind_gusts_10m&wind_speed_unit=mph&temperature_unit=fahrenheit&timezone=auto`
           ),
           fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`)
         ]);
@@ -5057,38 +5057,33 @@ async function startWeather() {
   );
 }
 
+function weatherHourlyHtml(date) {
+  const hourly=weatherCache?.hourly;
+  if(!hourly?.time?.length)return '<p class="weather-hourly-empty">Hourly forecast is unavailable. Refresh to try again.</p>';
+  const value=(n,suffix)=>n==null||!Number.isFinite(Number(n))?'—':`${Math.round(n)}${suffix}`;
+  const rows=hourly.time.flatMap((stamp,i)=>{
+    if(stamp.slice(0,10)!==date)return [];
+    const hour=Number(stamp.slice(11,13));const label=`${hour%12||12} ${hour<12?'AM':'PM'}`;
+    const code=hourly.weather_code?.[i];const wind=hourly.wind_speed_10m?.[i];
+    const condition=WEATHER_CODES[code]||'Unavailable';
+    return [`<tr><th scope="row">${label}</th><td><strong>${value(hourly.temperature_2m?.[i],'°F')}</strong><small>Feels ${value(hourly.apparent_temperature?.[i],'°')}</small></td><td><span class="weather-hour-condition"><span class="material-symbols-outlined" aria-hidden="true">${WEATHER_ICONS[code]||'cloud'}</span>${escapeHtml(condition)}${wind>=20?' · Windy':''}</span></td><td>${value(hourly.precipitation_probability?.[i],'%')}</td><td>${value(wind,' mph')}<small>Gusts ${value(hourly.wind_gusts_10m?.[i],' mph')}</small></td></tr>`];
+  });
+  return rows.length?`<div class="weather-hourly-scroll" tabindex="0" role="region" aria-label="Hourly forecast"><table class="weather-hourly-table"><thead><tr><th>Time</th><th>Temperature</th><th>Conditions</th><th>Rain chance</th><th>Wind</th></tr></thead><tbody>${rows.join('')}</tbody></table></div>`:'<p>Hourly forecast is unavailable for this day.</p>';
+}
+
 function openWeatherWeekModal() {
-  if (!weatherCache?.daily) return;
-  const { time, weather_code: codes, temperature_2m_max: maxes, temperature_2m_min: mins, precipitation_probability_max: rain } =
-    weatherCache.daily;
-
-  const cardsHtml = time
-    .map((dateStr, i) => {
-      const d = new Date(`${dateStr}T00:00`);
-      const isToday = i === 0;
-      const rainChance = rain?.[i] || 0;
-      return `
-        <div class="weather-week-day ${isToday ? 'is-today' : ''}">
-          <p class="weather-week-day-name">${isToday ? 'Today' : d.toLocaleDateString(undefined, { weekday: 'short' })}</p>
-          <span class="material-symbols-outlined weather-week-icon" aria-hidden="true">${WEATHER_ICONS[codes[i]] || 'cloud'}</span>
-          <p class="weather-week-desc">${escapeHtml(WEATHER_CODES[codes[i]] || 'Unknown')}</p>
-          <p class="weather-week-temp"><span class="weather-week-max">${Math.round(maxes[i])}°</span><span class="weather-week-min">${Math.round(mins[i])}°</span></p>
-          <p class="weather-week-rain ${rainChance >= 30 ? 'is-notable' : ''}">
-            <span class="material-symbols-outlined" aria-hidden="true">water_drop</span>${rainChance}%
-          </p>
-        </div>
-      `;
-    })
-    .join('');
-
-  openModal(
-    `
-    <h2>This week’s weather</h2>
-    <div class="weather-week-grid">${cardsHtml}</div>
-  `,
-    null,
-    'modal--wide'
-  );
+  if (!weatherCache?.daily?.time?.length) return;
+  const daily=weatherCache.daily;
+  const dates=daily.time;
+  const cards=dates.map((date,i)=>`<button type="button" class="weather-day-choice" data-weather-day="${date}" aria-pressed="${i===0}"><span>${i===0?'Today':new Date(date+'T12:00').toLocaleDateString(undefined,{weekday:'short'})}</span><small>${new Date(date+'T12:00').toLocaleDateString(undefined,{month:'short',day:'numeric'})}</small><span class="material-symbols-outlined" aria-hidden="true">${WEATHER_ICONS[daily.weather_code[i]]||'cloud'}</span><strong>${Math.round(daily.temperature_2m_max[i])}° <span>${Math.round(daily.temperature_2m_min[i])}°</span></strong></button>`).join('');
+  openModal(`<h2>Weather forecast</h2><p class="weather-forecast-location">${escapeHtml(document.getElementById('weather-loc').textContent)} · °F · Times in ${escapeHtml(weatherCache.timezone||'local time')}</p><div class="weather-day-selector" role="group" aria-label="Choose forecast day">${cards}</div><h3 id="weather-hourly-title">Today · Hour by hour</h3><div id="weather-hourly">${weatherHourlyHtml(dates[0])}</div>`,root=>{
+    root.querySelectorAll('[data-weather-day]').forEach(button=>button.addEventListener('click',()=>{
+      const date=button.dataset.weatherDay;
+      root.querySelectorAll('[data-weather-day]').forEach(other=>other.setAttribute('aria-pressed',String(other===button)));
+      root.querySelector('#weather-hourly-title').textContent=(date===dates[0]?'Today':new Date(date+'T12:00').toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'}))+' · Hour by hour';
+      root.querySelector('#weather-hourly').innerHTML=weatherHourlyHtml(date);
+    }));
+  },'modal--wide');
 }
 
 const overviewWeatherEl = document.getElementById('overview-weather');
