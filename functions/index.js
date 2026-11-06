@@ -363,3 +363,4 @@ exports.fileShareAccess = require('./file-sharing').fileShareAccess;
 
 exports.manageBudgetSubscriptions = require('./budget-subscriptions').manageBudgetSubscriptions;
 exports.recordSubscriptionRenewals = require('./budget-subscriptions').recordSubscriptionRenewals;
+exports.budgetChat = require('./budget-chat').budgetChat;
