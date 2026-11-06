@@ -224,7 +224,7 @@ function setTheme(theme) {
   themeToggleBtn?.setAttribute('aria-pressed', String(theme === 'light'));
   const icon = themeToggleBtn?.querySelector('.material-symbols-outlined');
   if (icon) icon.textContent = theme === 'dark' ? 'light_mode' : 'dark_mode';
-  document.querySelector('meta[name="theme-color"]').content = theme === 'light' ? '#f3f2ee' : '#090909';
+  document.querySelector('meta[name="theme-color"]').content = theme === 'light' ? '#f3f5fa' : '#171923';
 }
 
 const savedTheme = window.localStorage?.getItem(THEME_STORAGE_KEY);
@@ -367,6 +367,8 @@ function enterPortal() {
 }
 
 function startPortal() {
+  summaryLoaded.clear();
+  renderWorkspaceSummary();
   stopBudget?.();
   stopBudget = mountBudget(document.getElementById('budget-root'), createBudgetStore(db, currentUser.uid));
   applyTabFromHash(true);
@@ -413,6 +415,7 @@ function requestTabSwitch(tabName, onArrive) {
 const PORTAL_TAB_NAMES = ['overview', 'birthdays', 'todos', 'vault', 'files', 'budget', ...(NOTES_ENABLED ? ['drive'] : []), 'calendar', 'contacts'];
 document.querySelector('[data-tab="drive"]').hidden = !NOTES_ENABLED;
 const PORTAL_TAB_LABELS = { overview: 'Overview', birthdays: 'Birthdays', todos: 'Tasks', vault: 'Vault', files: 'Files', budget: 'Budget', drive: 'Notes', calendar: 'Calendar', contacts: 'Contacts' };
+document.getElementById('workspace-search-trigger').addEventListener('click', () => requestTabSwitch('overview', () => document.getElementById('universal-search-input').focus()));
 const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
 const portalHeader = document.querySelector('.portal-header');
 
@@ -755,6 +758,18 @@ function userDoc(name, id) {
   return doc(db, 'users', currentUser.uid, name, id);
 }
 
+const summaryLoaded = new Set();
+function renderWorkspaceSummary() {
+  const tasks = Object.values(todos).flat();
+  const counts = { tasks: tasks.filter(t => !t.completed).length, completed: tasks.filter(t => t.completed).length, files: files.length, contacts: contacts.length };
+  for (const [key, count] of Object.entries(counts)) document.getElementById('metric-' + key).textContent = summaryLoaded.has(key === 'completed' || key === 'tasks' ? 'todos' : key) ? count : '—';
+  document.getElementById('workspace-focus-grid').innerHTML = summaryLoaded.has('todos') ? Object.entries(todos).map(([category, items]) => {
+    const completed = items.filter(t => t.completed).length, percent = items.length ? Math.round(completed / items.length * 100) : 0;
+    const label = {school:'School', personal:'Personal', business:'Business'}[category];
+    return `<a class="focus-category focus-${category}" href="#todos" data-goto-tab="todos"><div><span>${label}</span><strong>${items.length - completed}<small> open</small></strong></div><div class="focus-track" role="img" aria-label="${completed} of ${items.length} ${label} tasks completed"><i style="width:${percent}%"></i></div><small>${items.length ? `${completed} of ${items.length} completed` : 'A clear slate'}</small></a>`;
+  }).join('') : '<p class="entry-empty">Your task overview will appear when it syncs.</p>';
+}
+
 function subscribeCollections() {
   unsubscribers.push(
     onSnapshot(userCollection('birthdays'), (snap) => {
@@ -773,6 +788,7 @@ function subscribeCollections() {
       });
       renderTodos();
       renderOverviewTodos();
+      summaryLoaded.add('todos'); renderWorkspaceSummary();
     })
   );
 
@@ -787,6 +803,7 @@ function subscribeCollections() {
     onSnapshot(userCollection('contacts'), (snap) => {
       contacts = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       renderContacts();
+      summaryLoaded.add('contacts'); renderWorkspaceSummary();
     })
   );
 
@@ -802,6 +819,7 @@ function subscribeCollections() {
   unsubscribers.push(
     onSnapshot(userCollection('files'), (snap) => {
       files = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      summaryLoaded.add('files'); renderWorkspaceSummary();
       renderFiles();
     })
   );
