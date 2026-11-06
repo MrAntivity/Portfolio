@@ -49,3 +49,11 @@ test('photo ownership, reservations and immutable metadata protect shared upload
  await assertFails(uploadBytes(ref(a.storage(),metadata.storagePath),bytes,{contentType:'image/jpeg'}));
  await assertFails(updateDoc(photoRef,{uploaderName:'Impersonation'}));
 });
+test('browser cannot extract Google refresh tokens or forge connection status',async()=>{
+ const owner=env.authenticatedContext('owner',{email:'aiden@viro.local'}).firestore();
+ await env.withSecurityRulesDisabled(async context=>{await setDoc(doc(context.firestore(),'users','owner','googleCalendar','connection'),{refreshToken:'test-only'});await setDoc(doc(context.firestore(),'users','owner','googleCalendar','status'),{connected:true});});
+ await assertFails(getDoc(doc(owner,'users','owner','googleCalendar','connection')));
+ await assertFails(setDoc(doc(owner,'users','owner','googleCalendar','connection'),{refreshToken:'forged'}));
+ await assertSucceeds(getDoc(doc(owner,'users','owner','googleCalendar','status')));
+ await assertFails(updateDoc(doc(owner,'users','owner','googleCalendar','status'),{connected:false}));
+});

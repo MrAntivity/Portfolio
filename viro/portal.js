@@ -1,3 +1,4 @@
+import { safeResourceUrl, sanitizeRichHtml } from './content-security.js';
 import { originalUploadMetadata, downloadOriginal } from '../shared/original-files.js';
 import { initFileSharing } from './file-sharing.js';
 import { convertHeicPhoto, isHeicPhoto } from '../shared/heic.js';
@@ -12,7 +13,6 @@ import {
   signInWithEmailAndPassword,
   EmailAuthProvider,
   reauthenticateWithCredential,
-  createUserWithEmailAndPassword,
   onAuthStateChanged,
   signOut
 } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js';
@@ -92,9 +92,7 @@ async function deriveKey(pin, saltB64) {
     { name: 'PBKDF2', salt: b64ToBuf(saltB64), iterations: 150000, hash: 'SHA-256' },
     baseKey,
     { name: 'AES-GCM', length: 256 },
-    // Extractable so it can be persisted for "stay logged in on this device"
-    // (see persistSessionKey) — the trade-off is spelled out there.
-    true,
+    false,
     ['encrypt', 'decrypt']
   );
 }
@@ -126,39 +124,12 @@ async function getOrCreateSalt(uid) {
   return saltB64;
 }
 
-/* ==================== remembered session ==================== */
-/* So a refresh doesn't ask for the PIN again on this device. Firebase Auth
-   already persists its own session by default; this additionally persists
-   the derived AES key so the vault can still decrypt without re-entering
-   the PIN. Trade-off: anyone with access to this browser's local storage
-   (not just anyone who finds the URL) could extract this key and, combined
-   with the already-persisted Firebase session, read the vault — that's the
-   cost of "stay logged in on this computer." Logging out clears it. */
-
-const SESSION_KEY_STORAGE = 'viro-session-key';
-
-async function persistSessionKey(key) {
-  const raw = await crypto.subtle.exportKey('raw', key);
-  window.localStorage.setItem(SESSION_KEY_STORAGE, bufToB64(raw));
-}
-
-async function restoreSessionKey() {
-  const b64 = window.localStorage.getItem(SESSION_KEY_STORAGE);
-  if (!b64) return null;
-  try {
-    return await crypto.subtle.importKey('raw', b64ToBuf(b64), { name: 'AES-GCM' }, false, [
-      'encrypt',
-      'decrypt'
-    ]);
-  } catch (err) {
-    console.error(err);
-    return null;
-  }
-}
-
+// Remove keys saved by older versions. Vault keys now exist only in memory
+// after a fresh password verification, never in persistent browser storage.
 function clearSessionKey() {
-  window.localStorage.removeItem(SESSION_KEY_STORAGE);
+  window.localStorage.removeItem('viro-session-key');
 }
+clearSessionKey();
 
 /* ==================== state ==================== */
 
@@ -265,10 +236,8 @@ loginForm.addEventListener('submit', async (event) => {
 
   try {
     const user = await loginWithPin(pin);
-    const saltB64 = await getOrCreateSalt(user.uid);
-    encryptionKey = await deriveKey(pin, saltB64);
+    encryptionKey = null;
     currentUser = user;
-    await persistSessionKey(encryptionKey);
     pinInput.value = '';
     enterPortal();
   } catch (err) {
@@ -284,43 +253,31 @@ loginForm.addEventListener('submit', async (event) => {
 });
 
 async function loginWithPin(pin) {
-  try {
-    // First run: no account exists yet, so this PIN becomes the password.
-    const cred = await createUserWithEmailAndPassword(auth, PORTAL_ACCOUNT_EMAIL, pin);
-    return cred.user;
-  } catch (err) {
-    if (err.code === 'auth/email-already-in-use') {
-      const cred = await signInWithEmailAndPassword(auth, PORTAL_ACCOUNT_EMAIL, pin);
-      return cred.user;
-    }
-    throw err;
-  }
+  const cred = await signInWithEmailAndPassword(auth, PORTAL_ACCOUNT_EMAIL, pin);
+  return cred.user;
 }
 
-// Resumes an existing session on page load (e.g. after a refresh) so the PIN
-// only has to be entered once per device, until Log out is pressed. Skips
-// itself entirely while a manual PIN submit is in flight to avoid a race
-// where this fires mid-login and signs the user right back out.
+// Resume Firebase login without restoring a vault encryption key.
+// Vault access still requires fresh verification.
 onAuthStateChanged(auth, async (user) => {
-  if (manualLoginInProgress || currentUser) return;
+  if (manualLoginInProgress) return;
 
   if (!user) {
+    lockVault();
+    currentUser = null;
+    portalEl.hidden = true;
     loginScreen.hidden = false;
     return;
   }
 
-  const storedKey = await restoreSessionKey();
-  if (!storedKey) {
-    // Authenticated but we don't have the key to decrypt the vault (e.g.
-    // storage was cleared on this device) — force a clean re-login instead
-    // of leaving the portal in a half-usable state.
+  if (currentUser) return;
+  if (user.email !== PORTAL_ACCOUNT_EMAIL) {
     await signOut(auth);
     loginScreen.hidden = false;
     return;
   }
-
   currentUser = user;
-  encryptionKey = storedKey;
+  encryptionKey = null;
   enterPortal();
 });
 
@@ -329,7 +286,7 @@ logoutBtn.addEventListener('click', async () => {
   stopBudget?.(); stopBudget = null;
   unsubscribers.forEach((unsub) => unsub());
   unsubscribers.length = 0;
-  encryptionKey = null;
+  lockVault();
   currentUser = null;
   calendarConnected = false;
   calendarLoadVersion++;
@@ -512,10 +469,13 @@ function openVaultUnlockPrompt(onSuccess) {
         submit.disabled = true;
         submit.textContent = 'Checking…';
         try {
-          const credential = EmailAuthProvider.credential(user.email || PORTAL_ACCOUNT_EMAIL, input.value.trim());
+          const secret = input.value.trim();
+          const credential = EmailAuthProvider.credential(user.email || PORTAL_ACCOUNT_EMAIL, secret);
           await reauthenticateWithCredential(user, credential);
+          const key = await deriveKey(secret, await getOrCreateSalt(user.uid));
           // A closed prompt or a changed session must not navigate into Vault.
           if (!form.isConnected || currentUser !== user) return;
+          encryptionKey = key;
           vaultUnlocked = true;
           closeModal();
           onSuccess();
@@ -538,7 +498,15 @@ function openVaultUnlockPrompt(onSuccess) {
   );
 }
 
+function lockVault() {
+  vaultUnlocked = false;
+  encryptionKey = null;
+  revealedVaultPayloads.clear();
+  document.querySelectorAll('[data-vault-fields]').forEach(el => { el.replaceChildren(); el.hidden = true; });
+}
+
 function switchTab(tabName) {
+  if (tabName !== 'vault') lockVault();
   document.querySelectorAll('.portal-tab').forEach((panel) => {
     panel.hidden = panel.dataset.tabPanel !== tabName;
   });
@@ -1192,7 +1160,7 @@ function renderVault() {
       (v) => `
         <article class="entry-card" data-id="${v.id}">
           <div class="entry-main">
-            <div class="entry-title">${escapeHtml(v.name)} <span class="tag tag--personal">${VAULT_TYPES[v.type]?.label || v.type}</span></div>
+            <div class="entry-title">${escapeHtml(v.name)} <span class="tag tag--personal">${escapeHtml(VAULT_TYPES[v.type]?.label || v.type)}</span></div>
             <div class="vault-fields" data-vault-fields="${v.id}" hidden></div>
           </div>
           <div class="entry-actions">
@@ -1214,6 +1182,8 @@ document.getElementById('vault-search').addEventListener('input', renderVault);
 const revealedVaultPayloads = new Map();
 
 document.getElementById('vault-list').addEventListener('click', async (event) => {
+  if (!vaultUnlocked || !encryptionKey) return;
+  const activeKey = encryptionKey;
   const copyBtn = event.target.closest('[data-copy-vault]');
   if (copyBtn) {
     const payload = revealedVaultPayloads.get(copyBtn.dataset.copyVault);
@@ -1235,7 +1205,8 @@ document.getElementById('vault-list').addEventListener('click', async (event) =>
     }
     const entry = vaultEntries.find((v) => v.id === id);
     try {
-      const payload = await decryptPayload(encryptionKey, entry.iv, entry.ciphertext);
+      const payload = await decryptPayload(activeKey, entry.iv, entry.ciphertext);
+      if (!vaultUnlocked || encryptionKey !== activeKey) return;
       revealedVaultPayloads.set(id, payload);
       const def = VAULT_TYPES[entry.type];
       fieldsEl.innerHTML = def.fields
@@ -1269,7 +1240,8 @@ document.getElementById('vault-list').addEventListener('click', async (event) =>
   if (editBtn) {
     const entry = vaultEntries.find((v) => v.id === editBtn.dataset.editVault);
     try {
-      const payload = await decryptPayload(encryptionKey, entry.iv, entry.ciphertext);
+      const payload = await decryptPayload(activeKey, entry.iv, entry.ciphertext);
+      if (!vaultUnlocked || encryptionKey !== activeKey) return;
       openVaultForm(entry.type, { id: entry.id, name: entry.name, payload });
     } catch (err) {
       console.error(err);
@@ -1354,6 +1326,7 @@ function openVaultTypePicker() {
 }
 
 function openVaultForm(type, existing = null) {
+  if (!vaultUnlocked || !encryptionKey) return;
   const def = VAULT_TYPES[type];
   openModal(
     `
@@ -1378,7 +1351,10 @@ function openVaultForm(type, existing = null) {
         def.fields.forEach((f) => {
           payload[f.key] = (form.get(f.key) || '').trim();
         });
-        const { iv, ciphertext } = await encryptPayload(encryptionKey, payload);
+        if (!vaultUnlocked || !encryptionKey) return;
+        const key = encryptionKey, user = currentUser;
+        const { iv, ciphertext } = await encryptPayload(key, payload);
+        if (!vaultUnlocked || key !== encryptionKey || user !== currentUser) return;
         if (existing) {
           revealedVaultPayloads.delete(existing.id);
           await updateDoc(userDoc('vault', existing.id), { name, iv, ciphertext });
@@ -1848,7 +1824,7 @@ function renderFiles() {
             multi
               ? ''
               : `<div class="file-card-actions">
-                  <a data-original-download class="icon-btn icon-btn--sm" href="${escapeHtml(pages[0]?.downloadURL || '')}" target="_blank" rel="noopener" download="${escapeHtml(pages[0]?.fileName || f.name)}" aria-label="Download">
+                  <a data-original-download class="icon-btn icon-btn--sm" href="${escapeHtml(safeResourceUrl(pages[0]?.downloadURL))}" target="_blank" rel="noopener" download="${escapeHtml(pages[0]?.fileName || f.name)}" aria-label="Download">
                     <span class="material-symbols-outlined">download</span>
                   </a>
                 </div>`
@@ -2398,13 +2374,13 @@ function previewBodyHtml(page, entryName) {
 
   switch (kind) {
     case 'image':
-      return `<img class="preview-image" src="${escapeHtml(page.previewURL || page.downloadURL)}" alt="${escapeHtml(entryName)}" data-preview-media />`;
+      return `<img class="preview-image" src="${escapeHtml(safeResourceUrl(page.previewURL || page.downloadURL))}" alt="${escapeHtml(entryName)}" data-preview-media />`;
     case 'pdf':
-      return `<iframe class="preview-frame" src="${escapeHtml(page.downloadURL)}" title="${escapeHtml(entryName)}"></iframe>`;
+      return `<iframe sandbox="" referrerpolicy="no-referrer" class="preview-frame" src="${escapeHtml(safeResourceUrl(page.downloadURL))}" title="${escapeHtml(entryName)}"></iframe>`;
     case 'video':
-      return `<video class="preview-video" src="${escapeHtml(page.downloadURL)}" controls data-preview-media></video>`;
+      return `<video class="preview-video" src="${escapeHtml(safeResourceUrl(page.downloadURL))}" controls data-preview-media></video>`;
     case 'audio':
-      return `<audio class="preview-audio" src="${escapeHtml(page.downloadURL)}" controls data-preview-media></audio>`;
+      return `<audio class="preview-audio" src="${escapeHtml(safeResourceUrl(page.downloadURL))}" controls data-preview-media></audio>`;
     case 'design':
       return fallbackPreviewHtml(
         'palette',
@@ -2606,7 +2582,7 @@ const editorStatus = document.getElementById('editor-status');
 
 function stripHtml(html) {
   const div = document.createElement('div');
-  div.innerHTML = html || '';
+  div.innerHTML = sanitizeRichHtml(html);
   return div.textContent || '';
 }
 
@@ -3040,7 +3016,7 @@ document.getElementById('add-note-btn').addEventListener('click', async () => {
 function openNoteEditor(note) {
   currentNoteId = note.id;
   editorTitleInput.value = note.title || '';
-  editorSurface.innerHTML = note.contentHtml || '';
+  editorSurface.innerHTML = sanitizeRichHtml(note.contentHtml);
   editorFolderSelect.value = note.folderId || '';
   editorStatus.textContent = '';
   driveListView.hidden = true;
@@ -3547,7 +3523,7 @@ aiMenuDropdown.querySelectorAll('[data-ai-task]').forEach((btn) => {
         if (hasSelection) {
           document.execCommand('insertHTML', false, result);
         } else {
-          editorSurface.innerHTML = result;
+          editorSurface.innerHTML = sanitizeRichHtml(result);
         }
       } else if (hasSelection) {
         document.execCommand('insertText', false, result);

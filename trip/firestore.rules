@@ -10,8 +10,10 @@ service cloud.firestore {
     match /users/{uid} {
       allow read, write: if privateOwner(uid);
       match /{collectionName}/{document=**} {
-        allow read, write: if privateOwner(uid) && collectionName != 'lectures';
+        allow read, write: if privateOwner(uid) && collectionName != 'lectures' && collectionName != 'googleCalendar';
       }
+      // Refresh tokens and connection state are written only by the backend.
+      match /googleCalendar/status { allow read: if privateOwner(uid); }
       match /lectures/{lectureId} {
         allow read: if privateOwner(uid);
         allow create: if privateOwner(uid) && request.resource.data.keys().hasOnly(lectureFields());
