@@ -4,6 +4,7 @@ import { safeResourceUrl, sanitizeRichHtml } from './content-security.js';
 import { originalUploadMetadata, downloadOriginal } from '../shared/original-files.js';
 import { initFileSharing } from './file-sharing.js';
 import { convertHeicPhoto, isHeicPhoto } from '../shared/heic.js';
+import { createPreferences } from './preferences.js';
 import { mountBudget } from './budget.js';
 import { createBudgetStore } from './budget-store.js';
 // Hidden at the owner's request; existing notes and recordings are retained.
@@ -46,6 +47,7 @@ const storage = getStorage(app);
 const functions = getFunctions(app);
 const lectureStudio = NOTES_ENABLED ? (await import('./lectures.js')).initLectures({ auth, db, storage, functions }) : { isBusy: () => false };
 let stopBudget = null;
+let layoutPreferences = null;
 const callAiAssist = httpsCallable(functions, 'aiAssist');
 const callGoogleCalendarConnect = httpsCallable(functions, 'googleCalendarConnect');
 const callGoogleCalendarToken = httpsCallable(functions, 'googleCalendarToken');
@@ -275,6 +277,7 @@ onAuthStateChanged(auth, async (user) => {
     document.body.classList.remove('modal-open');
     portalEl.inert = false;
     stopBudget?.(); stopBudget = null;
+    layoutPreferences?.dispose(); layoutPreferences = null;
     unsubscribers.splice(0).forEach((unsubscribe) => unsubscribe());
     loginScreen.hidden = false;
     if (user) await signOut(auth);
@@ -290,6 +293,7 @@ onAuthStateChanged(auth, async (user) => {
 logoutBtn.addEventListener('click', async () => {
   if (lectureStudio.isBusy()) { alert('Finish the lecture and wait for audio sync and AI processing before signing out.'); return; }
   stopBudget?.(); stopBudget = null;
+    layoutPreferences?.dispose(); layoutPreferences = null;
   unsubscribers.forEach((unsub) => unsub());
   unsubscribers.length = 0;
   lockVault();
@@ -347,7 +351,19 @@ function startPortal() {
   summaryLoaded.clear();
   renderWorkspaceSummary();
   stopBudget?.();
-  stopBudget = mountBudget(document.getElementById('budget-root'), createBudgetStore(db, currentUser.uid));
+  layoutPreferences?.dispose();
+  const preferenceCollection=collection(db,'users',currentUser.uid,'uiPreferences');
+  layoutPreferences=createPreferences({
+    watch:(next,error)=>onSnapshot(preferenceCollection,snapshot=>{document.getElementById('preferences-sync-error')?.remove();next(Object.fromEntries(snapshot.docs.map(item=>[item.id,item.data().collapsed])));},error),
+    write:(key,collapsed)=>setDoc(doc(preferenceCollection,key),{collapsed}),
+    onError:()=>{
+      let notice=document.getElementById('preferences-sync-error');
+      if(!notice){notice=document.createElement('p');notice.id='preferences-sync-error';notice.setAttribute('role','status');notice.className='preferences-sync-error';document.querySelector('.workspace-topbar').after(notice);}
+      notice.textContent='Could not sync your layout preferences. Check your connection and try again.';
+    }
+  });
+  layoutPreferences.subscribe(()=>{renderTodos();renderContacts();});
+  stopBudget = mountBudget(document.getElementById('budget-root'), createBudgetStore(db, currentUser.uid),layoutPreferences);
   applyTabFromLocation(true);
   startClock();
   startWeather();
@@ -1029,7 +1045,7 @@ function renderTodos() {
   const today = toIsoDate(new Date());
   Object.keys(todos).forEach(category => {
     const container = document.querySelector(`[data-todo-list="${category}"]`);
-    const wasOpen = container.querySelector('details')?.open || false;
+    const wasOpen = !layoutPreferences?.get('tasks-completed-'+category,true);
     const items = [...todos[category]].sort((a,b) => (a.deadline || '9999').localeCompare(b.deadline || '9999'));
     const active = items.filter(t => !t.completed), completed = items.filter(t => t.completed);
     const heading = container.closest('.todo-column').querySelector('h3');
@@ -1039,6 +1055,12 @@ function renderTodos() {
       <div class="entry-main"><div class="entry-title">${escapeHtml(item.title)}</div>${item.deadline?`<p class="task-due ${!item.completed&&item.deadline<today?'is-overdue':''}"><span class="material-symbols-outlined" aria-hidden="true">schedule</span>${item.deadline===today?'Today':new Date(item.deadline+'T00:00').toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}${!item.completed&&item.deadline<today?' · Overdue':''}</p>`:''}${item.description?`<p class="entry-desc">${escapeHtml(item.description)}</p>`:''}</div>
       <div class="entry-actions"><button type="button" class="icon-btn" data-edit-todo="${escapeHtml(item.id)}" data-category="${category}" aria-label="Edit ${escapeHtml(item.title)}" title="Edit"><span class="material-symbols-outlined" aria-hidden="true">edit</span></button><button type="button" class="icon-btn" data-delete-todo="${escapeHtml(item.id)}" data-category="${category}" aria-label="Delete ${escapeHtml(item.title)}" title="Delete"><span class="material-symbols-outlined" aria-hidden="true">delete</span></button></div></article>`;
     container.innerHTML = `<div class="task-active-list">${active.map(row).join('')||'<p class="task-clear"><span class="material-symbols-outlined" aria-hidden="true">done_all</span>All clear. Add a task when you need one.</p>'}</div>${completed.length?`<details class="task-completed" ${wasOpen?'open':''}><summary>Completed <span>${completed.length}</span></summary><div>${completed.map(row).join('')}</div></details>`:''}`;
+    const details=container.querySelector('details');
+    if(details)details.addEventListener('toggle',()=>{
+      if(!details.isConnected)return;
+      const key='tasks-completed-'+category;
+      if(layoutPreferences&&layoutPreferences.get(key,true)!==!details.open)layoutPreferences.set(key,!details.open);
+    });
   });
 }
 
@@ -1404,7 +1426,7 @@ function openVaultForm(type, existing = null) {
 
 /* ==================== contacts ==================== */
 
-const expandedContactIds = new Set();
+
 
 function renderContacts() {
   const list = document.getElementById('contact-list');
@@ -1450,7 +1472,7 @@ function renderContacts() {
         })
         .join(', ');
 
-      const expanded = expandedContactIds.has(c.id);
+      const expanded = !layoutPreferences?.get('contact-'+c.id,true);
       const hasDetails = metaBits.length > 0 || !!urlLinks;
 
       return `
@@ -1610,11 +1632,7 @@ document.getElementById('contact-list').addEventListener('click', (event) => {
   const toggleBtn = event.target.closest('[data-toggle-contact]');
   if (toggleBtn) {
     const id = toggleBtn.dataset.toggleContact;
-    if (expandedContactIds.has(id)) {
-      expandedContactIds.delete(id);
-    } else {
-      expandedContactIds.add(id);
-    }
+    layoutPreferences?.set('contact-'+id,!layoutPreferences.get('contact-'+id,true));
     renderContacts();
   }
 });
