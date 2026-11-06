@@ -26,24 +26,31 @@ export function validateBill(b) {
 }
 export function validateEntry(e,s,now=today()) {
   if(!e||!['expense','income','payment','refund'].includes(e.kind)||typeof e.title!=='string'||!e.title.trim()||e.title.length>120||typeof e.notes!=='string'||e.notes.length>2000||!integer(e.amount)||e.amount===0)throw Error('Enter a title and an amount greater than zero.');
-  if(!dateValid(e.date)||e.date<s.startDate||e.date>now)throw Error('Use a transaction date between your opening date and today.');
+  if(!dateValid(e.date)||e.date>now)throw Error('Use a valid transaction date on or before today.');
   if(!Object.hasOwn(ACCOUNTS,e.account)||(e.kind==='income'&&e.account!=='debit')||(e.kind==='payment'&&e.account==='debit'))throw Error('Choose the correct account.');
   if(e.kind==='expense'&&!CATEGORIES.includes(e.category))throw Error('Choose a spending category.');
   return e;
 }
 export function summarize(s,entries,month=today().slice(0,7)) {
-  let bank=s.openingBank,amex=s.openingAmex,chase=s.openingChase,income=0,living=month===s.startDate.slice(0,7)?s.priorLiving:0,rent=month===s.startDate.slice(0,7)?s.priorRent:0;
+  let bank=s.openingBank,amex=s.openingAmex,chase=s.openingChase,income=0,living=0,rent=0,earlierLiving=0,earlierRent=0;
   const categories={},paid={};
   for(const e of entries.filter(e=>!e.voided)){
     const sign=e.kind==='refund'?-1:1;
+    // Opening balances already contain every transaction before startDate.
+    if(e.date>=s.startDate){
     if(e.kind==='income')bank+=e.amount;
     else if(e.kind==='payment'){bank-=e.amount;if(e.account==='amex')amex-=e.amount;else chase-=e.amount;if(e.billId)paid[e.billId]=(paid[e.billId]||0)+e.amount;}
     else{if(e.account==='debit')bank-=sign*e.amount;else if(e.account==='amex')amex+=sign*e.amount;else chase+=sign*e.amount;}
+    }
     if(e.date.slice(0,7)===month){
       if(e.kind==='income')income+=e.amount;
-      if(e.kind==='expense'||e.kind==='refund'){const n=sign*e.amount;if(e.category==='Rent & fees')rent+=n;else living+=n;categories[e.category]=(categories[e.category]||0)+n;}
+      if(e.kind==='expense'||e.kind==='refund'){const n=sign*e.amount;if(e.date<s.startDate){if(e.category==='Rent & fees')earlierRent+=n;else earlierLiving+=n;}else{if(e.category==='Rent & fees')rent+=n;else living+=n;}categories[e.category]=(categories[e.category]||0)+n;}
     }
   }
+  // Earlier detail fills in the aggregate entered at setup, rather than adding it twice.
+  const openingMonth=month===s.startDate.slice(0,7);
+  living+=openingMonth?Math.max(s.priorLiving,earlierLiving):earlierLiving;
+  rent+=openingMonth?Math.max(s.priorRent,earlierRent):earlierRent;
   const debt=Math.max(0,amex)+Math.max(0,chase),remainingLiving=Math.max(0,s.livingBudget-living),remainingRent=Math.max(0,s.rentBudget+s.rentFee-rent);
   return {bank,amex,chase,debt,net:bank-amex-chase,income,living,rent,categories,paid,remainingLiving,remainingRent,comfortable:bank-debt-remainingLiving-remainingRent-s.cushion};
 }

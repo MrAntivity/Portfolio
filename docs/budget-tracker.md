@@ -33,3 +33,7 @@ Notes is hidden behind `NOTES_ENABLED = false` in `viro/portal.js`, with the nav
 ## Tests
 
 `npm --prefix tests test` includes accounting/validation, refund and wishlist transaction tests with a mock transactional store, and DOM flow tests for spending, refunds, plan changes, setup import, failed validation and sign-out cleanup. Tests use synthetic figures. The initial setup file is separately validated without publishing its contents. Actual Firebase/browser smoke testing still requires a signed-in portal session after deployment.
+
+## Backdated entries
+
+Transactions may be dated before the opening date (future dates remain disallowed). These are labeled historical and do not change opening bank/card balances or reduce statements owed at setup. They appear in the log and in spending/income summaries for their actual month. For the opening month, earlier living/rent spending uses the larger of its setup aggregate and its detailed historical total, rather than adding both. Entries on/after the opening date retain normal balance effects, including a later refund of a historical purchase. The date field explains this before saving. Voiding a historical entry removes its summary effect but does not adjust opening balances.
