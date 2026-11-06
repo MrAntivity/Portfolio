@@ -126,3 +126,44 @@ body[data-portal='true'] .login-card .button,body[data-portal='true'] .me-export
 body[data-portal='true'] .sidebar-account{justify-content:center;align-items:center;padding:16px 0 0;gap:0}
 body[data-portal='true'] #logout-btn{display:flex;align-items:center;justify-content:center;width:48px;height:48px;margin:0 auto;border-radius:12px}
 body[data-portal='true'] #logout-btn .material-symbols-outlined{font-size:26px}
+/* Dense lists, readable names, and actions that never force an empty card row. */
+#tab-todos .todo-column{padding:16px;border-top-width:1px}
+#tab-todos .todo-column-header{margin-bottom:6px;padding-bottom:12px}
+#tab-todos .todo-column-header h3{display:flex;align-items:center;gap:8px}
+.list-count{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;border-radius:6px;background:var(--accent-soft);color:var(--accent);font-size:10px}
+#tab-todos .entry-list{display:block}
+#tab-todos .task-row{display:grid;grid-template-columns:25px minmax(0,1fr) auto;align-items:start;gap:10px;padding:15px 0;border:0;border-bottom:1px solid var(--border);border-radius:0;background:transparent;min-height:0}
+#tab-todos .task-row:last-child{border-bottom:0}
+#tab-todos .task-row .entry-main{width:auto;min-width:0}
+#tab-todos .task-row .entry-title{font-size:12px;font-weight:500;line-height:1.6;margin:0}
+#tab-todos .task-row .entry-desc{font-size:11px;margin:5px 0 0;white-space:pre-wrap}
+#tab-todos .task-row .entry-actions{width:auto;margin:0;gap:0;display:flex;flex-wrap:wrap;max-width:60px}
+#tab-todos .task-row .icon-btn{width:28px;height:28px;min-height:28px}
+#tab-todos .task-row .icon-btn .material-symbols-outlined{font-size:17px}
+.task-check{display:flex;align-items:center;justify-content:center;background:none;border:0;color:var(--accent);padding:3px 0;cursor:pointer;width:25px;height:28px}
+.task-check .material-symbols-outlined{font-size:22px}.task-due{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted);margin:5px 0 0}.task-due .material-symbols-outlined{font-size:13px}.task-due.is-overdue{color:#f0b58a}[data-theme='light'] .task-due.is-overdue{color:#9c4d16}
+.task-clear{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:8px;padding:18px 0;margin:0}.task-clear .material-symbols-outlined{font-size:19px;color:var(--mint)}
+.task-completed{border-top:1px solid var(--border);margin-top:8px;padding-top:12px}.task-completed summary{cursor:pointer;font-size:11px;color:var(--muted);padding:5px 0}.task-completed summary span{margin-left:6px;font-variant-numeric:tabular-nums}.task-completed .task-check{color:var(--mint)}
+#birthday-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#birthday-list .birthday-row{display:grid;grid-template-columns:48px minmax(0,1fr) auto;align-items:center;gap:14px;padding:17px;min-height:100px}
+.birthday-date{display:flex;flex-direction:column;align-items:center;justify-content:center;width:48px;height:58px;border-radius:10px;background:var(--accent-soft);color:var(--accent)}.birthday-date span{font-size:9px;text-transform:uppercase;letter-spacing:.08em}.birthday-date strong{font-size:23px;font-weight:550;line-height:1.3}
+#birthday-list .entry-main{width:auto;min-width:0}#birthday-list .entry-title{display:flex;align-items:center;flex-wrap:wrap;gap:7px;line-height:1.5}#birthday-list .entry-meta{margin:6px 0 0;font-size:11px}#birthday-list .entry-actions{gap:0}#birthday-list .entry-actions .icon-btn{width:28px;height:30px}#birthday-list .entry-actions .material-symbols-outlined{font-size:17px}
+#contact-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}
+#contact-list .contact-card{padding:12px;gap:8px;align-items:center;min-height:76px;display:flex;flex-wrap:nowrap}
+#contact-list .contact-card-main{display:flex;gap:12px;align-items:center;min-width:0;padding:3px;border-radius:8px;flex:1}
+.contact-initials{display:flex;align-items:center;justify-content:center;flex:0 0 36px;height:36px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-size:11px;font-weight:600}
+#contact-list .entry-main{min-width:0;width:auto;flex:1}#contact-list .entry-title{display:block;line-height:1.5;font-size:12px}#contact-list .contact-company{display:block;margin:3px 0 0;font-size:10px;line-height:1.5}#contact-list .contact-card-chevron{font-size:17px;flex-shrink:0}#contact-list .entry-actions{gap:0;margin:0}#contact-list .entry-actions .icon-btn{width:28px;height:30px}#contact-list .entry-actions .material-symbols-outlined{font-size:17px}#contact-list .contact-meta{display:flex;flex-direction:column;align-items:flex-start;gap:5px}#contact-list .copyable-field{max-width:100%;overflow-wrap:anywhere}
+#tab-files .folder-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,265px),1fr));gap:10px}
+#tab-files .folder-card{grid-template-columns:34px minmax(0,1fr) 32px;grid-template-rows:auto auto;min-height:76px;padding:14px;gap:3px 12px;align-items:center}
+#tab-files .folder-card-icon{grid-column:1;grid-row:1/3;font-size:28px}#tab-files .folder-card-name{grid-column:2;grid-row:1;font-size:12px;margin:0}#tab-files .folder-card-count{grid-column:2;grid-row:2;font-size:10px}#tab-files .folder-card .share-card-button{grid-column:3;grid-row:1/3}
+#tab-files .share-card-button{display:flex;align-items:center;justify-content:center;width:30px;height:30px;min-height:30px;padding:4px;margin:0;border:0;background:transparent;color:var(--muted)}#tab-files .share-card-button:hover{color:var(--accent);background:var(--accent-soft)}#tab-files .share-card-button .material-symbols-outlined{font-size:18px}
+#tab-files .file-grid{display:grid;grid-template-columns:1fr;gap:0;border:1px solid var(--border);border-radius:12px;background:var(--surface);overflow:hidden}
+#tab-files .file-grid:empty{display:none}
+#tab-files .file-card{display:grid;grid-template-columns:34px minmax(0,1fr) 120px 135px 32px 32px;grid-template-rows:auto;gap:10px;align-items:center;position:relative;padding:13px 16px;border:0;border-bottom:1px solid var(--border);border-radius:0;background:transparent;min-height:64px}
+#tab-files .file-card:last-child{border-bottom:0}#tab-files .file-card:hover{background:var(--surface-hover)}#tab-files .file-card-icon{grid-column:1;grid-row:1;margin:0;width:32px;height:36px;background:var(--accent-soft);color:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center}#tab-files .file-card-icon>.material-symbols-outlined{font-size:21px}#tab-files .file-card-name{grid-column:2;grid-row:1;font-size:12px;margin:0;overflow-wrap:anywhere;white-space:normal}#tab-files .file-card-meta{grid-column:3;grid-row:1;font-size:10px;margin:0;overflow-wrap:anywhere}#tab-files .file-card-date{grid-column:4;grid-row:1;font-size:10px;margin:0;color:var(--muted)}#tab-files .file-card>.share-card-button{grid-column:5;grid-row:1}#tab-files .file-card-actions{grid-column:6;grid-row:1;position:static;display:flex;opacity:1;margin:0}#tab-files .file-card-desc{grid-column:2/5;font-size:11px;margin:0}#tab-files .file-card-pages-badge{position:absolute;top:3px;left:3px;font-size:8px}
+@media(max-width:1100px){#tab-files .file-card{grid-template-columns:34px minmax(0,1fr) 100px 32px 32px}#tab-files .file-card-date{display:none}#tab-files .file-card>.share-card-button{grid-column:4}#tab-files .file-card-actions{grid-column:5}#tab-files .file-card-desc{grid-column:2/4}}
+@media(max-width:700px){#birthday-list,#contact-list{grid-template-columns:1fr}#tab-files .folder-grid{grid-template-columns:1fr}#tab-files .file-card{grid-template-columns:30px minmax(0,1fr) 32px 32px;gap:5px 10px;padding:12px}#tab-files .file-card-name{grid-column:2;grid-row:1}#tab-files .file-card-meta{grid-column:2;grid-row:2}#tab-files .file-card>.share-card-button{grid-column:3;grid-row:1/3}#tab-files .file-card-actions{grid-column:4;grid-row:1/3}#tab-files .file-card-icon{grid-row:1/3}#tab-files .file-card-desc{grid-column:2/5}#birthday-list .birthday-row{padding:14px;gap:10px}}
+@media(pointer:coarse){#tab-todos .task-row .icon-btn,#birthday-list .entry-actions .icon-btn,#contact-list .entry-actions .icon-btn,#tab-files .share-card-button,.task-check{min-height:44px}#tab-todos .task-row .entry-actions{max-width:60px}}
+
+.calendar-sync-status{display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding:14px 16px;margin-bottom:16px;border:1px solid var(--border);border-radius:10px;background:var(--surface);font-size:12px;color:var(--muted)}
+.calendar-sync-status span{flex:1;min-width:180px}.calendar-sync-status .button{padding:7px 12px;font-size:11px}
