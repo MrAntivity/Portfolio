@@ -182,6 +182,9 @@ let calendarConnected = false;
 let calendarEmail = '';
 let googleAccessToken = null;
 let googleAccessTokenExpiryMs = 0;
+let calendarTokenRequest = null;
+let calendarLoadVersion = 0;
+let calendarSyncReady = false;
 let calendarWeekStart = startOfWeek(new Date());
 let calendarEvents = [];
 let calendarSummaryCache = null;
@@ -328,6 +331,14 @@ logoutBtn.addEventListener('click', async () => {
   unsubscribers.length = 0;
   encryptionKey = null;
   currentUser = null;
+  calendarConnected = false;
+  calendarLoadVersion++;
+  calendarSyncReady = false;
+  calendarEvents = [];
+  calendarList = [];
+  calendarSummaryCache = null;
+  googleAccessToken = null;
+  calendarTokenRequest = null;
   vaultUnlocked = false;
   clearSessionKey();
   await signOut(auth);
@@ -852,6 +863,7 @@ function subscribeCollections() {
   // refresh token, so this is the only way it knows whether it's connected.
   unsubscribers.push(
     onSnapshot(userDoc('googleCalendar', 'status'), (snap) => {
+      if (!snap.exists() && snap.metadata.fromCache) return;
       const wasConnected = calendarConnected;
       calendarConnected = !!snap.data()?.connected;
       calendarEmail = snap.data()?.email || '';
@@ -909,7 +921,7 @@ function renderBirthdays() {
       const next = nextOccurrence(b.date);
       const turning = next.getFullYear() - Number(b.date.split('-')[0]);
       return `
-        <article class="entry-card" data-id="${b.id}">
+        <article class="entry-card birthday-row" data-id="${b.id}"><div class="birthday-date"><span>${next.toLocaleDateString(undefined,{month:'short'})}</span><strong>${next.getDate()}</strong></div>
           <div class="entry-main">
             <div class="entry-title">${escapeHtml(b.name)} <span class="tag tag--personal">${formatDaysUntil(daysUntil(next))}</span></div>
             <p class="entry-meta">${escapeHtml(b.relationship || 'Friend')} · Turning ${turning} · ${next.toLocaleDateString(undefined, { month: 'long', day: 'numeric' })}</p>
@@ -1017,45 +1029,19 @@ document.getElementById('birthday-list').addEventListener('click', (event) => {
 const CATEGORY_LABEL = { school: 'School', personal: 'Personal', business: 'Business' };
 
 function renderTodos() {
-  Object.keys(todos).forEach((category) => {
+  const today = toIsoDate(new Date());
+  Object.keys(todos).forEach(category => {
     const container = document.querySelector(`[data-todo-list="${category}"]`);
-    const items = [...todos[category]].sort((a, b) => {
-      if (a.completed !== b.completed) return a.completed ? 1 : -1;
-      if (a.deadline && b.deadline) return a.deadline.localeCompare(b.deadline);
-      if (a.deadline) return -1;
-      if (b.deadline) return 1;
-      return 0;
-    });
-
-    if (!items.length) {
-      container.innerHTML = '<p class="entry-empty">Nothing here yet.</p>';
-      return;
-    }
-
-    container.innerHTML = items
-      .map(
-        (item) => `
-          <article class="entry-card ${item.completed ? 'todo-done' : ''}" data-id="${item.id}">
-            <div class="entry-main">
-              <div class="entry-title">${escapeHtml(item.title)}</div>
-              ${item.deadline ? `<p class="entry-meta">Due ${new Date(item.deadline + 'T00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</p>` : ''}
-              ${item.description ? `<p class="entry-desc">${escapeHtml(item.description)}</p>` : ''}
-            </div>
-            <div class="entry-actions">
-              <button class="icon-btn" data-toggle-todo="${item.id}" data-category="${category}" aria-label="Toggle complete">
-                <span class="material-symbols-outlined">${item.completed ? 'undo' : 'check'}</span>
-              </button>
-              <button class="icon-btn" data-edit-todo="${item.id}" data-category="${category}" aria-label="Edit">
-                <span class="material-symbols-outlined">edit</span>
-              </button>
-              <button class="icon-btn" data-delete-todo="${item.id}" data-category="${category}" aria-label="Delete">
-                <span class="material-symbols-outlined">delete</span>
-              </button>
-            </div>
-          </article>
-        `
-      )
-      .join('');
+    const wasOpen = container.querySelector('details')?.open || false;
+    const items = [...todos[category]].sort((a,b) => (a.deadline || '9999').localeCompare(b.deadline || '9999'));
+    const active = items.filter(t => !t.completed), completed = items.filter(t => t.completed);
+    const heading = container.closest('.todo-column').querySelector('h3');
+    heading.innerHTML = `${CATEGORY_LABEL[category]} <span class="list-count">${active.length}</span>`;
+    const row = item => `<article class="entry-card task-row ${item.completed?'todo-done':''}" data-id="${escapeHtml(item.id)}">
+      <button type="button" class="task-check" data-toggle-todo="${escapeHtml(item.id)}" data-category="${category}" aria-label="${item.completed?'Reopen':'Complete'} ${escapeHtml(item.title)}" aria-pressed="${!!item.completed}" title="${item.completed?'Reopen task':'Mark complete'}"><span class="material-symbols-outlined" aria-hidden="true">${item.completed?'check_circle':'radio_button_unchecked'}</span></button>
+      <div class="entry-main"><div class="entry-title">${escapeHtml(item.title)}</div>${item.deadline?`<p class="task-due ${!item.completed&&item.deadline<today?'is-overdue':''}"><span class="material-symbols-outlined" aria-hidden="true">schedule</span>${item.deadline===today?'Today':new Date(item.deadline+'T00:00').toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}${!item.completed&&item.deadline<today?' · Overdue':''}</p>`:''}${item.description?`<p class="entry-desc">${escapeHtml(item.description)}</p>`:''}</div>
+      <div class="entry-actions"><button type="button" class="icon-btn" data-edit-todo="${escapeHtml(item.id)}" data-category="${category}" aria-label="Edit ${escapeHtml(item.title)}" title="Edit"><span class="material-symbols-outlined" aria-hidden="true">edit</span></button><button type="button" class="icon-btn" data-delete-todo="${escapeHtml(item.id)}" data-category="${category}" aria-label="Delete ${escapeHtml(item.title)}" title="Delete"><span class="material-symbols-outlined" aria-hidden="true">delete</span></button></div></article>`;
+    container.innerHTML = `<div class="task-active-list">${active.map(row).join('')||'<p class="task-clear"><span class="material-symbols-outlined" aria-hidden="true">done_all</span>All clear. Add a task when you need one.</p>'}</div>${completed.length?`<details class="task-completed" ${wasOpen?'open':''}><summary>Completed <span>${completed.length}</span></summary><div>${completed.map(row).join('')}</div></details>`:''}`;
   });
 }
 
@@ -1470,7 +1456,7 @@ function renderContacts() {
             ${hasDetails ? 'role="button" tabindex="0"' : ''}
             aria-expanded="${expanded}"
           >
-            <div class="entry-main">
+            <span class="contact-initials" aria-hidden="true">${escapeHtml(c.name.trim().split(/\s+/).slice(0,2).map(p=>p[0]||'').join('').toUpperCase())}</span><div class="entry-main">
               <div class="entry-title">
                 ${escapeHtml(c.name)}
                 ${c.company ? `<span class="entry-meta contact-company">${escapeHtml(c.company)}</span>` : ''}
@@ -1801,7 +1787,7 @@ function renderFolderGrid() {
           <span class="material-symbols-outlined folder-card-icon" aria-hidden="true">folder</span>
           <span class="folder-card-name">${escapeHtml(f.name)}</span>
           <span class="folder-card-count">${itemCount ? `${itemCount} item${itemCount === 1 ? '' : 's'}` : 'Empty'}</span>
-          <button class="button ghost share-card-button" type="button" data-share-kind="folder" data-share-target="${f.id}">Share</button>
+          <button class="button ghost share-card-button" type="button" data-share-kind="folder" data-share-target="${f.id}" aria-label="Share ${escapeHtml(f.name)}" title="Share"><span class="material-symbols-outlined" aria-hidden="true">ios_share</span></button>
         </article>
       `;
     })
@@ -1854,7 +1840,7 @@ function renderFiles() {
             ${multi ? `<span class="file-card-pages-badge">${pages.length}</span>` : ''}
           </div>
           <div class="file-card-name">${escapeHtml(f.name)}</div>
-          <button class="button ghost share-card-button" type="button" data-share-kind="file" data-share-target="${f.id}">Share</button>
+          <button class="button ghost share-card-button" type="button" data-share-kind="file" data-share-target="${f.id}" aria-label="Share ${escapeHtml(f.name)}" title="Share"><span class="material-symbols-outlined" aria-hidden="true">ios_share</span></button>
           <p class="file-card-meta">${formatBytes(totalSize(pages))}${multi ? ` · ${pages.length} pages` : ''}${f.folderId ? ` · ${escapeHtml(folderPathLabel(f.folderId))}` : ''}</p>
           ${fileUploadedLabel(f) ? `<p class="file-card-date">Uploaded ${fileUploadedLabel(f)}</p>` : ''}
           ${f.description ? `<p class="file-card-desc">${escapeHtml(f.description)}</p>` : ''}
@@ -4054,10 +4040,15 @@ calendarConnectBtn.addEventListener('click', () => {
       calendarConnectBtn.disabled = true;
       try {
         await callGoogleCalendarConnect({ code: response.code });
-        // The googleCalendar/status listener flips calendarConnected and loads the week.
+        googleAccessToken = null;
+        calendarTokenRequest = null;
+        calendarConnected = true;
+        updateCalendarConnectionUI();
+        loadWeekEvents();
       } catch (err) {
         calendarConnectError.hidden = false;
         calendarConnectError.textContent = err.message || 'Could not connect to Google Calendar.';
+        if (calendarConnected) calendarSyncStatus(calendarConnectError.textContent, true);
       } finally {
         calendarConnectBtn.disabled = false;
       }
@@ -4076,6 +4067,8 @@ document.getElementById('calendar-disconnect-btn').addEventListener('click', () 
       calendarEvents = [];
       calendarSummaryCache = null;
       googleAccessToken = null;
+      calendarLoadVersion++;
+      calendarSyncReady = false;
     }
   );
 });
@@ -4085,13 +4078,21 @@ async function ensureGoogleAccessToken() {
   if (googleAccessToken && now < googleAccessTokenExpiryMs - 60000) {
     return googleAccessToken;
   }
-  const { data } = await callGoogleCalendarToken();
-  googleAccessToken = data.accessToken;
-  googleAccessTokenExpiryMs = now + (data.expiresIn || 3600) * 1000;
-  return googleAccessToken;
+  if (!calendarTokenRequest) {
+    const tokenUser = currentUser;
+    const pending = callGoogleCalendarToken().then(({ data }) => {
+      if (currentUser !== tokenUser) throw new Error('Calendar session changed.');
+      if (!data.accessToken) throw new Error('Calendar authorization expired. Reconnect Google Calendar.');
+      googleAccessToken = data.accessToken;
+      googleAccessTokenExpiryMs = Date.now() + (data.expiresIn || 3600) * 1000;
+      return googleAccessToken;
+    }).finally(() => { if (calendarTokenRequest === pending) calendarTokenRequest = null; });
+    calendarTokenRequest = pending;
+  }
+  return calendarTokenRequest;
 }
 
-async function calendarApiFetch(path, options = {}) {
+async function calendarApiFetch(path, options = {}, retried = false) {
   const token = await ensureGoogleAccessToken();
   const res = await fetch(`https://www.googleapis.com/calendar/v3${path}`, {
     ...options,
@@ -4101,6 +4102,10 @@ async function calendarApiFetch(path, options = {}) {
       ...(options.headers || {})
     }
   });
+  if (res.status === 401 && !retried) {
+    if (googleAccessToken === token) googleAccessToken = null;
+    return calendarApiFetch(path, options, true);
+  }
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw new Error(body.error?.message || 'Google Calendar request failed.');
@@ -4126,9 +4131,20 @@ function updateCalendarWeekLabel() {
 // own, school/work, shared ones, etc.) merged together in the Google
 // Calendar UI - the events API only returns one calendar at a time, so this
 // lists every calendar you have and fetches each one's events in parallel.
+async function calendarApiList(path) {
+  const items = [];
+  let pageToken = '';
+  do {
+    const data = await calendarApiFetch(path + (pageToken ? `${path.includes('?') ? '&' : '?'}pageToken=${encodeURIComponent(pageToken)}` : ''));
+    items.push(...(data.items || []));
+    pageToken = data.nextPageToken || '';
+  } while (pageToken);
+  return items;
+}
+
 async function fetchVisibleCalendars() {
-  const data = await calendarApiFetch('/users/me/calendarList?minAccessRole=freeBusyReader');
-  return (data.items || []).filter((cal) => cal.selected !== false);
+  return (await calendarApiList('/users/me/calendarList?minAccessRole=reader'))
+    .filter((cal) => cal.selected !== false);
 }
 
 // Which calendars to actually draw in the grid is a display-only choice, so
@@ -4170,39 +4186,51 @@ document.getElementById('calendar-filter-chips').addEventListener('click', (even
   renderCalendarGrid();
 });
 
+function calendarSyncStatus(message, failed = false) {
+  const status = document.getElementById('calendar-sync-status');
+  status.hidden = !message;
+  status.querySelector('span').textContent = message;
+  status.querySelectorAll('button').forEach(button => { button.hidden = !failed; });
+}
+
+document.getElementById('calendar-retry-btn').addEventListener('click', loadWeekEvents);
+document.getElementById('calendar-reconnect-btn').addEventListener('click', () => calendarConnectBtn.click());
+
 async function loadWeekEvents() {
   if (!calendarConnected) return;
-  const weekEnd = addDays(calendarWeekStart, 7);
+  const version = ++calendarLoadVersion;
+  const week = calendarWeekStart.toISOString();
+  const user = currentUser;
+  const isCurrent = () => version === calendarLoadVersion && user === currentUser && calendarConnected && week === calendarWeekStart.toISOString();
+  calendarSyncReady = false;
+  calendarSummaryCache = null;
+  document.getElementById('calendar-summary-banner').hidden = true;
+  calendarSyncStatus('Syncing your calendars…');
   const params = new URLSearchParams({
-    timeMin: calendarWeekStart.toISOString(),
-    timeMax: weekEnd.toISOString(),
-    singleEvents: 'true',
-    orderBy: 'startTime',
-    maxResults: '250'
+    timeMin: week, timeMax: addDays(calendarWeekStart, 7).toISOString(),
+    singleEvents: 'true', orderBy: 'startTime', maxResults: '250'
   });
-
   try {
     const calendars = await fetchVisibleCalendars();
+    const results = await Promise.all(calendars.map(async cal =>
+      (await calendarApiList(`/calendars/${encodeURIComponent(cal.id)}/events?${params}`))
+        .map(e => ({ ...e, calendarId: cal.id, calendarColor: cal.backgroundColor }))
+    ));
+    if (!isCurrent()) return;
     calendarList = calendars;
-    renderCalendarFilterChips();
-
-    const results = await Promise.all(
-      calendars.map((cal) =>
-        calendarApiFetch(`/calendars/${encodeURIComponent(cal.id)}/events?${params}`)
-          .then((data) => (data.items || []).map((e) => ({ ...e, calendarId: cal.id, calendarColor: cal.backgroundColor })))
-          .catch((err) => {
-            console.error(`loadWeekEvents failed for calendar ${cal.id}`, err);
-            return [];
-          })
-      )
-    );
     calendarEvents = results.flat();
+    calendarSyncReady = true;
+    renderCalendarFilterChips();
+    renderCalendarGrid();
+    calendarSyncStatus('');
+    maybeLoadTodaySummary();
   } catch (err) {
-    console.error('loadWeekEvents failed', err);
-    calendarEvents = [];
+    if (!isCurrent()) return;
+    // Preserve the last successful result; a failed request is not an empty week.
+    calendarSyncStatus(`Could not sync. Previously loaded events may be out of date. ${err.message || 'Try again.'}`, true);
+    updateOverviewScheduleCard('Calendar sync needs attention. Open Calendar to retry.');
+    renderCalendarGrid();
   }
-  renderCalendarGrid();
-  maybeLoadTodaySummary();
 }
 
 function eventDateIso(e) {
@@ -4481,6 +4509,8 @@ function updateOverviewScheduleCard(summary) {
 }
 
 async function refreshCalendarSummary() {
+  if (!calendarSyncReady) return;
+  const version = calendarLoadVersion;
   const todayIso = toIsoDate(new Date());
   const todaysEvents = calendarEvents
     .filter((e) => eventDateIso(e) === todayIso)
@@ -4497,15 +4527,18 @@ async function refreshCalendarSummary() {
 
   try {
     const summary = (await requestAi('calendar_summary', '', { events: todaysEvents })) || 'Nothing on your calendar today.';
+    if (version !== calendarLoadVersion || !calendarSyncReady) return;
     textEl.textContent = summary;
     calendarSummaryCache = summary;
     updateOverviewScheduleCard(summary);
   } catch (err) {
+    if (version !== calendarLoadVersion || !calendarSyncReady) return;
     textEl.textContent = err.message || 'Could not summarize your day.';
   }
 }
 
 function maybeLoadTodaySummary() {
+  if (!calendarSyncReady) return;
   const isCurrentWeek = toIsoDate(calendarWeekStart) === toIsoDate(startOfWeek(new Date()));
   const banner = document.getElementById('calendar-summary-banner');
   if (!isCurrentWeek) {
