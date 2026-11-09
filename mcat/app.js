@@ -7,8 +7,8 @@ import {
   reviewDue,
   chooseQuestions,
   safeText as h,
-} from "./model.mjs";
-import { flowVisual, labHTML, bindLab, heroArt } from "./visuals.js";
+} from "./model.mjs?v=20261109-2";
+import { flowVisual, labHTML, bindLab, heroArt } from "./visuals.js?v=20261109-2";
 const $ = (s) => document.querySelector(s),
   main = $("#main");
 let curriculum,
@@ -904,8 +904,8 @@ async function connect() {
 try {
   records = readLocal();
   const [response, module] = await Promise.all([
-    fetch("/mcat/curriculum.json"),
-    import("./bank.mjs"),
+    fetch("/mcat/curriculum.json?v=20261109-2"),
+    import("./bank.mjs?v=20261109-2"),
   ]);
   if (!response.ok) throw Error("Curriculum unavailable");
   curriculum = await response.json();
