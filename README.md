@@ -4,15 +4,15 @@ Personal portfolio at **https://aidenyue.com**, hosted from `main` with GitHub P
 
 ## Public site
 
-- `index.html`: biography, current ventures, Asynq Designs, experience, photos, and contact links.
-- `portfolio.css`: responsive monochrome theme and animation styles.
-- `portfolio.js`: scroll animation, theme preference, photo gallery, and the existing view counter.
+- `index.html`: professional introduction, AUREX Medical, selected ventures, Asynq Designs, experience, and contact links.
+- `homepage.css`: dark-first responsive portfolio, light theme, and animation styles. `portfolio.css` remains for the existing error page.
+- `homepage.js`: decorative orbital canvas, scroll-driven product story, reveal animations, and persisted theme preference.
 - `assets/photos/`: optimized WebP versions of Aiden's supplied photographs.
 - `assets/keyboard-basin.webp`: PBTfans Basin product render; source below.
 
-The page is plain HTML, CSS, and JavaScript, with no installation or build step. Edit the files and push to `main`. Navigation and content work without JavaScript; animations respect reduced-motion settings. Short screens show the keyboard story in normal document flow. The gallery supports next/previous buttons, arrow keys, and Escape to close.
+The page is plain HTML, CSS, and JavaScript, with no installation or build step. Edit the files and push to `main`. Navigation and content work without JavaScript; animations respect reduced-motion settings. Short screens show the keyboard story in normal document flow. The professional homepage contains no travel gallery, portal links, or trips links. The direct-link travel journal remains shareable.
 
-Google Fonts supplies Inter and Space Grotesk; system fonts remain available offline. The view counter retains its cached fallback when its external service is unavailable.
+Google Fonts supplies Inter and Space Grotesk; system fonts remain available offline. The decorative canvas pauses offscreen and in background tabs; reduced-motion users see all content without animation.
 
 ## Private portal
 
