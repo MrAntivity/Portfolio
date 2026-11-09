@@ -22,9 +22,34 @@
     document.querySelector('meta[name="theme-color"]').content = theme === 'light' ? '#f5f6f8' : '#080a0e';
     drawOrbit(performance.now());
   }
-  themeButton.addEventListener('click', () => {
+  themeButton.addEventListener('click', async () => {
     const next = body.dataset.theme === 'light' ? 'dark' : 'light';
-    setTheme(next); storage.set(next);
+    const applyTheme = () => { setTheme(next); storage.set(next); };
+    if (motion.matches || typeof document.startViewTransition !== 'function') {
+      applyTheme();
+      return;
+    }
+    const rect = themeButton.getBoundingClientRect();
+    const x = rect.left + rect.width / 2;
+    const y = rect.top + rect.height / 2;
+    const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+    themeButton.disabled = true;
+    themeButton.classList.add('switching');
+    try {
+      const transition = document.startViewTransition(applyTheme);
+      await transition.ready;
+      const reveal = root.animate(
+        { clipPath: ['circle(0px at ' + x + 'px ' + y + 'px)', 'circle(' + radius + 'px at ' + x + 'px ' + y + 'px)'] },
+        { duration: 850, easing: 'cubic-bezier(.22,1,.36,1)', pseudoElement: '::view-transition-new(root)', fill: 'both' }
+      );
+      await reveal.finished;
+      await transition.finished;
+    } catch {
+      applyTheme();
+    } finally {
+      themeButton.disabled = false;
+      themeButton.classList.remove('switching');
+    }
   });
   document.getElementById('year').textContent = new Date().getFullYear();
   let revealObserver;

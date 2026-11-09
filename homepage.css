@@ -11,3 +11,27 @@ body[data-theme=light] .aurex-copy .eyebrow{color:#aa480b}
 body[data-theme=light] .keyboard-visual img{mix-blend-mode:normal}
 .keyboard-word{top:5%;font-size:clamp(70px,10vw,150px);opacity:.35}
 @media(max-width:760px){.keyboard-visual img{width:100%;max-height:none}.keyboard-word{display:none}}
+
+/* Reserve a separate footer row below the hero actions at every desktop size. */
+@media(min-width:761px){.hero{min-height:920px;padding-bottom:140px}.hero-bottom{bottom:36px}}
+.contact-emails{display:flex;flex-direction:column;align-items:flex-start;gap:20px;margin-top:45px}.contact-emails .contact-email{margin-top:0}
+@media(max-width:760px){.contact-emails{margin-top:30px}}
+
+/* Keep the AUREX brand lockup in normal flow, clear of decorative elements. */
+.aurex-art{padding:44px 24px;gap:24px}.aurex-art img{width:70%;max-width:320px;flex:none}.aurex-wordmark{margin:0;line-height:1.2;flex:none}.aurex-wordmark span{margin-top:14px;line-height:1.5}
+@media(max-width:760px){.aurex-art{padding:32px 24px 40px;gap:20px}.aurex-art img{max-width:240px;width:75%}}
+@media(min-width:761px){
+  .hero{display:flex;flex-direction:column;height:auto;min-height:max(920px,100svh);max-height:none;padding-bottom:0}
+  .hero-topline,.hero-copy{flex:none}
+  .hero-copy{margin-bottom:80px}
+  .hero-bottom{position:relative;left:auto;right:auto;bottom:auto;margin-top:auto;padding-bottom:32px;flex:none}
+}
+.linkedin-button{width:48px;height:48px;display:inline-grid;place-items:center;border:1px solid var(--line);border-radius:50%;background:var(--surface);color:var(--text);transition:transform .25s,background .25s,border-color .25s}
+.linkedin-button:hover{transform:translateY(-3px);background:#0a66c2;border-color:#0a66c2;color:#fff}
+.hero-links{gap:18px}
+::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}
+::view-transition-old(root){z-index:1}
+::view-transition-new(root){z-index:2}
+.theme-toggle.switching svg{animation:theme-spin .85s cubic-bezier(.22,1,.36,1)}
+@keyframes theme-spin{to{transform:rotate(180deg)}}
+@media(prefers-reduced-motion:reduce){.linkedin-button{transition:none}}
