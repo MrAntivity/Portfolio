@@ -1,4 +1,4 @@
-import { today, history } from "./model.mjs?v=edge-1";
+import { today, history } from "./model.mjs?v=inline-1";
 export const WORLDS = {
   behavioral: ["PS", "01 / HUMAN BEHAVIOR", "#a9a1db"],
   biochemistry: ["BC", "02 / MOLECULAR SYSTEMS", "#a0bca8"],

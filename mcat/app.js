@@ -1,4 +1,5 @@
-import { gameState, WORLDS, buddy } from "./game.mjs?v=edge-1";
+import { renderAI } from "./ai-format.mjs?v=inline-1";
+import { gameState, WORLDS, buddy } from "./game.mjs?v=inline-1";
 import {
   EXAM_DATE,
   today,
@@ -8,8 +9,8 @@ import {
   reviewDue,
   chooseQuestions,
   safeText as h,
-} from "./model.mjs?v=edge-1";
-import { flowVisual, labHTML, bindLab, heroArt } from "./visuals.js?v=edge-1";
+} from "./model.mjs?v=inline-1";
+import { flowVisual, labHTML, bindLab, heroArt } from "./visuals.js?v=inline-1";
 const $ = (s) => document.querySelector(s),
   main = $("#main");
 let curriculum,
@@ -458,7 +459,7 @@ function sessionView() {
   const state = session.results[session.index],
     key = "session-" + session.startedAt + "-" + q.id;
   if (state) lessonAnswers.set(key, { choice: state.choice });
-  main.innerHTML = `<div class="bank-layout"><div class="bank-top"><a href="#practice" id="end-session">← End session</a><span class="tag">${h(subjectName(q.subject))}</span><span>${session.index + 1} / ${session.questions.length}</span></div><div class="progress-strip">${session.questions.map((_, i) => `<span class="${i < session.results.length ? "done" : ""}"></span>`).join("")}</div><section class="panel"><div class="section-head" style="margin-top:0"><span class="eyebrow">${h(q.topic)}</span><span class="pill">${h(q.difficulty)} · ${q.variant ? "variant" : "original passage"}</span></div>${qHTML(q, key)}<div class="actions"><button id="flag-question">${records[q.id]?.flag ? "✓ Flagged" : "↻ Flag for review"}</button><button id="ask-question">✧ ${state ? "Explain with AI" : "Get an AI hint"}</button>${state ? '<button id="next-question" class="primary">Next question →</button>' : ""}</div></section><p class="report-note">Original practice drill · ${h(q.family)} · Numerical answers use up to 4 significant figures. <a href="${h(q.source)}" target="_blank" rel="noopener">Study reference ↗</a></p></div>`;
+  main.innerHTML = `<div class="bank-layout"><div class="bank-top"><a href="#practice" id="end-session">← End session</a><span class="tag">${h(subjectName(q.subject))}</span><span>${session.index + 1} / ${session.questions.length}</span></div><div class="progress-strip">${session.questions.map((_, i) => `<span class="${i < session.results.length ? "done" : ""}"></span>`).join("")}</div><section class="panel"><div class="section-head" style="margin-top:0"><span class="eyebrow">${h(q.topic)}</span><span class="pill">${h(q.difficulty)} · ${q.variant ? "variant" : "original passage"}</span></div>${qHTML(q, key)}<div class="actions"><button id="flag-question">${records[q.id]?.flag ? "✓ Flagged" : "↻ Flag for review"}</button><button id="ask-question">✧ ${state ? "Explain with AI" : "Get an AI hint"}</button>${state ? '<button id="next-question" class="primary">Next question →</button>' : ""}</div><div id="question-ai" data-question="${h(q.id)}"></div></section><p class="report-note">Original practice drill · ${h(q.family)} · Numerical answers use up to 4 significant figures. <a href="${h(q.source)}" target="_blank" rel="noopener">Study reference ↗</a></p></div>`;
   $("#end-session").onclick = (e) => {
     e.preventDefault();
     sessionSummary();
@@ -475,16 +476,8 @@ function sessionView() {
       ? "✓ Flagged"
       : "↻ Flag for review";
   };
-  $("#ask-question").onclick = () => {
-    chat = [];
-    chatMode = state ? "explain" : "socratic";
-    chatContext = {
-      subject: subjectName(q.subject),
-      title: q.topic,
-      question: q,
-    };
-    location.hash = "tutor";
-  };
+  paintQuestionAI();
+  $("#ask-question").onclick = () => requestQuestionAI(q, Boolean(state));
   if (state)
     $("#next-question").onclick = () => {
       session.index++;
@@ -504,6 +497,91 @@ function sessionView() {
           sessionView();
         }),
     );
+}
+function paintQuestionAI() {
+  const host = $("#question-ai");
+  if (!host || !session) return;
+  const data = session.ai?.[host.dataset.question],
+    button = $("#ask-question");
+  if (button) button.disabled = Boolean(data?.pending);
+  if (!data?.open) {
+    host.innerHTML = "";
+    return;
+  }
+  host.innerHTML = `<aside class="inline-ai" aria-label="AI question help"><div class="inline-ai-header"><span>✧ ${data.mode === "explain" ? "Worked explanation" : "A hint, not the answer"}</span><button id="close-question-ai" aria-label="Close AI help">×</button></div><div class="ai-prose" role="status" aria-live="polite">${data.pending ? '<p class="ai-thinking">Thinking through this question…</p>' : data.error ? `<p>${h(data.error)}</p><button id="retry-question-ai">Try again</button>` : renderAI(data.text)}</div><p class="report-note">AI study help · Your question and answer choices stay right here.</p></aside>`;
+  $("#close-question-ai").onclick = () => {
+    data.open = false;
+    paintQuestionAI();
+  };
+  if ($("#retry-question-ai"))
+    $("#retry-question-ai").onclick = () =>
+      requestQuestionAI(
+        session.questions[session.index],
+        data.mode === "explain",
+      );
+}
+async function requestQuestionAI(q, answered) {
+  if (!user) {
+    $("#login").showModal();
+    return;
+  }
+  if (!cloud) {
+    toast("Your tutor is offline. Please check your connection.");
+    return;
+  }
+  const activeSession = session,
+    uid = user.uid,
+    mode = answered ? "explain" : "socratic";
+  activeSession.ai ||= {};
+  const previous = activeSession.ai[q.id];
+  if (previous?.pending) return;
+  if (previous?.text && previous.mode === mode) {
+    previous.open = true;
+    paintQuestionAI();
+    return;
+  }
+  const data = { mode, open: true, pending: true, text: "", error: "" };
+  activeSession.ai[q.id] = data;
+  paintQuestionAI();
+  const question = {
+    prompt: q.prompt,
+    choices: q.choices,
+    ...(q.passage ? { passage: q.passage } : {}),
+  };
+  if (answered) {
+    question.correctAnswer = q.choices[q.answer];
+    question.explanation = q.explanation;
+    question.selectedAnswer =
+      q.choices[activeSession.results[activeSession.index]?.choice];
+  }
+  try {
+    const result = await cloud.httpsCallable(cloud.functions, "mcatTutor", {
+      timeout: 120000,
+    })({
+      mode,
+      context: { subject: subjectName(q.subject), title: q.topic, question },
+      messages: [
+        {
+          role: "user",
+          content: answered
+            ? "Explain this question clearly in a short worked solution. Use a heading, numbered steps, and a typeset equation when useful. Explain the selected answer. Do not add a new practice question."
+            : "Give me one short useful hint for this question, in 2–3 sentences. Point me toward the concept or equation without substituting the numbers, giving the final result, or identifying the correct choice. Do not solve it. Use readable Markdown and LaTeX if useful.",
+        },
+      ],
+    });
+    data.text = result.data.answer;
+  } catch (error) {
+    data.error = error.message || "The hint could not load. Please try again.";
+  } finally {
+    data.pending = false;
+    if (
+      user?.uid === uid &&
+      session === activeSession &&
+      view === "practice" &&
+      $("#question-ai")?.dataset.question === q.id
+    )
+      paintQuestionAI();
+  }
 }
 function sessionSummary() {
   const count = session.results.length,
@@ -575,7 +653,7 @@ function tutor() {
       "Your study crew.",
       "Four ways to work with your AI tutor, powered by your private OpenAI connection.",
     ) +
-    `<div class="chat-layout"><aside class="partners">${partners.map(([id, title, desc]) => `<button class="partner ${id === chatMode ? "active" : ""}" data-mode="${id}"><strong>✧ ${title}</strong><small>${desc}</small></button>`).join("")}</aside><section class="panel"><div class="section-head" style="margin-top:0"><h3>${partners.find((p) => p[0] === chatMode)[1]}</h3><button id="new-chat">New chat</button></div>${chatContext.title ? `<div class="notice">Studying: ${h(chatContext.title)} <button id="clear-context">Clear context</button></div>` : ""}<div id="chat-log" class="chat-log" aria-live="polite">${chat.length ? chat.map((m) => `<div class="message ${m.role}"><small>${m.role === "user" ? "YOU" : "STUDY PARTNER · AI"}</small>${h(m.content)}</div>`).join("") : `<div class="empty"><h3>Let’s make it click.</h3><p>Try “Teach me competitive inhibition, then give me a question” or “Help me identify the main claim in this passage.”</p>${!user ? '<button id="tutor-signin" class="primary">Sign in to use your tutor</button>' : ""}</div>`}${busy ? "<p>Thinking through your question…</p>" : ""}</div><form class="chat-input" id="chat-form"><label class="sr-only" for="chat-prompt">Your question</label><textarea id="chat-prompt" placeholder="What would you like to understand?" maxlength="4000" required ${busy ? "disabled" : ""}></textarea><button class="primary" ${busy ? "disabled" : ""}>${busy ? "Thinking…" : "Send ↗"}</button></form><p class="report-note">AI can make mistakes. Check important facts against linked sources. Up to 100 requests/day; API usage is billed to your connected account. Chats stay in this tab; progress and notes sync.</p></section></div>`;
+    `<div class="chat-layout"><aside class="partners">${partners.map(([id, title, desc]) => `<button class="partner ${id === chatMode ? "active" : ""}" data-mode="${id}"><strong>✧ ${title}</strong><small>${desc}</small></button>`).join("")}</aside><section class="panel"><div class="section-head" style="margin-top:0"><h3>${partners.find((p) => p[0] === chatMode)[1]}</h3><button id="new-chat">New chat</button></div>${chatContext.title ? `<div class="notice">Studying: ${h(chatContext.title)} <button id="clear-context">Clear context</button></div>` : ""}<div id="chat-log" class="chat-log" aria-live="polite">${chat.length ? chat.map((m) => `<div class="message ${m.role}"><small>${m.role === "user" ? "YOU" : "STUDY PARTNER · AI"}</small>${m.role === "assistant" ? `<div class="ai-prose">${renderAI(m.content)}</div>` : h(m.content)}</div>`).join("") : `<div class="empty"><h3>Let’s make it click.</h3><p>Try “Teach me competitive inhibition, then give me a question” or “Help me identify the main claim in this passage.”</p>${!user ? '<button id="tutor-signin" class="primary">Sign in to use your tutor</button>' : ""}</div>`}${busy ? "<p>Thinking through your question…</p>" : ""}</div><form class="chat-input" id="chat-form"><label class="sr-only" for="chat-prompt">Your question</label><textarea id="chat-prompt" placeholder="What would you like to understand?" maxlength="4000" required ${busy ? "disabled" : ""}></textarea><button class="primary" ${busy ? "disabled" : ""}>${busy ? "Thinking…" : "Send ↗"}</button></form><p class="report-note">AI can make mistakes. Check important facts against linked sources. Up to 100 requests/day; API usage is billed to your connected account. Chats stay in this tab; progress and notes sync.</p></section></div>`;
   document.querySelectorAll("[data-mode]").forEach(
     (b) =>
       (b.onclick = () => {
@@ -978,8 +1056,8 @@ async function connect() {
 try {
   records = readLocal();
   const [response, module] = await Promise.all([
-    fetch("/mcat/curriculum.json?v=edge-1"),
-    import("./bank.mjs?v=edge-1"),
+    fetch("/mcat/curriculum.json?v=inline-1"),
+    import("./bank.mjs?v=inline-1"),
   ]);
   if (!response.ok) throw Error("Curriculum unavailable");
   curriculum = await response.json();

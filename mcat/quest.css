@@ -1225,3 +1225,229 @@ footer {
     transform: none;
   }
 }
+/* Readable AI answers, shared by in-place hints and the study crew. */
+.inline-ai {
+  margin-top: 24px;
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--accent);
+  background: var(--bg);
+  border-radius: 8px;
+  padding: 20px 23px;
+  scroll-margin-top: 20px;
+}
+.inline-ai-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.inline-ai-header > span {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.4px;
+}
+.inline-ai-header button {
+  background: transparent;
+  padding: 2px 8px;
+  font-size: 20px;
+  border: 0;
+  color: var(--muted);
+}
+.ai-prose {
+  white-space: normal;
+  font-size: 15px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  max-width: 76ch;
+}
+.ai-prose > :first-child {
+  margin-top: 0;
+}
+.ai-prose > :last-child {
+  margin-bottom: 0;
+}
+.ai-prose p {
+  margin: 0 0 15px;
+  color: var(--ink);
+  font-size: inherit;
+  line-height: inherit;
+}
+.ai-prose h1,
+.ai-prose h2,
+.ai-prose h3,
+.ai-prose h4 {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.3px;
+  margin: 24px 0 12px;
+}
+.ai-prose h4 {
+  font-size: 16px;
+}
+.ai-prose ul,
+.ai-prose ol {
+  margin: 12px 0 18px;
+  padding-left: 24px;
+}
+.ai-prose li {
+  padding-left: 4px;
+  margin: 7px 0;
+}
+.ai-prose li::marker {
+  color: var(--accent);
+}
+.ai-prose li p {
+  margin: 6px 0;
+}
+.ai-prose strong {
+  font-weight: 650;
+}
+.ai-prose a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.ai-prose blockquote {
+  margin: 18px 0;
+  padding: 12px 17px;
+  background: var(--soft);
+  border-left: 2px solid var(--accent);
+}
+.ai-prose pre {
+  white-space: pre;
+  overflow: auto;
+  background: var(--soft);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 16px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.ai-prose code {
+  font-size: 0.86em;
+  font-family: ui-monospace, monospace;
+  background: var(--soft);
+  padding: 2px 5px;
+  border-radius: 3px;
+}
+.ai-prose pre code {
+  padding: 0;
+  background: transparent;
+}
+.ai-prose hr {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: 23px 0;
+}
+.ai-prose table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 18px 0;
+  max-width: 100%;
+}
+.ai-prose th,
+.ai-prose td {
+  border: 1px solid var(--line);
+  padding: 10px 13px;
+  text-align: left;
+}
+.ai-prose th {
+  background: var(--soft);
+  font-weight: 600;
+}
+.ai-prose .equation {
+  display: block;
+  background: var(--soft);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 14px 18px;
+  margin: 17px 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+.ai-prose .katex-display {
+  margin: 0;
+  text-align: left;
+}
+.ai-prose .katex-display > .katex {
+  text-align: left;
+}
+.ai-prose .katex {
+  font-size: 1.14em;
+  white-space: nowrap;
+}
+.ai-prose .inline-equation {
+  display: inline;
+}
+.ai-prose .math-fallback {
+  white-space: pre-wrap;
+}
+.message.assistant {
+  white-space: normal;
+  width: 100%;
+  max-width: 100%;
+  background: transparent;
+  border: 1px solid var(--line);
+  padding: 24px;
+}
+.message.assistant > small {
+  display: block;
+  margin-bottom: 18px;
+}
+.message.user {
+  font-size: 14px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  padding: 14px 18px;
+}
+.chat-log {
+  max-height: 70vh;
+  min-height: 340px;
+  gap: 20px;
+}
+.chat-layout > section {
+  min-width: 0;
+}
+.ai-thinking {
+  color: var(--muted) !important;
+}
+.inline-ai .report-note {
+  margin: 17px 0 0;
+  font-size: 10px;
+}
+.inline-ai .ai-prose {
+  max-width: 100%;
+}
+@media (max-width: 760px) {
+  .inline-ai {
+    padding: 17px;
+    margin-top: 20px;
+  }
+  .ai-prose {
+    font-size: 14px;
+    line-height: 1.8;
+  }
+  .ai-prose h1,
+  .ai-prose h2,
+  .ai-prose h3 {
+    font-size: 17px;
+  }
+  .message.assistant {
+    padding: 18px;
+  }
+  .ai-prose .equation {
+    padding: 13px 12px;
+  }
+  .ai-prose .katex {
+    font-size: 1.08em;
+  }
+  .chat-log {
+    max-height: 65vh;
+  }
+}
