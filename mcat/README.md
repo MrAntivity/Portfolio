@@ -25,3 +25,9 @@ npx firebase-tools deploy --only functions:mcatTutor --project aidenyue
 ```
 
 Only the new callable needs deployment; Firestore rules are unchanged. Push the static files to the existing GitHub Pages source branch. Browser QA covers local preview, lesson answer/notes/flags, practice/filtering/scoring, desktop and phone layouts. Signed-in live sync and a billed OpenAI reply require an owner session and should be verified separately if no session is available.
+
+## MCAT Quest design and rewards
+
+The Quest redesign adds Pip (a code-native SVG companion), seven colored subject worlds, daily activity quests, levels, XP, and badges. `game.mjs` derives rewards from existing synced records rather than storing a second score balance. First question attempts earn 10 XP plus 5 for a correct first attempt; the first later correction of a first-attempt mistake earns 5 XP once. First lesson completion earns 50 XP and saves `completedEver` / `completedDay`, retaining rewards when completion is toggled. Legacy completions receive credit without fabricated activity dates. Levels require 250 XP. Streaks use Eastern calendar dates and earned streak badges use the best historical streak. Reduced-motion preferences disable mascot motion and confetti.
+
+Validation: `node --test tests/mcat-game.test.mjs tests/mcat-model.test.mjs`. Local preview verifies lesson XP, first-lesson badge, mobile layout, and persistent activity without writing test answers to the owner's account.

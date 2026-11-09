@@ -5,32 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#f5f4ef" />
     <meta name="robots" content="noindex" />
-    <title>MCAT Studio · Aiden Yue</title>
+    <title>MCAT Quest · Aiden Yue</title>
     <meta
       name="description"
       content="A personal visual MCAT study studio. Learn, apply, practice, and review."
     />
     <link rel="icon" href="/assets/avatar.svg" />
-    <link rel="stylesheet" href="/mcat/style.css?v=20261109-2" />
+    <link rel="stylesheet" href="/mcat/style.css?v=quest-1" />
+    <link rel="stylesheet" href="/mcat/quest.css?v=quest-1" />
   </head>
   <body>
     <a class="skip" href="#main">Skip to study content</a>
     <div class="shell">
       <aside class="sidebar">
         <a class="brand" href="/">AY<span>AIDEN YUE</span></a>
-        <div class="studio-label">YOUR LEARNING SPACE</div>
-        <a class="studio-title" href="#dashboard">MCAT <i>studio.</i></a>
+        <div class="studio-label">YOUR NEXT GREAT ADVENTURE</div>
+        <a class="studio-title" href="#dashboard">MCAT <i>quest!</i></a>
         <nav aria-label="Study navigation">
-          <a href="#dashboard" data-nav="dashboard"><span>◷</span>Overview</a
-          ><a href="#learn" data-nav="learn"><span>▦</span>Learning library</a
+          <a href="#dashboard" data-nav="dashboard"><span>🏡</span>Base camp</a
+          ><a href="#learn" data-nav="learn"><span>🗺️</span>Explore worlds</a
           ><a href="#practice" data-nav="practice"
-            ><span>✳</span>Practice bank</a
+            ><span>🎯</span>Practice playground</a
           ><a href="#review" data-nav="review"
-            ><span>↻</span>Review queue <b id="review-count">0</b></a
-          ><a href="#tutor" data-nav="tutor"><span>✧</span>AI study partners</a
-          ><a href="#plan" data-nav="plan"><span>▤</span>Study plan</a
+            ><span>🪃</span>Review queue <b id="review-count">0</b></a
+          ><a href="#tutor" data-nav="tutor"><span>💬</span>Study buddies</a
+          ><a href="#plan" data-nav="plan"><span>📅</span>Adventure plan</a
           ><a href="#resources" data-nav="resources"
-            ><span>↗</span>Resources</a
+            ><span>🎒</span>Discovery chest</a
+          >
+          <a href="#achievements" data-nav="achievements"
+            ><span>🏆</span>Badge collection</a
           >
         </nav>
         <div class="sidebar-bottom">
@@ -47,9 +51,9 @@
       </aside>
       <div class="workspace">
         <header class="topbar">
-          <span>THE LONG GAME, ONE CONCEPT AT A TIME.</span
-          ><button id="theme" aria-label="Toggle dark mode">◐</button
-          ><span class="avatar">AY</span>
+          <span>A LITTLE CURIOUS. A LITTLE BRAVER. EVERY DAY.</span
+          ><button id="theme" aria-label="Toggle dark mode">◐</button>
+          <div id="player-meter" class="player-meter"></div>
         </header>
         <main id="main" tabindex="-1">
           <div class="loading">Opening your study space…</div>
@@ -86,6 +90,6 @@
         <p id="login-error" role="alert"></p>
       </form>
     </dialog>
-    <script type="module" src="/mcat/app.js?v=20261109-2"></script>
+    <script type="module" src="/mcat/app.js?v=quest-1"></script>
   </body>
 </html>
