@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f5f4ef" />
+    <meta name="robots" content="noindex" />
+    <title>MCAT Studio · Aiden Yue</title>
+    <meta
+      name="description"
+      content="A personal visual MCAT study studio. Learn, apply, practice, and review."
+    />
+    <link rel="icon" href="/assets/avatar.svg" />
+    <link rel="stylesheet" href="/mcat/style.css" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to study content</a>
+    <div class="shell">
+      <aside class="sidebar">
+        <a class="brand" href="/">AY<span>AIDEN YUE</span></a>
+        <div class="studio-label">YOUR LEARNING SPACE</div>
+        <a class="studio-title" href="#dashboard">MCAT <i>studio.</i></a>
+        <nav aria-label="Study navigation">
+          <a href="#dashboard" data-nav="dashboard"><span>◷</span>Overview</a
+          ><a href="#learn" data-nav="learn"><span>▦</span>Learning library</a
+          ><a href="#practice" data-nav="practice"
+            ><span>✳</span>Practice bank</a
+          ><a href="#review" data-nav="review"
+            ><span>↻</span>Review queue <b id="review-count">0</b></a
+          ><a href="#tutor" data-nav="tutor"><span>✧</span>AI study partners</a
+          ><a href="#plan" data-nav="plan"><span>▤</span>Study plan</a
+          ><a href="#resources" data-nav="resources"
+            ><span>↗</span>Resources</a
+          >
+        </nav>
+        <div class="sidebar-bottom">
+          <div class="tiny">YOUR TARGET DATE</div>
+          <strong>August 28, 2027</strong>
+          <div class="date-track"><span id="date-fill"></span></div>
+          <small id="days-left"></small
+          ><button id="account" class="account">
+            Sign in to sync <span>↗</span></button
+          ><small id="sync-status" role="status"
+            >Preview · progress stays on this device</small
+          >
+        </div>
+      </aside>
+      <div class="workspace">
+        <header class="topbar">
+          <span>THE LONG GAME, ONE CONCEPT AT A TIME.</span
+          ><button id="theme" aria-label="Toggle dark mode">◐</button
+          ><span class="avatar">AY</span>
+        </header>
+        <main id="main" tabindex="-1">
+          <div class="loading">Opening your study space…</div>
+        </main>
+        <footer>
+          Built for understanding. Original learning material, independent of
+          AAMC and Kaplan.<br />Practice progress is not an MCAT score
+          prediction.
+        </footer>
+      </div>
+    </div>
+    <div id="toast" role="status" aria-live="polite"></div>
+    <dialog id="login">
+      <form id="login-form">
+        <button type="button" class="close" id="close-login" aria-label="Close">
+          ×
+        </button>
+        <p class="eyebrow">PICK UP WHERE YOU LEFT OFF</p>
+        <h2>Your study space,<br />on every device.</h2>
+        <p>
+          Use your existing VIRO portal PIN to securely sync lessons, answers,
+          notes, and your review queue. Preview work stays separate; export it
+          from Study plan if you want to restore it after signing in.
+        </p>
+        <label
+          >Portal PIN<input
+            name="pin"
+            type="password"
+            autocomplete="current-password"
+            required
+            maxlength="128"
+            autofocus /></label
+        ><button class="primary" type="submit">Sign in & sync →</button>
+        <p id="login-error" role="alert"></p>
+      </form>
+    </dialog>
+    <script type="module" src="/mcat/app.js"></script>
+  </body>
+</html>

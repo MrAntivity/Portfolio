@@ -1,0 +1,3829 @@
+{
+  "version": 1,
+  "contentNote": "Original foundational lessons and practice, informed by the linked educational references. Not affiliated with AAMC or Kaplan. This collection is a starting curriculum, not an exhaustive exam outline or a validated score predictor.",
+  "subjects": [
+    {
+      "id": "behavioral",
+      "title": "Behavioral science",
+      "color": "#a78bfa",
+      "description": "Connect behavior, cognition, society, and research."
+    },
+    {
+      "id": "biochemistry",
+      "title": "Biochemistry",
+      "color": "#34d399",
+      "description": "Follow molecules through structure, catalysis, and metabolism."
+    },
+    {
+      "id": "biology",
+      "title": "Biology",
+      "color": "#38bdf8",
+      "description": "Link cells, genes, organ systems, and homeostasis."
+    },
+    {
+      "id": "cars",
+      "title": "Critical analysis and reasoning skills",
+      "color": "#fbbf24",
+      "description": "Read arguments closely and reason from passage evidence."
+    },
+    {
+      "id": "general",
+      "title": "General chemistry",
+      "color": "#fb923c",
+      "description": "Use particles, equilibrium, and energy to explain change."
+    },
+    {
+      "id": "organic",
+      "title": "Organic chemistry",
+      "color": "#f472b6",
+      "description": "Track electrons, structure, reactions, and laboratory evidence."
+    },
+    {
+      "id": "physics",
+      "title": "Physics and math",
+      "color": "#60a5fa",
+      "description": "Turn physical models into quantitative predictions."
+    }
+  ],
+  "sources": [
+    {
+      "title": "AAMC official MCAT content outline",
+      "url": "https://students-residents.aamc.org/prepare-mcat-exam/whats-mcat-exam-pdf-outline"
+    },
+    {
+      "title": "OpenStax Biology 2e",
+      "url": "https://openstax.org/details/books/biology-2e"
+    },
+    {
+      "title": "OpenStax Psychology 2e",
+      "url": "https://openstax.org/details/books/psychology-2e"
+    },
+    {
+      "title": "OpenStax Introduction to Sociology 3e",
+      "url": "https://openstax.org/details/books/introduction-sociology-3e"
+    },
+    {
+      "title": "OpenStax Chemistry 2e",
+      "url": "https://openstax.org/details/books/chemistry-2e"
+    },
+    {
+      "title": "OpenStax Organic Chemistry",
+      "url": "https://openstax.org/details/books/organic-chemistry"
+    },
+    {
+      "title": "OpenStax College Physics 2e",
+      "url": "https://openstax.org/details/books/college-physics-2e"
+    },
+    {
+      "title": "Kaplan official MCAT books (external commercial resource)",
+      "url": "https://www.kaptest.com/mcat/mcat-books"
+    },
+    {
+      "title": "Original CARS mini-passages",
+      "url": "https://students-residents.aamc.org/prepare-mcat-exam/whats-mcat-exam-pdf-outline",
+      "note": "All mini-passages in this collection were written for this study site. The AAMC link describes the exam framework; it is not the source of these passages."
+    }
+  ],
+  "lessons": [
+    {
+      "id": "behavioral-conditioning",
+      "subject": "behavioral",
+      "title": "Learning: consequences and associations",
+      "summary": "Classical conditioning links stimuli so a previously neutral cue can evoke a learned response. Operant conditioning changes the probability of a behavior through its consequences. First identify the behavior and whether it becomes more or less frequent. Then ask whether a stimulus was added or removed. This two-axis approach keeps negative reinforcement separate from punishment.",
+      "keyPoints": [
+        "Reinforcement increases behavior; punishment decreases it.",
+        "Positive means adding; negative means removing."
+      ],
+      "misconception": "Negative reinforcement does not mean an unpleasant punishment.",
+      "workedExample": {
+        "prompt": "A student buckles a seat belt to stop a buzzer. Buckling becomes more frequent. Classify the consequence.",
+        "steps": [
+          "Identify the behavior: buckling.",
+          "The behavior increases, so this is reinforcement.",
+          "An aversive sound is removed, making it negative reinforcement."
+        ],
+        "answer": "Negative reinforcement."
+      },
+      "check": {
+        "prompt": "A lab animal presses a lever more often after each press delivers food. What occurred?",
+        "choices": [
+          "Positive reinforcement",
+          "Positive punishment",
+          "Negative reinforcement",
+          "Extinction"
+        ],
+        "answer": 0,
+        "explanation": "Food is added and lever pressing increases: positive reinforcement."
+      },
+      "transfer": {
+        "prompt": "A teenager texts less after losing access to a game following texting during class. What occurred?",
+        "choices": [
+          "Positive reinforcement",
+          "Classical conditioning",
+          "Negative reinforcement",
+          "Negative punishment"
+        ],
+        "answer": 3,
+        "explanation": "A valued stimulus is removed and the behavior decreases: negative punishment."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Cue or behavior",
+          "Consequence",
+          "Added or removed?",
+          "Behavior changes"
+        ],
+        "caption": "Use two decisions: direction of behavior change, then direction of stimulus change."
+      },
+      "source": "https://openstax.org/books/psychology-2e/pages/6-3-operant-conditioning"
+    },
+    {
+      "id": "behavioral-memory",
+      "subject": "behavioral",
+      "title": "Memory and interference",
+      "summary": "Encoding transforms information into a usable representation, storage retains it, and retrieval brings it back. Working memory holds and manipulates a small amount of current information. Long-term declarative memory includes events and facts; procedural memory includes learned skills. Interference is directional: older learning can disrupt newer recall, or newer learning can disrupt older recall.",
+      "keyPoints": [
+        "Proactive interference: old information disrupts new information.",
+        "Retroactive interference: new information disrupts old information."
+      ],
+      "misconception": "Forgetting is not always loss of a stored trace; retrieval cues can fail.",
+      "workedExample": {
+        "prompt": "After moving, someone repeatedly writes their old address on forms asking for the new address. Identify the interference.",
+        "steps": [
+          "Identify what should be recalled: the new address.",
+          "Identify what intrudes: the older address.",
+          "Old disrupts new, so use proactive interference."
+        ],
+        "answer": "Proactive interference."
+      },
+      "check": {
+        "prompt": "A newly learned password makes an older password harder to recall. Which process best fits?",
+        "choices": [
+          "Proactive interference",
+          "Procedural learning",
+          "Retroactive interference",
+          "Sensory adaptation"
+        ],
+        "answer": 2,
+        "explanation": "New learning interferes with old recall, the definition of retroactive interference."
+      },
+      "transfer": {
+        "prompt": "A cyclist retains riding skill but cannot recall a recent vacation. Which distinction is illustrated?",
+        "choices": [
+          "Semantic versus episodic only",
+          "Sensory versus working only",
+          "Encoding versus conditioning",
+          "Procedural versus episodic"
+        ],
+        "answer": 3,
+        "explanation": "Cycling is a procedural skill; remembering a personal vacation is episodic memory."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Encoding",
+          "Storage",
+          "Retrieval",
+          "Interference check"
+        ],
+        "caption": "Follow the target memory and the source of interference."
+      },
+      "source": "https://openstax.org/details/books/psychology-2e"
+    },
+    {
+      "id": "behavioral-sensation",
+      "subject": "behavioral",
+      "title": "Sensation, perception, and signal detection",
+      "summary": "Sensation begins with detecting physical input; perception organizes and interprets it. An absolute threshold is conventionally the intensity detected on half of trials. Signal detection separates sensitivity to a signal from the decision criterion used to report it. A more liberal criterion can raise both hits and false alarms without improving the sensory system itself.",
+      "keyPoints": [
+        "Hits and misses occur when a signal is present.",
+        "False alarms and correct rejections occur when a signal is absent."
+      ],
+      "misconception": "Reporting more signals does not by itself prove better sensitivity.",
+      "workedExample": {
+        "prompt": "A screener starts saying “present” whenever uncertain. Hits and false alarms both rise. What changed most directly?",
+        "steps": [
+          "The stimulus information has not changed.",
+          "More positive decisions occur for both signal and noise trials.",
+          "The criterion has become more liberal."
+        ],
+        "answer": "A more liberal response criterion."
+      },
+      "check": {
+        "prompt": "A participant says “tone present” on a trial with no tone. This is a:",
+        "choices": [
+          "Hit",
+          "False alarm",
+          "Miss",
+          "Correct rejection"
+        ],
+        "answer": 1,
+        "explanation": "The report is positive but the signal is absent, so it is a false alarm."
+      },
+      "transfer": {
+        "prompt": "A stronger penalty for false alarms makes an observer say “present” less often. What is the most likely tradeoff?",
+        "choices": [
+          "More hits and fewer misses",
+          "Higher sensory sensitivity necessarily",
+          "No change in responses",
+          "Fewer false alarms and more misses"
+        ],
+        "answer": 3,
+        "explanation": "A conservative criterion reduces false alarms but can miss more real signals."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Physical input",
+          "Sensory encoding",
+          "Decision criterion",
+          "Reported percept"
+        ],
+        "caption": "Sensitivity and willingness to say yes are different quantities."
+      },
+      "source": "https://openstax.org/details/books/psychology-2e"
+    },
+    {
+      "id": "behavioral-development",
+      "subject": "behavioral",
+      "title": "Development and attachment",
+      "summary": "Developmental theories organize changes in reasoning, identity, and relationships. In Piaget’s model, concrete operations support logical reasoning about tangible situations, while formal operations support abstract hypotheses. Attachment descriptions concern patterns of seeking comfort and exploring in the context of a caregiver. Treat these models as frameworks for interpreting a described behavior, not as rigid diagnoses from age alone.",
+      "keyPoints": [
+        "Conservation requires recognizing that appearance can change without amount changing.",
+        "Formal operations include systematic hypothetical reasoning."
+      ],
+      "misconception": "A child’s age alone is weaker evidence than the behavior described in a passage.",
+      "workedExample": {
+        "prompt": "A child says equal amounts of water remain equal after one is poured into a tall narrow glass. Which skill is shown?",
+        "steps": [
+          "The shape changes but the amount does not.",
+          "The child mentally separates appearance from quantity.",
+          "This demonstrates conservation, associated with concrete operations."
+        ],
+        "answer": "Conservation."
+      },
+      "check": {
+        "prompt": "A student systematically tests every combination of two variables in a hypothetical problem. Which Piagetian capacity fits best?",
+        "choices": [
+          "Formal operational reasoning",
+          "Object permanence",
+          "Egocentrism",
+          "Classical conditioning"
+        ],
+        "answer": 0,
+        "explanation": "Systematic hypothetical reasoning is characteristic of formal operations."
+      },
+      "transfer": {
+        "prompt": "An infant searches for a toy hidden behind a screen. Which concept is most directly illustrated?",
+        "choices": [
+          "Conservation",
+          "Cognitive dissonance",
+          "Role strain",
+          "Object permanence"
+        ],
+        "answer": 3,
+        "explanation": "Searching for a hidden object indicates an expectation that it continues to exist."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Observe behavior",
+          "Identify cognitive demand",
+          "Match theory",
+          "Check limits"
+        ],
+        "caption": "Use demonstrated reasoning rather than age as your strongest clue."
+      },
+      "source": "https://openstax.org/details/books/psychology-2e"
+    },
+    {
+      "id": "behavioral-motivation",
+      "subject": "behavioral",
+      "title": "Motivation, stress, and emotion",
+      "summary": "Motivation theories explain why behavior starts and persists. Drive reduction emphasizes correcting internal imbalance; incentives emphasize external rewards. Stress depends partly on appraisal: a demand may be judged as threatening and resources as insufficient. Sympathetic activation supports rapid responses, while the hypothalamic-pituitary-adrenal axis produces a slower hormonal response involving cortisol.",
+      "keyPoints": [
+        "Hypothalamus releases CRH; pituitary releases ACTH; adrenal cortex releases cortisol.",
+        "An incentive can motivate behavior even without a physiological deficit."
+      ],
+      "misconception": "The adrenal cortex and adrenal medulla are not interchangeable.",
+      "workedExample": {
+        "prompt": "Trace the endocrine stress pathway from hypothalamus to cortisol.",
+        "steps": [
+          "CRH signals from the hypothalamus to anterior pituitary.",
+          "ACTH travels from anterior pituitary to adrenal cortex.",
+          "The cortex releases cortisol, which participates in negative feedback."
+        ],
+        "answer": "CRH → ACTH → cortisol."
+      },
+      "check": {
+        "prompt": "Which gland region releases cortisol in the stress axis?",
+        "choices": [
+          "Adrenal medulla",
+          "Posterior pituitary",
+          "Adrenal cortex",
+          "Thyroid follicle"
+        ],
+        "answer": 2,
+        "explanation": "The adrenal cortex releases cortisol; the medulla releases catecholamines."
+      },
+      "transfer": {
+        "prompt": "A full person eats dessert because it earns a prize. Which account best fits the stated motive?",
+        "choices": [
+          "Drive reduction from hunger",
+          "Osmotic regulation",
+          "Habituation",
+          "Incentive motivation"
+        ],
+        "answer": 3,
+        "explanation": "The stated external prize is an incentive; hunger is explicitly absent."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Stressor appraisal",
+          "CRH",
+          "ACTH",
+          "Cortisol"
+        ],
+        "caption": "The HPA axis links appraisal to a hormonal stress response."
+      },
+      "source": "https://openstax.org/details/books/psychology-2e"
+    },
+    {
+      "id": "behavioral-identity",
+      "subject": "behavioral",
+      "title": "Self, identity, and attribution",
+      "summary": "Attribution concerns how people explain behavior. A dispositional explanation points to a person’s traits; a situational explanation points to circumstances. The fundamental attribution error is a tendency to overweight dispositions when explaining others’ behavior. Self-serving bias assigns successes to oneself and failures to external causes. Identity also depends on roles and group memberships, which can shift with context.",
+      "keyPoints": [
+        "Disposition describes the person; situation describes the context.",
+        "Self-serving bias protects a favorable self-image."
+      ],
+      "misconception": "A negative judgment is not automatically an attribution error; inspect the explanation.",
+      "workedExample": {
+        "prompt": "A commuter calls a late coworker lazy without considering a transit outage. What bias is suggested?",
+        "steps": [
+          "The explanation is a stable trait: laziness.",
+          "A relevant situational cause is ignored.",
+          "This pattern fits the fundamental attribution error."
+        ],
+        "answer": "Overweighting disposition when explaining another person."
+      },
+      "check": {
+        "prompt": "A student credits a high score to talent and a low score to an unfair exam. Which bias fits?",
+        "choices": [
+          "Self-serving bias",
+          "Confirmation bias only",
+          "Social loafing",
+          "Bystander effect"
+        ],
+        "answer": 0,
+        "explanation": "Success is internalized while failure is externalized, protecting self-image."
+      },
+      "transfer": {
+        "prompt": "A researcher explains delayed attendance by road closures. This is primarily a:",
+        "choices": [
+          "Dispositional attribution",
+          "Fixed-ratio schedule",
+          "Situational attribution",
+          "Role conflict"
+        ],
+        "answer": 2,
+        "explanation": "The explanation is an external circumstance, not a personality trait."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Observed behavior",
+          "Possible context",
+          "Possible traits",
+          "Attribution"
+        ],
+        "caption": "Compare situational and dispositional explanations before labeling a bias."
+      },
+      "source": "https://openstax.org/details/books/psychology-2e"
+    },
+    {
+      "id": "behavioral-groups",
+      "subject": "behavioral",
+      "title": "Groups, conformity, and helping",
+      "summary": "Group settings can alter individual decisions. Conformity means matching a group; obedience means responding to an authority’s command. Social facilitation can improve a well-practiced response in an audience but impair an unfamiliar task. Diffusion of responsibility can make each witness feel less personally responsible for helping. Distinguish these mechanisms from simply being near other people.",
+      "keyPoints": [
+        "Normative influence seeks acceptance; informational influence seeks accuracy.",
+        "Diffusion of responsibility can reduce helping as witnesses increase."
+      ],
+      "misconception": "An audience does not improve all kinds of performance.",
+      "workedExample": {
+        "prompt": "A novice performs a difficult new routine worse while being watched. Is this inconsistent with social facilitation theory?",
+        "steps": [
+          "Identify the task as unfamiliar and difficult.",
+          "Arousal can strengthen dominant responses, which may be incorrect for a novice.",
+          "The theory predicts possible impairment here."
+        ],
+        "answer": "No; unfamiliar tasks can worsen under observation."
+      },
+      "check": {
+        "prompt": "A person publicly agrees with friends to avoid rejection, despite private disagreement. What influence is strongest?",
+        "choices": [
+          "Informational",
+          "Normative",
+          "Genetic",
+          "Operant extinction"
+        ],
+        "answer": 1,
+        "explanation": "The motive is acceptance, making the influence normative."
+      },
+      "transfer": {
+        "prompt": "Each of many witnesses assumes someone else will call for help. What mechanism is described?",
+        "choices": [
+          "Social mobility",
+          "Diffusion of responsibility",
+          "Cognitive conservation",
+          "Positive punishment"
+        ],
+        "answer": 1,
+        "explanation": "Responsibility is mentally distributed across witnesses, reducing individual action."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Group context",
+          "Motive or task",
+          "Individual response",
+          "Behavioral outcome"
+        ],
+        "caption": "Identify the mechanism rather than labeling every group effect conformity."
+      },
+      "source": "https://openstax.org/details/books/psychology-2e"
+    },
+    {
+      "id": "behavioral-social-structure",
+      "subject": "behavioral",
+      "title": "Social structure, roles, and culture",
+      "summary": "A status is a social position; a role is an expected pattern of behavior attached to that position. Role conflict occurs between different roles, while role strain occurs within one role. Norms guide behavior, values identify what a group considers important, and sanctions respond to compliance or violation. Institutions organize recurring social activities such as education, family life, and health care.",
+      "keyPoints": [
+        "Role conflict: competing demands from different roles.",
+        "Role strain: incompatible demands within one role."
+      ],
+      "misconception": "Status does not only mean prestige; student is also a status.",
+      "workedExample": {
+        "prompt": "A parent must attend a child’s event at the same time their employer requires a shift. Classify the tension.",
+        "steps": [
+          "Identify two statuses: parent and employee.",
+          "Each status has a separate expected behavior.",
+          "Competing demands across roles indicate role conflict."
+        ],
+        "answer": "Role conflict."
+      },
+      "check": {
+        "prompt": "A teacher must give every student individual attention while finishing a large syllabus. What best fits?",
+        "choices": [
+          "Intergenerational mobility",
+          "Role exit",
+          "Classical conditioning",
+          "Role strain"
+        ],
+        "answer": 3,
+        "explanation": "Both demands belong to the same teacher role, so this is role strain."
+      },
+      "transfer": {
+        "prompt": "A community publicly praises residents who volunteer. The praise is a:",
+        "choices": [
+          "Negative formal sanction",
+          "Positive informal sanction",
+          "Biological drive",
+          "Role conflict"
+        ],
+        "answer": 1,
+        "explanation": "Praise rewards a valued behavior and is described as social rather than codified enforcement."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Status",
+          "Expected roles",
+          "Competing demands",
+          "Strain or conflict"
+        ],
+        "caption": "Count the roles involved before choosing strain or conflict."
+      },
+      "source": "https://openstax.org/details/books/introduction-sociology-3e"
+    },
+    {
+      "id": "behavioral-inequality",
+      "subject": "behavioral",
+      "title": "Stratification and health disparities",
+      "summary": "Social stratification organizes unequal access to resources and opportunities. Income is a flow of earnings; wealth is accumulated assets minus debts. Health outcomes can reflect housing, pollution, education, working conditions, and access to care as well as individual choices. Social mobility describes changes in social position within a person’s life or across generations. A group-level association alone does not identify a single causal mechanism.",
+      "keyPoints": [
+        "Intragenerational mobility occurs within one life.",
+        "Intergenerational mobility compares generations."
+      ],
+      "misconception": "Income and wealth are related but are not the same measure.",
+      "workedExample": {
+        "prompt": "A person becomes a physician after growing up with parents employed in low-wage work. Which mobility comparison is being made?",
+        "steps": [
+          "The comparison is between parent and child.",
+          "The social positions differ across generations.",
+          "This is upward intergenerational mobility."
+        ],
+        "answer": "Upward intergenerational mobility."
+      },
+      "check": {
+        "prompt": "Which best measures wealth rather than income?",
+        "choices": [
+          "Assets minus debts",
+          "Annual wages",
+          "Monthly salary",
+          "Hourly pay"
+        ],
+        "answer": 0,
+        "explanation": "Wealth is a stock of net resources; income measures a flow over time."
+      },
+      "transfer": {
+        "prompt": "A city finds higher asthma rates near heavy traffic. Which next step most directly investigates a structural exposure?",
+        "choices": [
+          "Assume residents lack motivation",
+          "Conclude genetics must explain it",
+          "Measure pollution and relevant confounders",
+          "Ignore neighborhood conditions"
+        ],
+        "answer": 2,
+        "explanation": "Measuring environmental exposure and confounders tests a plausible structural explanation without assuming causation."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Social conditions",
+          "Resource access",
+          "Exposure and opportunity",
+          "Health outcomes"
+        ],
+        "caption": "Structural pathways can connect social position with health without reducing outcomes to individual choices."
+      },
+      "source": "https://openstax.org/books/introduction-sociology-3e/pages/9-1-what-is-social-stratification"
+    },
+    {
+      "id": "behavioral-research",
+      "subject": "behavioral",
+      "title": "Research design and confounding",
+      "summary": "An experiment manipulates an independent variable and measures an outcome. Random assignment helps balance preexisting differences between groups; random sampling addresses who is represented. A confound varies with the exposure and offers another explanation for the outcome. Reliability is consistency, while validity concerns whether a measure or inference captures what it claims. Correlation can motivate a hypothesis but does not by itself establish causation.",
+      "keyPoints": [
+        "Random assignment supports internal validity.",
+        "Random sampling supports population representation."
+      ],
+      "misconception": "Random assignment and random sampling answer different questions.",
+      "workedExample": {
+        "prompt": "People who choose a tutoring program score higher, but they also studied more beforehand. Can the program alone explain the difference?",
+        "steps": [
+          "Participation was self-selected.",
+          "Prior study differs between groups and can affect scores.",
+          "Prior preparation is a competing explanation; causal attribution is limited."
+        ],
+        "answer": "No; prior preparation may confound the association."
+      },
+      "check": {
+        "prompt": "Which design feature most directly reduces baseline confounding between treatment groups?",
+        "choices": [
+          "Larger font on surveys",
+          "Only measuring one group",
+          "Random assignment",
+          "Selecting only volunteers"
+        ],
+        "answer": 2,
+        "explanation": "Random assignment tends to balance measured and unmeasured preexisting differences."
+      },
+      "transfer": {
+        "prompt": "A scale gives nearly identical but consistently incorrect readings. It is best described as:",
+        "choices": [
+          "Neither consistent nor repeatable",
+          "Necessarily valid",
+          "Reliable but inaccurate",
+          "Randomly assigned"
+        ],
+        "answer": 2,
+        "explanation": "Consistency supports reliability even when calibration error undermines accuracy."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Question",
+          "Design and comparison",
+          "Measurement",
+          "Alternative explanations"
+        ],
+        "caption": "A causal claim needs a design that addresses plausible competing causes."
+      },
+      "source": "https://openstax.org/details/books/psychology-2e"
+    },
+    {
+      "id": "biochemistry-amino-acids",
+      "subject": "biochemistry",
+      "title": "Amino acids and charge",
+      "summary": "An amino acid’s charge depends on pH relative to each ionizable group’s pKa. Below a group’s pKa it is more protonated; above it, more deprotonated. Sum the charges of the amino terminus, carboxyl terminus, and any ionizable side chain. Acidic side chains commonly lose protons near physiological pH, while lysine and arginine side chains commonly retain positive charge.",
+      "keyPoints": [
+        "pH below pKa favors the protonated form.",
+        "At pH = pKa, the two forms have equal concentrations."
+      ],
+      "misconception": "Deprotonation changes charge by minus one; it does not always create a negative group.",
+      "workedExample": {
+        "prompt": "For glycine at pH 7, use pKa values 2.3 and 9.6. Estimate net charge.",
+        "steps": [
+          "The carboxyl group is mostly deprotonated: −1.",
+          "The amino group is mostly protonated: +1.",
+          "Glycine has no ionizable side chain, giving a sum near zero."
+        ],
+        "answer": "Approximately 0."
+      },
+      "check": {
+        "prompt": "A lysine side chain has pKa 10.5. At pH 7, its dominant charge is:",
+        "choices": [
+          "−2",
+          "−1",
+          "0",
+          "+1"
+        ],
+        "answer": 3,
+        "explanation": "pH is below pKa, so the basic amino side chain is predominantly protonated and positive."
+      },
+      "transfer": {
+        "prompt": "A carboxyl side chain has pKa 4. At pH 7, its dominant charge is:",
+        "choices": [
+          "0",
+          "−1",
+          "+1",
+          "+2"
+        ],
+        "answer": 1,
+        "explanation": "pH exceeds pKa, so the carboxyl group is predominantly deprotonated as a carboxylate."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "List ionizable groups",
+          "Compare pH and pKa",
+          "Assign each charge",
+          "Sum charges"
+        ],
+        "caption": "Charge bookkeeping works for free amino acids and ionizable groups in peptides."
+      },
+      "source": "https://openstax.org/details/books/biology-2e"
+    },
+    {
+      "id": "biochemistry-protein-structure",
+      "subject": "biochemistry",
+      "title": "Protein structure and folding",
+      "summary": "Primary structure is the amino acid sequence. Secondary structures such as alpha helices and beta sheets rely on backbone hydrogen bonding. Tertiary structure is the three-dimensional arrangement of one polypeptide, while quaternary structure describes multiple subunits. In aqueous solution, hydrophobic residues often become buried, and polar groups often face water. Denaturation can disrupt folding without breaking the peptide backbone.",
+      "keyPoints": [
+        "Secondary structure is stabilized mainly by backbone hydrogen bonds.",
+        "Disulfide bonds covalently connect cysteine residues."
+      ],
+      "misconception": "Denaturation is not necessarily peptide-bond hydrolysis.",
+      "workedExample": {
+        "prompt": "Heat destroys an enzyme’s activity, but its amino acid sequence remains intact. What structural change is most likely?",
+        "steps": [
+          "The unchanged sequence preserves primary structure.",
+          "Heat can disrupt interactions that stabilize the folded shape.",
+          "Loss of active-site geometry can abolish function."
+        ],
+        "answer": "Disruption of higher-order structure."
+      },
+      "check": {
+        "prompt": "A protein consists of four associated polypeptide chains. Their association is its:",
+        "choices": [
+          "Primary structure",
+          "Secondary structure",
+          "Quaternary structure",
+          "Genetic code"
+        ],
+        "answer": 2,
+        "explanation": "Quaternary structure describes how multiple polypeptide subunits associate."
+      },
+      "transfer": {
+        "prompt": "Which pair can form a disulfide cross-link?",
+        "choices": [
+          "Two glycines",
+          "Two cysteines",
+          "Two alanines",
+          "Two valines"
+        ],
+        "answer": 1,
+        "explanation": "Cysteine sulfhydryl groups can be oxidized to a disulfide bond."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Sequence",
+          "Local folding",
+          "One-chain shape",
+          "Subunit assembly"
+        ],
+        "caption": "Each level asks a different structural question."
+      },
+      "source": "https://openstax.org/details/books/biology-2e"
+    },
+    {
+      "id": "biochemistry-enzyme-kinetics",
+      "subject": "biochemistry",
+      "title": "Enzyme kinetics and inhibition",
+      "summary": "Michaelis–Menten kinetics models initial rate as v = Vmax[S]/(Km + [S]) for appropriate simple enzyme systems. At substrate concentration Km, the rate is half Vmax. Competitive inhibitors increase apparent Km without changing Vmax when sufficiently high substrate can outcompete them. Pure noncompetitive inhibition lowers Vmax while leaving Km unchanged; mixed inhibition has different effects.",
+      "keyPoints": [
+        "At [S] = Km, v = Vmax/2.",
+        "Vmax rises with active enzyme concentration."
+      ],
+      "misconception": "A lower Km does not universally equal a binding constant; use the model’s assumptions.",
+      "workedExample": {
+        "prompt": "An enzyme has Vmax 80 units and Km 4 mM. Find v at 4 mM substrate.",
+        "steps": [
+          "Substitute [S] = Km into the equation.",
+          "The denominator is 4 + 4 = 8 mM.",
+          "v = 80 × 4/8 = 40 units."
+        ],
+        "answer": "40 units."
+      },
+      "check": {
+        "prompt": "A competitive inhibitor is added. Which pattern is expected in the simple model?",
+        "choices": [
+          "Higher apparent Km, unchanged Vmax",
+          "Lower Vmax, unchanged Km",
+          "Lower Km and Vmax",
+          "Higher Vmax only"
+        ],
+        "answer": 0,
+        "explanation": "Competitive inhibition can be overcome by abundant substrate, preserving Vmax while increasing apparent Km."
+      },
+      "transfer": {
+        "prompt": "If Vmax = 90 and [S] = 2Km, what is the initial rate?",
+        "choices": [
+          "30",
+          "60",
+          "45",
+          "90"
+        ],
+        "answer": 1,
+        "explanation": "v = 90 × 2Km/(Km + 2Km) = 60."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Substrate rises",
+          "Enzyme sites fill",
+          "Rate approaches Vmax",
+          "Compare inhibitors"
+        ],
+        "caption": "A saturation curve connects the equation to enzyme occupancy."
+      },
+      "source": "https://openstax.org/books/biology-2e/pages/6-5-enzymes"
+    },
+    {
+      "id": "biochemistry-bioenergetics",
+      "subject": "biochemistry",
+      "title": "Free energy and reaction coupling",
+      "summary": "The sign of Gibbs free-energy change predicts thermodynamic favorability under the specified conditions. A negative ΔG favors forward change; it does not guarantee speed. Cells couple unfavorable reactions to favorable ones through a shared mechanism. Add the ΔG values of coupled reactions. Actual ΔG also depends on concentrations, so a standard-state value alone need not describe the cellular direction.",
+      "keyPoints": [
+        "For coupled reactions, add their ΔG values.",
+        "Catalysts change activation barriers, not equilibrium ΔG."
+      ],
+      "misconception": "Thermodynamically favorable does not mean fast.",
+      "workedExample": {
+        "prompt": "A synthesis has ΔG = +18 kJ/mol and is coupled to a step with ΔG = −30 kJ/mol. Find the net value.",
+        "steps": [
+          "Write both reactions in their actual coupled directions.",
+          "Add +18 and −30.",
+          "The net value is negative, favoring the coupled process."
+        ],
+        "answer": "−12 kJ/mol."
+      },
+      "check": {
+        "prompt": "A catalyst accelerates a reaction. Which quantity remains unchanged for the same reactant and product states?",
+        "choices": [
+          "Equilibrium constant",
+          "Activation energy",
+          "Time to approach equilibrium",
+          "Both forward and reverse rates"
+        ],
+        "answer": 0,
+        "explanation": "Catalysts do not change the equilibrium constant or reaction free-energy difference."
+      },
+      "transfer": {
+        "prompt": "A +25 kJ/mol step is coupled to a −15 kJ/mol step. What is the net ΔG?",
+        "choices": [
+          "+10 kJ/mol",
+          "−40 kJ/mol",
+          "−10 kJ/mol",
+          "+40 kJ/mol"
+        ],
+        "answer": 0,
+        "explanation": "The sum is +10 kJ/mol, so this coupling alone remains unfavorable under those conditions."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Individual reactions",
+          "Shared mechanism",
+          "Add ΔG values",
+          "Assess net direction"
+        ],
+        "caption": "Energy bookkeeping is separate from kinetic speed."
+      },
+      "source": "https://openstax.org/details/books/biology-2e"
+    },
+    {
+      "id": "biochemistry-glycolysis",
+      "subject": "biochemistry",
+      "title": "Glycolysis and fermentation",
+      "summary": "Glycolysis converts one glucose into two pyruvate molecules in the cytosol. It invests ATP early and produces ATP and NADH later, yielding a net two ATP and two NADH per glucose. When oxidative reoxidation is insufficient, lactate formation regenerates NAD+ so glycolysis can continue. The lactate step itself does not add ATP to glycolysis’s yield.",
+      "keyPoints": [
+        "Net glycolysis: 2 ATP, 2 NADH, 2 pyruvate per glucose.",
+        "Lactate dehydrogenase regenerates NAD+ from NADH."
+      ],
+      "misconception": "Fermentation’s key role is redox recycling, not extra ATP production.",
+      "workedExample": {
+        "prompt": "Why can lactate formation support ATP production when oxygen delivery is limited?",
+        "steps": [
+          "Glycolysis requires NAD+ at glyceraldehyde-3-phosphate dehydrogenase.",
+          "Reducing pyruvate to lactate oxidizes NADH to NAD+.",
+          "Recycled NAD+ allows glycolysis and its substrate-level ATP production to continue."
+        ],
+        "answer": "It regenerates NAD+ needed for glycolysis."
+      },
+      "check": {
+        "prompt": "How much net ATP does glycolysis produce per glucose?",
+        "choices": [
+          "0",
+          "2",
+          "4",
+          "30"
+        ],
+        "answer": 1,
+        "explanation": "Four ATP are formed but two were invested, leaving a net two."
+      },
+      "transfer": {
+        "prompt": "Blocking NAD+ regeneration would directly threaten which process?",
+        "choices": [
+          "DNA base pairing only",
+          "Passive oxygen diffusion only",
+          "Peptide bond resonance",
+          "Sustained glycolytic oxidation"
+        ],
+        "answer": 3,
+        "explanation": "Glycolysis requires an oxidized electron acceptor; depletion of NAD+ limits the pathway."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Glucose",
+          "Two pyruvate",
+          "Lactate when needed",
+          "NAD+ recycled"
+        ],
+        "caption": "Follow carbon separately from the NADH/NAD+ electron carrier cycle."
+      },
+      "source": "https://openstax.org/details/books/biology-2e"
+    },
+    {
+      "id": "biochemistry-citric-acid",
+      "subject": "biochemistry",
+      "title": "Pyruvate oxidation and the citric acid cycle",
+      "summary": "Pyruvate dehydrogenase links glycolysis to the citric acid cycle by producing acetyl-CoA, CO2, and NADH. Each acetyl-CoA entering the cycle yields three NADH, one FADH2, one GTP or ATP equivalent, and two CO2. The cycle regenerates oxaloacetate; it does not consume a new oxaloacetate for every turn. Multiply by two when starting from one glucose.",
+      "keyPoints": [
+        "One cycle turn processes one acetyl-CoA.",
+        "Most captured energy leaves as reduced electron carriers."
+      ],
+      "misconception": "The cycle’s CO2 release does not mean both incoming acetyl carbons leave during the first turn.",
+      "workedExample": {
+        "prompt": "How many NADH are produced by two turns of the cycle, excluding pyruvate dehydrogenase?",
+        "steps": [
+          "One turn yields three NADH.",
+          "Two acetyl-CoA require two turns.",
+          "Multiply 3 by 2, keeping the linking reaction excluded."
+        ],
+        "answer": "6 NADH."
+      },
+      "check": {
+        "prompt": "Which molecule is regenerated at the end of each turn?",
+        "choices": [
+          "Oxaloacetate",
+          "Glucose",
+          "Lactate",
+          "Ethanol"
+        ],
+        "answer": 0,
+        "explanation": "Oxaloacetate is regenerated and can condense with another acetyl-CoA."
+      },
+      "transfer": {
+        "prompt": "For one acetyl-CoA, which product count belongs to the cycle itself?",
+        "choices": [
+          "1 NADH and 3 FADH2",
+          "3 NADH and 1 FADH2",
+          "2 NADH and 2 FADH2",
+          "0 NADH and 4 FADH2"
+        ],
+        "answer": 1,
+        "explanation": "Each turn produces three NADH and one FADH2, plus a GTP/ATP equivalent and two CO2."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Pyruvate",
+          "Acetyl-CoA",
+          "Cycle oxidation",
+          "Reduced carriers"
+        ],
+        "caption": "Separate the linking reaction from the cycle before counting products."
+      },
+      "source": "https://openstax.org/details/books/biology-2e"
+    },
+    {
+      "id": "biochemistry-oxidative-phosphorylation",
+      "subject": "biochemistry",
+      "title": "Electron transport and chemiosmosis",
+      "summary": "The mitochondrial electron transport chain transfers electrons to oxygen while selected complexes pump protons from matrix to intermembrane space. The resulting electrochemical gradient drives ATP synthase as protons return to the matrix. An uncoupler dissipates the gradient without directly stopping electron transfer, often increasing oxygen consumption while reducing ATP yield. An electron-transport inhibitor acts differently by blocking electron flow.",
+      "keyPoints": [
+        "Oxygen is the terminal electron acceptor.",
+        "The proton gradient stores energy used by ATP synthase."
+      ],
+      "misconception": "A higher oxygen-consumption rate does not always mean more ATP synthesis.",
+      "workedExample": {
+        "prompt": "A proton leak increases while substrates and oxygen remain available. Predict ATP production efficiency.",
+        "steps": [
+          "Protons can return without passing through ATP synthase.",
+          "Less gradient energy is captured as ATP.",
+          "More fuel may be oxidized per ATP produced."
+        ],
+        "answer": "ATP yield per fuel molecule decreases."
+      },
+      "check": {
+        "prompt": "Protons move through ATP synthase primarily in which direction in mitochondria?",
+        "choices": [
+          "Intermembrane space to matrix",
+          "Matrix to intermembrane space",
+          "Cytosol to nucleus",
+          "Matrix to cytosol through the outer membrane only"
+        ],
+        "answer": 0,
+        "explanation": "ATP synthase uses proton return to the matrix down the electrochemical gradient."
+      },
+      "transfer": {
+        "prompt": "An inhibitor prevents electron transfer to oxygen. What is the immediate trend?",
+        "choices": [
+          "Oxygen consumption necessarily rises",
+          "ATP synthase gains an unlimited gradient",
+          "NADH oxidation slows",
+          "NAD+ is produced faster"
+        ],
+        "answer": 2,
+        "explanation": "Blocking terminal electron transfer backs up the chain, reducing NADH oxidation."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "NADH/FADH2",
+          "Electron transport",
+          "Proton gradient",
+          "ATP synthase"
+        ],
+        "caption": "Electron flow builds a gradient; proton flow through ATP synthase harvests it."
+      },
+      "source": "https://openstax.org/details/books/biology-2e"
+    },
+    {
+      "id": "biochemistry-lipids",
+      "subject": "biochemistry",
+      "title": "Lipids, membranes, and fatty acid oxidation",
+      "summary": "Amphipathic phospholipids form bilayers with polar heads facing water and hydrophobic tails inside. Unsaturated tails typically disrupt tight packing. Fatty acid beta-oxidation removes two-carbon units as acetyl-CoA while generating NADH and FADH2. For a saturated even-chain fatty acid with n carbons, beta-oxidation uses n/2 − 1 cycles and produces n/2 acetyl-CoA; activation has an energy cost.",
+      "keyPoints": [
+        "Even-chain saturated fatty acid: acetyl-CoA count = n/2.",
+        "Beta-oxidation cycle count = n/2 − 1."
+      ],
+      "misconception": "Do not equate the number of acetyl-CoA products with the number of cycles.",
+      "workedExample": {
+        "prompt": "How many beta-oxidation cycles process a saturated 12-carbon fatty acid?",
+        "steps": [
+          "Divide 12 by 2 to obtain six acetyl-CoA.",
+          "The final four-carbon segment yields two acetyl-CoA in one cycle.",
+          "Therefore six products require five cycles."
+        ],
+        "answer": "5 cycles and 6 acetyl-CoA."
+      },
+      "check": {
+        "prompt": "A saturated 16-carbon fatty acid yields how many acetyl-CoA?",
+        "choices": [
+          "6",
+          "7",
+          "16",
+          "8"
+        ],
+        "answer": 3,
+        "explanation": "Sixteen carbons divided into two-carbon units yields eight acetyl-CoA."
+      },
+      "transfer": {
+        "prompt": "At the same tail length and temperature, adding cis double bonds generally makes a membrane:",
+        "choices": [
+          "Less fluid through tighter packing",
+          "More fluid through poorer packing",
+          "Covalently cross-linked",
+          "Unable to contain proteins"
+        ],
+        "answer": 1,
+        "explanation": "Cis bends disrupt packing and generally increase fluidity."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Fatty acyl-CoA",
+          "Repeated two-carbon removal",
+          "Acetyl-CoA",
+          "Cycle and electron transport"
+        ],
+        "caption": "Count carbon units first, then count processing cycles."
+      },
+      "source": "https://openstax.org/details/books/biology-2e"
+    },
+    {
+      "id": "biochemistry-nucleic-acids",
+      "subject": "biochemistry",
+      "title": "Nucleic acids and information flow",
+      "summary": "DNA stores information in base sequence; RNA can carry, interpret, or regulate it. DNA and RNA polymerases extend a strand by adding to its 3′ end, so synthesis proceeds 5′ to 3′. Complementary nucleic acid strands are antiparallel. A coding DNA strand matches the RNA sequence except that RNA uses U in place of T; the template strand is complementary to that RNA.",
+      "keyPoints": [
+        "Polymerases synthesize 5′ → 3′.",
+        "Always label strand direction before complementing bases."
+      ],
+      "misconception": "The coding strand is not the strand read directly as the transcription template.",
+      "workedExample": {
+        "prompt": "A template is 3′-TAC GGA-5′. Write the RNA produced.",
+        "steps": [
+          "Read the template in the given 3′ → 5′ direction.",
+          "Pair T with A, A with U, C with G, and G with C.",
+          "Write the new strand 5′ → 3′."
+        ],
+        "answer": "5′-AUG CCU-3′."
+      },
+      "check": {
+        "prompt": "Which sequence matches RNA 5′-AUG-3′ as the coding DNA strand?",
+        "choices": [
+          "5′-TAC-3′",
+          "3′-ATG-5′",
+          "5′-ATG-3′",
+          "5′-UAC-3′"
+        ],
+        "answer": 2,
+        "explanation": "The coding strand has the same orientation and bases as RNA except T replaces U."
+      },
+      "transfer": {
+        "prompt": "A polymerase adds a nucleotide to which end of a growing strand?",
+        "choices": [
+          "5′ phosphate end",
+          "Either end equally",
+          "A side-chain amino group",
+          "3′ hydroxyl end"
+        ],
+        "answer": 3,
+        "explanation": "The growing strand’s 3′ hydroxyl participates in phosphodiester bond formation."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "DNA template",
+          "Complementary RNA",
+          "Codon reading",
+          "Protein sequence"
+        ],
+        "caption": "Track both sequence and strand direction."
+      },
+      "source": "https://openstax.org/books/biology-2e/pages/15-1-the-genetic-code"
+    },
+    {
+      "id": "biochemistry-lab-methods",
+      "subject": "biochemistry",
+      "title": "Protein and molecular laboratory methods",
+      "summary": "Choose a laboratory method by the property it measures. SDS-PAGE separates denatured proteins mainly by size; reducing conditions additionally disrupt disulfide bonds. Western blots use antibodies to detect a target protein. Size-exclusion chromatography lets larger molecules elute earlier because they enter fewer pores. Affinity chromatography retains molecules through a specific binding interaction.",
+      "keyPoints": [
+        "SDS-PAGE is chiefly a size separation under denaturing conditions.",
+        "A Western blot adds target-specific antibody detection."
+      ],
+      "misconception": "A dark band is not an absolute concentration without appropriate controls and calibration.",
+      "workedExample": {
+        "prompt": "A disulfide-linked dimer is 100 kDa. Each subunit is identical. Predict reducing SDS-PAGE migration.",
+        "steps": [
+          "SDS disrupts noncovalent structure.",
+          "A reducing agent breaks the interchain disulfide bond.",
+          "The two identical 50 kDa chains migrate together as one size band."
+        ],
+        "answer": "A band near 50 kDa."
+      },
+      "check": {
+        "prompt": "Which technique most directly tests whether a particular protein is present using an antibody?",
+        "choices": [
+          "Western blot",
+          "PCR",
+          "Southern blot",
+          "Simple distillation"
+        ],
+        "answer": 0,
+        "explanation": "Western blotting detects a target protein with antibodies."
+      },
+      "transfer": {
+        "prompt": "In ideal size-exclusion chromatography, which usually elutes first?",
+        "choices": [
+          "The smallest molecule",
+          "The most acidic molecule regardless of size",
+          "The most strongly pore-retained small molecule",
+          "The largest molecule"
+        ],
+        "answer": 3,
+        "explanation": "Larger molecules access fewer pores and take a shorter path through the column."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Target property",
+          "Choose separation",
+          "Choose detection",
+          "Interpret controls"
+        ],
+        "caption": "Separate what a technique sorts from what its detector recognizes."
+      },
+      "source": "https://openstax.org/details/books/biology-2e"
+    },
+    {
+      "id": "biology-membranes",
+      "subject": "biology",
+      "title": "Cells, membranes, and transport",
+      "summary": "A plasma membrane creates a selective barrier. Small nonpolar molecules can cross its lipid core readily, whereas ions usually need proteins. Passive transport follows an electrochemical gradient without direct energy input; active transport moves material against a gradient using an energy source. Secondary active transport couples one downhill movement to another uphill movement. Osmosis describes water movement driven by differences in effective solute concentration.",
+      "keyPoints": [
+        "Facilitated diffusion uses proteins but remains passive.",
+        "Tonicity depends on solutes that do not freely cross the membrane."
+      ],
+      "misconception": "Protein-mediated transport does not automatically require ATP.",
+      "workedExample": {
+        "prompt": "A sodium-glucose cotransporter brings glucose uphill while sodium enters downhill. Classify glucose transport.",
+        "steps": [
+          "Glucose moves against its gradient.",
+          "Sodium movement supplies energy from its existing gradient.",
+          "This is secondary active transport rather than direct ATP hydrolysis by the cotransporter."
+        ],
+        "answer": "Secondary active transport."
+      },
+      "check": {
+        "prompt": "An ion moves through a channel down its electrochemical gradient. This is:",
+        "choices": [
+          "Primary active transport",
+          "Facilitated diffusion",
+          "Endocytosis",
+          "Secondary active transport necessarily"
+        ],
+        "answer": 1,
+        "explanation": "A channel permits passive movement down the electrochemical gradient."
+      },
+      "transfer": {
+        "prompt": "A cell placed in a solution with more impermeant solute outside than inside will initially:",
+        "choices": [
+          "Gain water and swell",
+          "Lose water and shrink",
+          "Replicate DNA",
+          "Have no water movement"
+        ],
+        "answer": 1,
+        "explanation": "The external solution is hypertonic, so water leaves the cell."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Membrane barrier",
+          "Solute properties",
+          "Gradient direction",
+          "Transport mechanism"
+        ],
+        "caption": "First identify the gradient, then identify the energy source."
+      },
+      "source": "https://openstax.org/details/books/biology-2e"
+    },
+    {
+      "id": "biology-cell-cycle",
+      "subject": "biology",
+      "title": "Cell cycle, mitosis, and meiosis",
+      "summary": "DNA replicates in S phase before mitosis or the first meiotic division. Mitosis generally preserves chromosome number by separating sister chromatids. Meiosis I separates homologous chromosomes, reducing ploidy, while meiosis II separates sister chromatids. Crossing over between homologs in prophase I and independent assortment create genetic variation. Count chromosomes by centromeres, not by the number of visible DNA strands.",
+      "keyPoints": [
+        "Homologs separate in meiosis I.",
+        "Sister chromatids separate in mitosis and meiosis II."
+      ],
+      "misconception": "DNA replication doubles DNA content but does not immediately double chromosome count.",
+      "workedExample": {
+        "prompt": "A diploid cell has 6 chromosomes before S phase. How many chromosomes are present just after S phase?",
+        "steps": [
+          "Chromosomes are counted by centromeres.",
+          "Each chromosome now has two sister chromatids.",
+          "There are still six chromosomes, containing twelve chromatids."
+        ],
+        "answer": "6 chromosomes and 12 chromatids."
+      },
+      "check": {
+        "prompt": "Which event reduces a diploid cell to haploid daughter cells?",
+        "choices": [
+          "Meiosis I",
+          "S phase",
+          "Mitosis prophase",
+          "Cytokinesis after ordinary mitosis"
+        ],
+        "answer": 0,
+        "explanation": "Separating homologous pairs in meiosis I reduces the number of chromosome sets."
+      },
+      "transfer": {
+        "prompt": "Crossing over normally involves:",
+        "choices": [
+          "Sister chromatids only during translation",
+          "Unrelated proteins in the cytosol",
+          "mRNA and ribosomes",
+          "Nonsister chromatids of homologous chromosomes"
+        ],
+        "answer": 3,
+        "explanation": "Homologous chromosomes exchange segments between nonsister chromatids during prophase I."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "DNA replication",
+          "Homologs separate",
+          "Sisters separate",
+          "Haploid products"
+        ],
+        "caption": "Distinguish chromosome sets from replicated DNA content."
+      },
+      "source": "https://openstax.org/details/books/biology-2e"
+    },
+    {
+      "id": "biology-inheritance",
+      "subject": "biology",
+      "title": "Inheritance and probability",
+      "summary": "A genotype describes alleles, while a phenotype describes an observable trait. For independent events, multiply probabilities; for mutually exclusive alternatives, add them. Autosomal recessive traits can appear in children of unaffected carriers. X-linked inheritance requires tracking the sex chromosomes explicitly. Linkage, incomplete penetrance, and environmental effects can make real inheritance depart from simple ratios.",
+      "keyPoints": [
+        "Aa × Aa gives 1/4 aa in a simple Mendelian model.",
+        "Each independent pregnancy has its own probability."
+      ],
+      "misconception": "A 25% probability does not guarantee exactly one affected child in four.",
+      "workedExample": {
+        "prompt": "Two carriers of an autosomal recessive allele have a child. What is the probability of an unaffected carrier?",
+        "steps": [
+          "Each parent transmits A or a with probability one half.",
+          "The combinations are AA, Aa, aA, and aa.",
+          "Two of four combinations are heterozygous."
+        ],
+        "answer": "1/2."
+      },
+      "check": {
+        "prompt": "For Aa × Aa, what is the probability of an affected aa child?",
+        "choices": [
+          "0",
+          "1/2",
+          "1/4",
+          "3/4"
+        ],
+        "answer": 2,
+        "explanation": "Only the aa combination is affected in the stated recessive model."
+      },
+      "transfer": {
+        "prompt": "For two independent births to carrier parents, what is the probability both children are aa?",
+        "choices": [
+          "1/2",
+          "1/4",
+          "1/16",
+          "1/8"
+        ],
+        "answer": 2,
+        "explanation": "Multiply the independent probabilities: 1/4 × 1/4 = 1/16."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Parental alleles",
+          "Possible gametes",
+          "Offspring combinations",
+          "Probability"
+        ],
+        "caption": "Use the inheritance model given in the passage, then apply probability rules."
+      },
+      "source": "https://openstax.org/details/books/biology-2e"
+    },
+    {
+      "id": "biology-gene-regulation",
+      "subject": "biology",
+      "title": "Gene expression and regulation",
+      "summary": "Gene regulation controls when and how much functional product is made. Transcription factors can alter transcription initiation; RNA processing and stability can alter available mRNA; translational and post-translational controls act later. Prokaryotic operons can coordinate several genes under shared regulation. A mutation in a promoter may change expression without changing the encoded protein’s amino acid sequence.",
+      "keyPoints": [
+        "Promoter changes can affect transcription rate.",
+        "mRNA abundance and protein abundance need not change together."
+      ],
+      "misconception": "Every regulatory mutation does not alter protein sequence.",
+      "workedExample": {
+        "prompt": "A promoter mutation lowers mRNA but leaves the coding sequence unchanged. Predict the simplest protein effect.",
+        "steps": [
+          "The promoter controls transcription rather than codon identity.",
+          "Lower mRNA supplies fewer templates for translation.",
+          "Protein amount may decrease while the sequence remains the same."
+        ],
+        "answer": "Less protein with an unchanged primary sequence, all else equal."
+      },
+      "check": {
+        "prompt": "Which change most directly affects translation initiation rather than transcription?",
+        "choices": [
+          "Deleting a DNA promoter",
+          "Preventing RNA polymerase binding",
+          "Changing a transcription-factor site",
+          "Blocking ribosome binding to mRNA"
+        ],
+        "answer": 3,
+        "explanation": "Ribosome recruitment acts at translation, after mRNA has been made."
+      },
+      "transfer": {
+        "prompt": "A protein decreases while its mRNA remains constant. Which mechanism is plausible?",
+        "choices": [
+          "Necessarily lower transcription",
+          "Loss of every DNA template",
+          "Faster protein degradation",
+          "No possible regulatory mechanism"
+        ],
+        "answer": 2,
+        "explanation": "Increased protein degradation can lower protein abundance without changing mRNA."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "DNA regulation",
+          "mRNA production",
+          "Translation",
+          "Protein turnover"
+        ],
+        "caption": "Expression can be controlled at multiple levels, so measure the level relevant to the claim."
+      },
+      "source": "https://openstax.org/details/books/biology-2e"
+    },
+    {
+      "id": "biology-nervous",
+      "subject": "biology",
+      "title": "Neurons and synapses",
+      "summary": "A neuron’s membrane potential reflects ion gradients and selective permeability. In a typical action potential, voltage-gated sodium channels drive rapid depolarization and potassium channels support repolarization. At a chemical synapse, arriving depolarization opens calcium channels; calcium promotes vesicle fusion and neurotransmitter release. Postsynaptic effects depend on the receptor and ion conductance, not just the transmitter’s name.",
+      "keyPoints": [
+        "Action potentials are all-or-none events.",
+        "Presynaptic calcium entry triggers transmitter release."
+      ],
+      "misconception": "Stronger stimuli generally change firing frequency, not the size of each action potential.",
+      "workedExample": {
+        "prompt": "A drug blocks presynaptic voltage-gated calcium channels. Predict the direct synaptic effect.",
+        "steps": [
+          "An action potential may still reach the terminal.",
+          "Calcium influx normally links depolarization to vesicle fusion.",
+          "Reduced calcium entry decreases neurotransmitter release."
+        ],
+        "answer": "Reduced neurotransmitter release."
+      },
+      "check": {
+        "prompt": "Which ion commonly enters during the rapid rising phase of a neuronal action potential?",
+        "choices": [
+          "Na+",
+          "K+",
+          "A large protein anion",
+          "Phosphate only"
+        ],
+        "answer": 0,
+        "explanation": "Opening of voltage-gated sodium channels produces inward sodium current."
+      },
+      "transfer": {
+        "prompt": "A stronger suprathreshold stimulus generally encodes intensity by increasing:",
+        "choices": [
+          "Individual action-potential amplitude without limit",
+          "The DNA content of the neuron",
+          "Action-potential frequency",
+          "The number of chromosomes"
+        ],
+        "answer": 2,
+        "explanation": "Action potentials have fairly stereotyped amplitude; frequency and recruitment can encode intensity."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Depolarization",
+          "Calcium enters terminal",
+          "Vesicles fuse",
+          "Receptor response"
+        ],
+        "caption": "Electrical activity becomes a chemical signal at the presynaptic terminal."
+      },
+      "source": "https://openstax.org/details/books/biology-2e"
+    },
+    {
+      "id": "biology-endocrine",
+      "subject": "biology",
+      "title": "Endocrine feedback and hormone action",
+      "summary": "Hormones coordinate distant tissues through receptors. Many peptide hormones bind surface receptors and trigger intracellular signaling; steroid hormones often cross membranes and bind intracellular receptors that regulate transcription. Negative feedback reduces upstream stimulation when a downstream hormone or regulated variable rises. To interpret an endocrine disturbance, trace the axis and locate the gland that is failing or overactive.",
+      "keyPoints": [
+        "Peptide hormones usually act through membrane receptors.",
+        "Negative feedback often lowers upstream hormones when downstream output rises."
+      ],
+      "misconception": "A high stimulating hormone can indicate failure of the target gland rather than excess target output.",
+      "workedExample": {
+        "prompt": "A thyroid cannot produce enough thyroid hormone despite a functional pituitary. Predict TSH.",
+        "steps": [
+          "Low thyroid hormone reduces negative feedback.",
+          "The pituitary responds by increasing thyroid-stimulating hormone.",
+          "TSH rises even though thyroid hormone remains low."
+        ],
+        "answer": "Elevated TSH."
+      },
+      "check": {
+        "prompt": "Which is most likely to act through an intracellular receptor?",
+        "choices": [
+          "A typical steroid hormone",
+          "A large peptide hormone",
+          "A charged extracellular ion only",
+          "A neurotransmitter vesicle"
+        ],
+        "answer": 0,
+        "explanation": "Steroid hormones are lipid-soluble and commonly bind intracellular receptors."
+      },
+      "transfer": {
+        "prompt": "Excess cortisol from an adrenal tumor would tend to have what effect on pituitary ACTH?",
+        "choices": [
+          "Increase it through positive feedback",
+          "Convert it into insulin",
+          "Necessarily leave it unchanged",
+          "Decrease it through negative feedback"
+        ],
+        "answer": 3,
+        "explanation": "Excess downstream cortisol suppresses upstream ACTH in an intact feedback system."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Hypothalamus",
+          "Pituitary",
+          "Target gland",
+          "Feedback upstream"
+        ],
+        "caption": "Follow both the forward signal and the feedback signal."
+      },
+      "source": "https://openstax.org/details/books/biology-2e"
+    },
+    {
+      "id": "biology-circulation",
+      "subject": "biology",
+      "title": "Circulation and gas exchange",
+      "summary": "Blood transports gases, nutrients, and signals. The right heart sends blood to pulmonary circulation; the left heart sends it to systemic circulation. Gas exchange depends on partial-pressure gradients and the properties of the exchange barrier. Hemoglobin binds oxygen cooperatively. Increased CO2, increased temperature, or lower pH can favor oxygen unloading in metabolically active tissues.",
+      "keyPoints": [
+        "Arteries carry blood away from the heart, regardless of oxygen level.",
+        "A right-shifted oxygen-binding curve means lower affinity at a given oxygen pressure."
+      ],
+      "misconception": "Pulmonary arteries carry relatively deoxygenated blood despite being arteries.",
+      "workedExample": {
+        "prompt": "Active muscle produces more CO2 and acid. What happens to hemoglobin’s oxygen affinity locally?",
+        "steps": [
+          "Higher CO2 and lower pH signal active metabolism.",
+          "These conditions stabilize states that release oxygen more readily.",
+          "Affinity decreases, helping delivery to the tissue."
+        ],
+        "answer": "Lower affinity and greater unloading."
+      },
+      "check": {
+        "prompt": "Which chamber pumps blood into systemic circulation?",
+        "choices": [
+          "Left ventricle",
+          "Right atrium",
+          "Right ventricle",
+          "Left atrium"
+        ],
+        "answer": 0,
+        "explanation": "The left ventricle supplies the aorta and systemic circulation."
+      },
+      "transfer": {
+        "prompt": "A thicker alveolar exchange barrier, with other factors unchanged, tends to:",
+        "choices": [
+          "Decrease gas diffusion",
+          "Increase gas diffusion",
+          "Reverse all pressure gradients",
+          "Remove the need for hemoglobin"
+        ],
+        "answer": 0,
+        "explanation": "A longer diffusion path reduces diffusion rate, all else equal."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Right heart",
+          "Lungs",
+          "Left heart",
+          "Systemic tissues"
+        ],
+        "caption": "Trace the circuit before assigning oxygen content."
+      },
+      "source": "https://openstax.org/details/books/biology-2e"
+    },
+    {
+      "id": "biology-kidney",
+      "subject": "biology",
+      "title": "Kidneys and water balance",
+      "summary": "The nephron filters plasma and then adjusts the filtrate through reabsorption and secretion. Filtration transfers fluid from glomerular blood into Bowman’s space; reabsorption returns substances to blood. Antidiuretic hormone increases collecting-duct water permeability, supporting water conservation when the medullary gradient is present. Clearance compares a substance’s urinary excretion rate with its plasma concentration.",
+      "keyPoints": [
+        "Excretion = filtration − reabsorption + secretion.",
+        "ADH promotes water reabsorption rather than adding water to the body."
+      ],
+      "misconception": "A filtered substance need not be fully excreted.",
+      "workedExample": {
+        "prompt": "A substance is filtered at 100 units/min, reabsorbed at 70, and secreted at 10. Find excretion.",
+        "steps": [
+          "Start with the filtered amount: 100.",
+          "Subtract return to blood: 100 − 70.",
+          "Add secretion from blood: 30 + 10."
+        ],
+        "answer": "40 units/min."
+      },
+      "check": {
+        "prompt": "Higher ADH ordinarily leads to urine that is:",
+        "choices": [
+          "More dilute and larger in volume",
+          "Always glucose-rich",
+          "More concentrated and smaller in volume",
+          "Identical in volume regardless of water balance"
+        ],
+        "answer": 2,
+        "explanation": "Greater collecting-duct water reabsorption conserves water and concentrates urine."
+      },
+      "transfer": {
+        "prompt": "Moving a substance from the nephron lumen back into blood is:",
+        "choices": [
+          "Filtration",
+          "Reabsorption",
+          "Secretion",
+          "Excretion"
+        ],
+        "answer": 1,
+        "explanation": "Reabsorption returns filtered material from tubular fluid to circulation."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Filtration",
+          "Reabsorption",
+          "Secretion",
+          "Excretion"
+        ],
+        "caption": "Use the direction of movement to name the renal process."
+      },
+      "source": "https://openstax.org/details/books/biology-2e"
+    },
+    {
+      "id": "biology-immune",
+      "subject": "biology",
+      "title": "Immune defense and memory",
+      "summary": "Innate defenses respond rapidly through barriers and broadly recognizing cells. Adaptive responses use antigen-specific lymphocytes and can develop memory. B cells can differentiate into antibody-secreting plasma cells; cytotoxic T cells can kill infected cells presenting antigen through MHC I. Helper T cells coordinate responses through signals and cell interactions. Vaccination aims to establish protection and memory without requiring the full risks of the natural infection.",
+      "keyPoints": [
+        "B cells produce antibodies through plasma-cell differentiation.",
+        "Memory responses are often faster and stronger than primary responses."
+      ],
+      "misconception": "Antibodies do not perform every immune function; cellular immunity is also essential.",
+      "workedExample": {
+        "prompt": "After a booster, antibody production rises faster than after the first exposure. Explain.",
+        "steps": [
+          "The first exposure generated antigen-specific memory cells.",
+          "The booster reactivates those cells.",
+          "Expanded, experienced populations respond more rapidly."
+        ],
+        "answer": "Adaptive immune memory."
+      },
+      "check": {
+        "prompt": "Which cell type directly secretes large quantities of antibody?",
+        "choices": [
+          "Plasma cell",
+          "Erythrocyte",
+          "Platelet",
+          "Neuron"
+        ],
+        "answer": 0,
+        "explanation": "Plasma cells are differentiated B cells specialized for antibody secretion."
+      },
+      "transfer": {
+        "prompt": "Which is a major function of cytotoxic T cells?",
+        "choices": [
+          "Secreting all circulating antibodies",
+          "Filtering blood in nephrons",
+          "Killing infected cells displaying relevant antigen",
+          "Producing bile"
+        ],
+        "answer": 2,
+        "explanation": "Cytotoxic T cells recognize relevant peptide–MHC I complexes and can kill the presenting cells."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Antigen encounter",
+          "Specific lymphocytes activate",
+          "Effector response",
+          "Memory cells"
+        ],
+        "caption": "Separate immediate defense from antigen-specific memory."
+      },
+      "source": "https://openstax.org/details/books/biology-2e"
+    },
+    {
+      "id": "biology-reproduction",
+      "subject": "biology",
+      "title": "Reproduction and hormonal cycles",
+      "summary": "Reproductive hormones act through feedback loops and developmental stages. FSH supports ovarian follicle development; rising estradiol usually provides negative feedback, but sustained high estradiol near midcycle can produce positive feedback and an LH surge. After ovulation, the corpus luteum produces progesterone that supports the endometrium. Fertilization, implantation, and embryonic development are distinct events at different locations and times.",
+      "keyPoints": [
+        "An LH surge triggers ovulation.",
+        "Progesterone supports the secretory endometrium after ovulation."
+      ],
+      "misconception": "Hormonal feedback is not always negative; the preovulatory interval is an important exception.",
+      "workedExample": {
+        "prompt": "What event links sustained high estradiol near midcycle to ovulation?",
+        "steps": [
+          "Sustained high estradiol changes feedback to positive.",
+          "Pituitary LH release rises sharply.",
+          "The LH surge triggers ovulation."
+        ],
+        "answer": "The LH surge."
+      },
+      "check": {
+        "prompt": "Which structure is a major source of progesterone soon after ovulation?",
+        "choices": [
+          "Corpus luteum",
+          "Anterior pituitary",
+          "Adrenal medulla only",
+          "Bowman’s capsule"
+        ],
+        "answer": 0,
+        "explanation": "The corpus luteum develops from the ovulated follicle and secretes progesterone."
+      },
+      "transfer": {
+        "prompt": "Which hormone most directly stimulates ovarian follicle development?",
+        "choices": [
+          "FSH",
+          "ADH",
+          "Calcitonin",
+          "Glucagon"
+        ],
+        "answer": 0,
+        "explanation": "FSH acts on ovarian follicles and supports their development."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Follicle growth",
+          "Estradiol rise",
+          "LH surge and ovulation",
+          "Corpus luteum"
+        ],
+        "caption": "Read the cycle as a sequence of feedback changes, not a static hormone list."
+      },
+      "source": "https://openstax.org/details/books/biology-2e"
+    },
+    {
+      "id": "general-atomic",
+      "subject": "general",
+      "title": "Atomic structure and periodic trends",
+      "summary": "An atom’s proton count defines its element; neutron changes create isotopes, and electron changes create ions. Across a period, increasing effective nuclear attraction generally decreases atomic radius and raises ionization energy, with important subshell exceptions. Down a group, added shells generally increase radius. Use electron configuration and shielding to explain trends rather than treating the periodic table as an unexplained arrow chart.",
+      "keyPoints": [
+        "Atomic number = number of protons.",
+        "For a cation, electrons are removed; protons remain unchanged."
+      ],
+      "misconception": "Isotopes differ in neutrons, not in the number of protons.",
+      "workedExample": {
+        "prompt": "How many electrons does Mg2+ have if magnesium has atomic number 12?",
+        "steps": [
+          "Neutral magnesium has twelve electrons.",
+          "A 2+ charge means two electrons were lost.",
+          "Subtract two from twelve."
+        ],
+        "answer": "10 electrons."
+      },
+      "check": {
+        "prompt": "Two carbon isotopes must have the same number of:",
+        "choices": [
+          "Neutrons",
+          "Protons",
+          "Total nucleons",
+          "Electrons in every ionization state"
+        ],
+        "answer": 1,
+        "explanation": "An element is defined by proton number; isotopes vary in neutron number."
+      },
+      "transfer": {
+        "prompt": "Which generally has the larger atomic radius: Li or K?",
+        "choices": [
+          "K because it has additional electron shells",
+          "Li because it is above K",
+          "They must be identical",
+          "Neither has electrons"
+        ],
+        "answer": 0,
+        "explanation": "Potassium lies farther down the group and has more occupied principal shells."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Protons define element",
+          "Electrons define ion",
+          "Shells and shielding",
+          "Periodic trend"
+        ],
+        "caption": "Explain each trend with nuclear attraction and electron-shell structure."
+      },
+      "source": "https://openstax.org/details/books/chemistry-2e"
+    },
+    {
+      "id": "general-bonding",
+      "subject": "general",
+      "title": "Bonding, shape, and polarity",
+      "summary": "Lewis structures track valence electrons and connectivity. VSEPR reasoning uses electron domains around a central atom to predict geometry; a multiple bond counts as one domain. Molecular polarity depends on both bond polarity and three-dimensional symmetry. Polar bonds can cancel in a symmetric molecule, while lone pairs or unequal substituents can prevent cancellation. Formal charge is a bookkeeping tool rather than a direct measurement of electron density.",
+      "keyPoints": [
+        "Count electron domains, not individual bond lines, for VSEPR.",
+        "Molecular dipoles add as vectors."
+      ],
+      "misconception": "Polar bonds do not guarantee a polar molecule.",
+      "workedExample": {
+        "prompt": "Why is linear CO2 nonpolar despite polar C=O bonds?",
+        "steps": [
+          "The two bond dipoles are equal in magnitude.",
+          "The linear geometry points them in opposite directions.",
+          "Their vector sum is zero."
+        ],
+        "answer": "The bond dipoles cancel."
+      },
+      "check": {
+        "prompt": "A central atom has four bonding domains and no lone pairs. Its geometry is:",
+        "choices": [
+          "Linear",
+          "Trigonal planar",
+          "Square planar necessarily",
+          "Tetrahedral"
+        ],
+        "answer": 3,
+        "explanation": "Four electron domains without lone pairs give tetrahedral geometry in VSEPR."
+      },
+      "transfer": {
+        "prompt": "Why is water polar in the usual molecular model?",
+        "choices": [
+          "Every molecule with oxygen must be linear",
+          "Its bonds have no dipoles",
+          "Its bent geometry prevents bond-dipole cancellation",
+          "Its two hydrogen atoms carry opposite full charges"
+        ],
+        "answer": 2,
+        "explanation": "Water’s bent structure leaves a nonzero vector sum of O–H bond dipoles."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Valence electrons",
+          "Lewis structure",
+          "Geometry",
+          "Net molecular dipole"
+        ],
+        "caption": "Predict shape before deciding whether bond dipoles cancel."
+      },
+      "source": "https://openstax.org/details/books/chemistry-2e"
+    },
+    {
+      "id": "general-stoichiometry",
+      "subject": "general",
+      "title": "Moles and limiting reactants",
+      "summary": "A balanced reaction supplies mole ratios, not direct mass ratios. Convert available masses to moles, compare reactants after dividing by their stoichiometric coefficients, and use the limiting reactant to find theoretical product. Excess reactant remains when the limiting reactant is exhausted. Percent yield compares actual product with the theoretical amount under the stated reaction model.",
+      "keyPoints": [
+        "Use coefficients as mole ratios.",
+        "Percent yield = actual/theoretical × 100%."
+      ],
+      "misconception": "The reactant with the smaller mass is not necessarily limiting.",
+      "workedExample": {
+        "prompt": "For 2H2 + O2 → 2H2O, mix 3 mol H2 and 2 mol O2. Find maximum water.",
+        "steps": [
+          "Three mol H2 needs 1.5 mol O2.",
+          "Two mol O2 is available, so hydrogen limits.",
+          "The H2:H2O ratio is 1:1."
+        ],
+        "answer": "3 mol H2O."
+      },
+      "check": {
+        "prompt": "A reaction has theoretical yield 20 g and actual yield 15 g. What is percent yield?",
+        "choices": [
+          "25%",
+          "50%",
+          "75%",
+          "125%"
+        ],
+        "answer": 2,
+        "explanation": "Percent yield compares actual product with theoretical product: (15 g / 20 g) × 100% = 75%."
+      },
+      "transfer": {
+        "prompt": "For N2 + 3H2 → 2NH3, 1 mol N2 and 2 mol H2 produce at most:",
+        "choices": [
+          "2/3 mol NH3",
+          "4/3 mol NH3",
+          "1 mol NH3",
+          "2 mol NH3"
+        ],
+        "answer": 1,
+        "explanation": "Hydrogen limits; 2 mol H2 × 2 mol NH3/3 mol H2 = 4/3 mol NH3."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Mass",
+          "Moles",
+          "Limiting ratio",
+          "Product amount"
+        ],
+        "caption": "Carry units through the conversion so mass and mole ratios do not get mixed."
+      },
+      "source": "https://openstax.org/details/books/chemistry-2e"
+    },
+    {
+      "id": "general-gases",
+      "subject": "general",
+      "title": "Gases and partial pressures",
+      "summary": "The ideal gas law PV = nRT relates pressure, volume, amount, and absolute temperature for an idealized gas. At fixed amount and temperature, pressure varies inversely with volume. In an ideal mixture, each gas contributes a partial pressure equal to its mole fraction times total pressure. Convert Celsius to kelvin for gas-law ratios; a zero Celsius reading is not zero thermal energy.",
+      "keyPoints": [
+        "Ptotal = sum of partial pressures.",
+        "Use absolute temperature in kelvin."
+      ],
+      "misconception": "Doubling Celsius temperature does not generally double pressure.",
+      "workedExample": {
+        "prompt": "A gas occupies 2 L at 3 atm. At constant temperature and amount, what pressure corresponds to 6 L?",
+        "steps": [
+          "Use P1V1 = P2V2.",
+          "Substitute 3 × 2 = P2 × 6.",
+          "Solve P2 = 1 atm."
+        ],
+        "answer": "1 atm."
+      },
+      "check": {
+        "prompt": "A gas is 25% of the moles in an ideal mixture at 800 mmHg. Its partial pressure is:",
+        "choices": [
+          "200 mmHg",
+          "100 mmHg",
+          "400 mmHg",
+          "800 mmHg"
+        ],
+        "answer": 0,
+        "explanation": "Partial pressure = 0.25 × 800 = 200 mmHg."
+      },
+      "transfer": {
+        "prompt": "A sealed rigid vessel warms from 300 K to 450 K. Its ideal-gas pressure changes by what factor?",
+        "choices": [
+          "1.5",
+          "1/2",
+          "2/3",
+          "3"
+        ],
+        "answer": 0,
+        "explanation": "At fixed n and V, P is proportional to T: 450/300 = 1.5."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Define fixed variables",
+          "Convert to kelvin",
+          "Choose gas relation",
+          "Check proportionality"
+        ],
+        "caption": "Identify what stays constant before rearranging the equation."
+      },
+      "source": "https://openstax.org/details/books/chemistry-2e"
+    },
+    {
+      "id": "general-thermodynamics",
+      "subject": "general",
+      "title": "Heat, enthalpy, and entropy",
+      "summary": "Heat transfer changes thermal energy and can change temperature or phase. For a temperature change without a phase transition, q = mcΔT. Enthalpy tracks heat at constant pressure under usual chemistry conditions; entropy measures the dispersal of energy among accessible microscopic arrangements. Gibbs free energy combines the two through ΔG = ΔH − TΔS. Consistent units are essential when multiplying entropy by temperature.",
+      "keyPoints": [
+        "q = mcΔT for a temperature change within one phase.",
+        "ΔG = ΔH − TΔS uses kelvin and compatible energy units."
+      ],
+      "misconception": "Heat and temperature are related but are not the same quantity.",
+      "workedExample": {
+        "prompt": "How much heat warms 100 g of water by 5°C using c = 4.2 J/(g·°C)?",
+        "steps": [
+          "Use q = mcΔT.",
+          "Multiply 100 × 4.2 × 5.",
+          "The mass and temperature units cancel."
+        ],
+        "answer": "2100 J."
+      },
+      "check": {
+        "prompt": "For ΔH < 0 and ΔS > 0, ΔG at positive temperature is:",
+        "choices": [
+          "Always positive",
+          "Always negative",
+          "Always zero",
+          "Undefined"
+        ],
+        "answer": 1,
+        "explanation": "Both ΔH and −TΔS are negative, so their sum is negative."
+      },
+      "transfer": {
+        "prompt": "A phase change occurs at constant temperature while heat is added. Which statement is correct?",
+        "choices": [
+          "No energy is absorbed",
+          "Energy can change intermolecular arrangement without raising temperature",
+          "Temperature must secretly double",
+          "Specific heat is always zero"
+        ],
+        "answer": 1,
+        "explanation": "Latent heat can alter phase while temperature remains constant under the stated conditions."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Energy transfer",
+          "Temperature or phase?",
+          "Enthalpy and entropy",
+          "Free-energy prediction"
+        ],
+        "caption": "Distinguish heat accounting from thermodynamic favorability."
+      },
+      "source": "https://openstax.org/details/books/chemistry-2e"
+    },
+    {
+      "id": "general-kinetics",
+      "subject": "general",
+      "title": "Reaction rates and rate laws",
+      "summary": "A rate law describes how measured rate depends on concentrations. Its exponents usually must be determined experimentally rather than copied from an overall balanced reaction. If rate = k[A]^m[B]^n, changing one concentration while holding others fixed reveals its order. Temperature and catalysts affect rate constants and activation barriers; equilibrium and reaction speed are separate questions.",
+      "keyPoints": [
+        "Doubling a first-order reactant doubles rate.",
+        "Doubling a second-order reactant multiplies rate by four."
+      ],
+      "misconception": "Overall stoichiometric coefficients are not generally reaction orders.",
+      "workedExample": {
+        "prompt": "Doubling [A] while holding [B] fixed quadruples the rate. Find the order in A.",
+        "steps": [
+          "Write the ratio of rates as 2 raised to the unknown order.",
+          "The observed ratio is four.",
+          "Since 2² = 4, the order is two."
+        ],
+        "answer": "Second order in A."
+      },
+      "check": {
+        "prompt": "For rate = k[A][B]², doubling both concentrations changes rate by:",
+        "choices": [
+          "2-fold",
+          "4-fold",
+          "8-fold",
+          "6-fold"
+        ],
+        "answer": 2,
+        "explanation": "The A factor doubles and the B factor quadruples, giving 2 × 4 = 8."
+      },
+      "transfer": {
+        "prompt": "A catalyst increases reaction rate mainly by:",
+        "choices": [
+          "Raising product free energy permanently",
+          "Changing the equilibrium constant",
+          "Making every reaction exothermic",
+          "Providing a lower-barrier pathway"
+        ],
+        "answer": 3,
+        "explanation": "Catalysts provide pathways with lower activation barriers without changing equilibrium thermodynamics."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Controlled concentration change",
+          "Measured rate ratio",
+          "Reaction order",
+          "Rate-law prediction"
+        ],
+        "caption": "Use experimental comparisons to infer exponents."
+      },
+      "source": "https://openstax.org/details/books/chemistry-2e"
+    },
+    {
+      "id": "general-equilibrium",
+      "subject": "general",
+      "title": "Chemical equilibrium and Le Châtelier reasoning",
+      "summary": "At dynamic equilibrium, forward and reverse rates are equal, so macroscopic concentrations remain constant even though molecules still react. The reaction quotient Q has the same form as K but uses current concentrations. If Q < K, forward reaction raises the product-to-reactant ratio; if Q > K, reverse reaction lowers it. Changing temperature can change K, whereas a catalyst cannot.",
+      "keyPoints": [
+        "Q < K favors net forward reaction.",
+        "Pure solids and liquids are omitted from standard equilibrium expressions."
+      ],
+      "misconception": "Equilibrium does not mean equal amounts of reactants and products.",
+      "workedExample": {
+        "prompt": "For A ⇌ B, K = 4 and current [B]/[A] = 1. Predict net direction.",
+        "steps": [
+          "The current ratio is Q = 1.",
+          "Compare Q with K: 1 < 4.",
+          "The system forms more B until the ratio approaches K."
+        ],
+        "answer": "Net forward reaction."
+      },
+      "check": {
+        "prompt": "At equilibrium, which is equal?",
+        "choices": [
+          "Reactant and product concentrations always",
+          "All stoichiometric coefficients",
+          "Forward and reverse reaction rates",
+          "Activation energies in both directions"
+        ],
+        "answer": 2,
+        "explanation": "Equal opposing rates produce stable concentrations without requiring equal concentrations."
+      },
+      "transfer": {
+        "prompt": "Adding a catalyst to an equilibrated system at fixed temperature changes K how?",
+        "choices": [
+          "Doubles it",
+          "Does not change it",
+          "Halves it",
+          "Makes it zero"
+        ],
+        "answer": 1,
+        "explanation": "A catalyst changes approach rates but not the equilibrium constant."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Write Q",
+          "Compare with K",
+          "Predict net change",
+          "Reach dynamic balance"
+        ],
+        "caption": "Use Q versus K when a verbal shift argument feels ambiguous."
+      },
+      "source": "https://openstax.org/details/books/chemistry-2e"
+    },
+    {
+      "id": "general-acid-base",
+      "subject": "general",
+      "title": "Acids, bases, and pH",
+      "summary": "Brønsted acids donate protons and bases accept them. For a dilute strong monoprotic acid that dissociates essentially completely, hydrogen-ion concentration is approximately the analytical acid concentration when water’s contribution is negligible. pH = −log10[H+] makes the scale logarithmic. Weak-acid strength is described by Ka or pKa, and lower pKa means stronger acid within comparable conditions.",
+      "keyPoints": [
+        "A one-unit pH decrease corresponds to tenfold greater [H+].",
+        "Lower pKa means greater acid strength."
+      ],
+      "misconception": "A concentrated weak acid can have a lower pH than a very dilute strong acid.",
+      "workedExample": {
+        "prompt": "Estimate the pH of 1.0 × 10⁻³ M HCl under the usual dilute-solution approximation.",
+        "steps": [
+          "HCl is treated as fully dissociated.",
+          "[H+] is approximately 10⁻³ M.",
+          "Apply −log10(10⁻³) = 3."
+        ],
+        "answer": "pH 3."
+      },
+      "check": {
+        "prompt": "A solution changes from pH 6 to pH 4. [H+] increases by:",
+        "choices": [
+          "2-fold",
+          "100-fold",
+          "10-fold",
+          "1000-fold"
+        ],
+        "answer": 1,
+        "explanation": "Two pH units correspond to 10² = 100-fold."
+      },
+      "transfer": {
+        "prompt": "Which acid is stronger if their pKa values are 3 and 5?",
+        "choices": [
+          "The pKa 5 acid",
+          "They have equal strength",
+          "Neither can donate a proton",
+          "The pKa 3 acid"
+        ],
+        "answer": 3,
+        "explanation": "Lower pKa corresponds to larger Ka and greater acid strength."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Acid dissociation",
+          "Hydrogen-ion concentration",
+          "Negative logarithm",
+          "pH"
+        ],
+        "caption": "Separate acid strength from the concentration of the solution."
+      },
+      "source": "https://openstax.org/books/chemistry-2e/pages/14-3-relative-strengths-of-acids-and-bases"
+    },
+    {
+      "id": "general-buffers",
+      "subject": "general",
+      "title": "Buffers and titration",
+      "summary": "A buffer contains appreciable amounts of a weak acid and its conjugate base. The acid consumes added base, and the base consumes added acid. Henderson–Hasselbalch estimates pH as pKa + log([A−]/[HA]) when applicable. In a weak-acid titration, the half-equivalence point has equal acid and conjugate-base amounts, so pH = pKa. The equivalence-point pH is not always seven.",
+      "keyPoints": [
+        "Equal conjugate-base and acid concentrations give pH = pKa.",
+        "Buffer capacity depends on total buffer amount as well as ratio."
+      ],
+      "misconception": "A buffer resists pH change; it does not prevent every change.",
+      "workedExample": {
+        "prompt": "A buffer has pKa 6.0 and [A−]/[HA] = 10. Estimate pH.",
+        "steps": [
+          "Use pH = pKa + log ratio.",
+          "log10(10) = 1.",
+          "Add 1 to 6.0."
+        ],
+        "answer": "pH 7.0."
+      },
+      "check": {
+        "prompt": "At half-equivalence during titration of a weak monoprotic acid with strong base, pH equals:",
+        "choices": [
+          "0",
+          "7 always",
+          "Twice pKa",
+          "pKa"
+        ],
+        "answer": 3,
+        "explanation": "Half the acid has become conjugate base, making their ratio one and the logarithmic term zero."
+      },
+      "transfer": {
+        "prompt": "For pKa 5 and [A−]/[HA] = 0.1, pH is approximately:",
+        "choices": [
+          "5",
+          "4",
+          "6",
+          "10"
+        ],
+        "answer": 1,
+        "explanation": "log10(0.1) = −1, so pH = 5 − 1 = 4."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Weak acid + conjugate base",
+          "Added acid or base consumed",
+          "Ratio shifts",
+          "Modest pH change"
+        ],
+        "caption": "Track chemical neutralization before using the concentration ratio."
+      },
+      "source": "https://openstax.org/details/books/chemistry-2e"
+    },
+    {
+      "id": "general-electrochemistry",
+      "subject": "general",
+      "title": "Redox and electrochemical cells",
+      "summary": "Oxidation loses electrons and reduction gains them. Oxidation occurs at the anode and reduction at the cathode in both galvanic and electrolytic cells, although electrode signs differ. Using tabulated reduction potentials, Ecell = Ecathode − Eanode. A positive standard cell potential corresponds to negative standard ΔG for the reaction as written. A salt bridge maintains charge balance through ion movement.",
+      "keyPoints": [
+        "Anode: oxidation; cathode: reduction.",
+        "Electrons flow through the external circuit from anode to cathode."
+      ],
+      "misconception": "Do not multiply a standard reduction potential by a stoichiometric coefficient.",
+      "workedExample": {
+        "prompt": "Cathode reduction potential is +0.80 V and anode reduction potential is −0.20 V. Find Ecell.",
+        "steps": [
+          "Use both values as reduction potentials.",
+          "Subtract the anode value from the cathode value.",
+          "0.80 − (−0.20) = 1.00 V."
+        ],
+        "answer": "1.00 V."
+      },
+      "check": {
+        "prompt": "At which electrode does oxidation occur?",
+        "choices": [
+          "Cathode",
+          "Anode",
+          "Both necessarily",
+          "Neither"
+        ],
+        "answer": 1,
+        "explanation": "The anode is defined as the site of oxidation in either cell type."
+      },
+      "transfer": {
+        "prompt": "For a reaction as written, a positive E°cell implies which ΔG° sign?",
+        "choices": [
+          "Negative",
+          "Positive",
+          "Zero necessarily",
+          "Unrelated in principle"
+        ],
+        "answer": 0,
+        "explanation": "ΔG° = −nFE°cell, so a positive cell potential gives negative standard free-energy change."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Anode oxidation",
+          "Electron flow",
+          "Cathode reduction",
+          "Ion charge balance"
+        ],
+        "caption": "Keep electrode definitions separate from the sign of each electrode."
+      },
+      "source": "https://openstax.org/details/books/chemistry-2e"
+    },
+    {
+      "id": "organic-functional-groups",
+      "subject": "organic",
+      "title": "Functional groups and molecular behavior",
+      "summary": "Functional groups organize predictions about reactivity and intermolecular forces. Alcohols contain hydroxyl groups, aldehydes and ketones contain carbonyl groups, and carboxylic acids combine a carbonyl with hydroxyl on the same carbon. Esters and amides are carboxylic-acid derivatives. Identify connectivity carefully: an oxygen near a carbonyl does not make every compound an alcohol, and an amide nitrogen behaves differently from an amine nitrogen.",
+      "keyPoints": [
+        "Aldehyde carbonyl carbon is bonded to at least one hydrogen.",
+        "An ester has a carbonyl carbon bonded to an oxygen that is bonded to carbon."
+      ],
+      "misconception": "An amide is not simply an amine placed near any oxygen.",
+      "workedExample": {
+        "prompt": "Classify CH3–C(=O)–O–CH2CH3.",
+        "steps": [
+          "Find the C=O group.",
+          "Its carbon is also bonded to an oxygen linked to another carbon.",
+          "That connectivity defines an ester."
+        ],
+        "answer": "An ester."
+      },
+      "check": {
+        "prompt": "Which group is present in CH3–C(=O)–CH3?",
+        "choices": [
+          "Ketone",
+          "Aldehyde",
+          "Amide",
+          "Ether only"
+        ],
+        "answer": 0,
+        "explanation": "The carbonyl carbon is bonded to two carbon groups, making it a ketone."
+      },
+      "transfer": {
+        "prompt": "Which compound contains a carboxylic acid group?",
+        "choices": [
+          "CH3OH",
+          "CH3OCH3",
+          "CH3NH2",
+          "CH3COOH"
+        ],
+        "answer": 3,
+        "explanation": "CH3COOH contains C(=O)OH, the carboxyl group."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Find heteroatoms",
+          "Identify carbonyls",
+          "Inspect connectivity",
+          "Predict properties"
+        ],
+        "caption": "Connectivity, rather than just an atom list, determines functional-group identity."
+      },
+      "source": "https://openstax.org/details/books/organic-chemistry"
+    },
+    {
+      "id": "organic-stereochemistry",
+      "subject": "organic",
+      "title": "Stereochemistry and chirality",
+      "summary": "Stereoisomers have the same connectivity but differ in spatial arrangement. Enantiomers are nonsuperimposable mirror images; diastereomers are stereoisomers that are not mirror images. A tetrahedral carbon with four distinct substituents is commonly a stereocenter, but overall molecular symmetry can make a molecule with stereocenters achiral. R/S labels describe configuration and do not determine the sign of optical rotation.",
+      "keyPoints": [
+        "Enantiomers are mirror-image pairs.",
+        "Meso compounds can contain stereocenters yet be achiral."
+      ],
+      "misconception": "R does not mean clockwise optical rotation, and S does not mean counterclockwise rotation.",
+      "workedExample": {
+        "prompt": "A tetrahedral carbon is bonded to H, OH, CH3, and CH2CH3. Is it a stereocenter?",
+        "steps": [
+          "List the four attached groups.",
+          "All four are different.",
+          "The carbon can support two distinct mirror-image configurations."
+        ],
+        "answer": "Yes."
+      },
+      "check": {
+        "prompt": "Two stereoisomers differ at one of two stereocenters and are not mirror images. They are:",
+        "choices": [
+          "Identical compounds",
+          "Diastereomers",
+          "Enantiomers",
+          "Constitutional isomers necessarily"
+        ],
+        "answer": 1,
+        "explanation": "Non-mirror-image stereoisomers are diastereomers."
+      },
+      "transfer": {
+        "prompt": "Which feature can make a molecule with two stereocenters achiral?",
+        "choices": [
+          "Any carbonyl group",
+          "Any hydrogen atom",
+          "An internal plane of symmetry",
+          "A high boiling point"
+        ],
+        "answer": 2,
+        "explanation": "Internal symmetry can make a meso compound superimposable on its mirror image."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Same connectivity?",
+          "Mirror images?",
+          "Superimposable?",
+          "Classify isomers"
+        ],
+        "caption": "Check the whole molecule for symmetry rather than only counting stereocenters."
+      },
+      "source": "https://openstax.org/details/books/organic-chemistry"
+    },
+    {
+      "id": "organic-resonance",
+      "subject": "organic",
+      "title": "Resonance and acid–base reasoning",
+      "summary": "Resonance structures represent alternative electron placements for the same arrangement of atomic nuclei. The actual molecule is a delocalized electronic structure, not a rapid switching between separate molecules. A conjugate base stabilized by resonance is generally less eager to reclaim a proton, which can increase the parent acid’s strength. Compare resonance, induction, atomic size, and hybridization when reasoning about acidity.",
+      "keyPoints": [
+        "Resonance moves electrons, not atoms.",
+        "Greater conjugate-base stabilization generally favors acidity."
+      ],
+      "misconception": "Resonance contributors are not different molecules in equilibrium.",
+      "workedExample": {
+        "prompt": "Why is a carboxylic acid more acidic than a typical alcohol?",
+        "steps": [
+          "Remove the acidic proton to compare conjugate bases.",
+          "Carboxylate spreads negative charge over two oxygens.",
+          "An ordinary alkoxide lacks that equivalent delocalization, so its parent acid is weaker."
+        ],
+        "answer": "The carboxylate conjugate base is resonance-stabilized."
+      },
+      "check": {
+        "prompt": "Which change is permitted when drawing resonance contributors?",
+        "choices": [
+          "Moving a hydrogen nucleus to another atom",
+          "Moving a pi-electron pair while retaining atom connectivity",
+          "Changing the molecular formula",
+          "Rotating into a different constitutional isomer"
+        ],
+        "answer": 1,
+        "explanation": "Resonance changes electron placement while keeping nuclear connectivity fixed."
+      },
+      "transfer": {
+        "prompt": "Which is the more stabilized conjugate base in a typical comparison?",
+        "choices": [
+          "An otherwise comparable alkoxide with localized charge",
+          "A carbocation described as an anion",
+          "Carboxylate with charge delocalized over two oxygens",
+          "They must always have identical stability"
+        ],
+        "answer": 2,
+        "explanation": "Delocalization over two oxygens stabilizes the carboxylate relative to a typical alkoxide."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Remove H+",
+          "Draw conjugate base",
+          "Assess stabilization",
+          "Compare acidity"
+        ],
+        "caption": "Predict acid strength by inspecting the species left after proton loss."
+      },
+      "source": "https://openstax.org/details/books/organic-chemistry"
+    },
+    {
+      "id": "organic-substitution",
+      "subject": "organic",
+      "title": "Nucleophilic substitution: SN1 and SN2",
+      "summary": "SN2 substitution occurs in one concerted step as a nucleophile attacks and a leaving group departs, often with inversion at the reacting stereocenter. SN1 proceeds through ionization to a carbocation and then capture, so carbocation stability matters and rearrangements can occur. Steric crowding slows SN2. A mechanism choice depends jointly on substrate, nucleophile, solvent, and leaving group rather than one cue alone.",
+      "keyPoints": [
+        "SN2 rate depends on both substrate and nucleophile concentrations.",
+        "SN1 rate-limiting ionization depends primarily on substrate concentration."
+      ],
+      "misconception": "A tertiary substrate is not a good SN2 substrate even with a strong nucleophile.",
+      "workedExample": {
+        "prompt": "For an SN2 reaction, doubling nucleophile concentration while holding substrate constant changes rate how?",
+        "steps": [
+          "Use rate = k[substrate][nucleophile].",
+          "Only the nucleophile factor changes.",
+          "Doubling it doubles the rate."
+        ],
+        "answer": "The rate doubles."
+      },
+      "check": {
+        "prompt": "The characteristic stereochemical outcome of a single SN2 attack at a stereocenter is:",
+        "choices": [
+          "Guaranteed retention",
+          "Creation of a carbocation first",
+          "No bond breaking",
+          "Inversion of geometry"
+        ],
+        "answer": 3,
+        "explanation": "Backside attack gives inversion at the reacting center; R/S lettering also depends on priorities."
+      },
+      "transfer": {
+        "prompt": "Which intermediate is characteristic of an SN1 pathway?",
+        "choices": [
+          "Free neutron",
+          "Peptide backbone",
+          "Stable five-bonded neutral carbon product",
+          "Carbocation"
+        ],
+        "answer": 3,
+        "explanation": "SN1 ionization forms a carbocation before nucleophilic capture."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Substrate and conditions",
+          "Concerted or stepwise?",
+          "Rate law",
+          "Stereochemical outcome"
+        ],
+        "caption": "Mechanism connects kinetics with product geometry."
+      },
+      "source": "https://openstax.org/books/organic-chemistry/pages/11-2-the-sn2-reaction"
+    },
+    {
+      "id": "organic-elimination",
+      "subject": "organic",
+      "title": "Elimination and competing pathways",
+      "summary": "Elimination forms a pi bond by removing groups from adjacent atoms. E2 uses a base to remove a beta hydrogen as a leaving group departs in one step; favorable geometry is commonly anti-periplanar. E1 proceeds through a carbocation and can compete with SN1. Strong bulky bases often favor elimination over substitution, but the actual product distribution depends on substrate and conditions.",
+      "keyPoints": [
+        "E2 is concerted and depends on base and substrate.",
+        "The beta carbon is adjacent to the carbon bearing the leaving group."
+      ],
+      "misconception": "The most substituted alkene is not the major product under every set of conditions.",
+      "workedExample": {
+        "prompt": "Which structural requirement is needed for ordinary beta elimination of an alkyl halide?",
+        "steps": [
+          "Locate the carbon bearing the leaving group.",
+          "Inspect an adjacent beta carbon.",
+          "A removable beta hydrogen is needed to form the new double bond."
+        ],
+        "answer": "An accessible beta hydrogen in suitable geometry."
+      },
+      "check": {
+        "prompt": "In E2, removal of H and departure of the leaving group occur:",
+        "choices": [
+          "In one concerted step",
+          "Only after a long-lived carbocation always",
+          "Without a base",
+          "After complete reduction to an alkane"
+        ],
+        "answer": 0,
+        "explanation": "E2 couples proton removal, pi-bond formation, and leaving-group departure."
+      },
+      "transfer": {
+        "prompt": "A bulky strong base reacts with a hindered alkyl halide that has beta hydrogens. Which pathway is often favored over SN2?",
+        "choices": [
+          "Peptide hydrolysis only",
+          "E2",
+          "Radical polymerization necessarily",
+          "No possible reaction"
+        ],
+        "answer": 1,
+        "explanation": "Steric hindrance suppresses backside substitution, while a strong base can promote elimination."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Locate leaving group",
+          "Find beta H",
+          "Check base and geometry",
+          "Form alkene"
+        ],
+        "caption": "Trace the atoms that become the double bond before predicting products."
+      },
+      "source": "https://openstax.org/details/books/organic-chemistry"
+    },
+    {
+      "id": "organic-carbonyl-addition",
+      "subject": "organic",
+      "title": "Carbonyls and nucleophilic addition",
+      "summary": "The oxygen of a carbonyl draws electron density toward itself, making the carbon electrophilic. A nucleophile can attack that carbon while the pi electrons move onto oxygen, producing a tetrahedral intermediate or adduct. Aldehydes and ketones often undergo addition because they lack a suitable leaving group directly attached to the carbonyl carbon. Proton transfers complete many such transformations.",
+      "keyPoints": [
+        "Carbonyl carbon is electrophilic.",
+        "Nucleophilic attack temporarily changes the carbonyl carbon from trigonal planar to tetrahedral."
+      ],
+      "misconception": "A nucleophile attacks the electron-poor carbon, not the oxygen merely because oxygen is electronegative.",
+      "workedExample": {
+        "prompt": "A hydride reagent reduces a ketone. What broad product class results after workup?",
+        "steps": [
+          "Hydride adds to the carbonyl carbon.",
+          "The pi bond opens to an alkoxide.",
+          "Protonation gives a secondary alcohol."
+        ],
+        "answer": "A secondary alcohol."
+      },
+      "check": {
+        "prompt": "What is the usual product class when an aldehyde is reduced without changing the carbon skeleton?",
+        "choices": [
+          "Ketone",
+          "Primary alcohol",
+          "Ester necessarily",
+          "Alkene necessarily"
+        ],
+        "answer": 1,
+        "explanation": "Reduction converts the aldehyde carbonyl into a primary alcohol."
+      },
+      "transfer": {
+        "prompt": "During initial nucleophilic attack on a carbonyl, the C=O pi electrons move mainly toward:",
+        "choices": [
+          "A distant nitrogen necessarily",
+          "The nucleophile’s counterion",
+          "The oxygen atom",
+          "A free proton only"
+        ],
+        "answer": 2,
+        "explanation": "Moving the pi electrons to oxygen accommodates the new bond at carbon."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Electrophilic carbonyl",
+          "Nucleophile attacks",
+          "Tetrahedral species",
+          "Proton transfer"
+        ],
+        "caption": "Follow electron pairs to avoid overfilling carbon’s valence shell."
+      },
+      "source": "https://openstax.org/details/books/organic-chemistry"
+    },
+    {
+      "id": "organic-acyl-substitution",
+      "subject": "organic",
+      "title": "Carboxylic acid derivatives and acyl substitution",
+      "summary": "Acyl derivatives contain a carbonyl linked to a group that can be replaced through addition–elimination chemistry. Nucleophilic attack creates a tetrahedral intermediate, then re-forming the carbonyl can expel a leaving group. Reactivity depends strongly on leaving-group ability and resonance donation. Amides are relatively resistant because nitrogen donates into the carbonyl and an amide anion is a poor leaving group.",
+      "keyPoints": [
+        "Acyl substitution commonly follows addition then elimination.",
+        "Amide resonance reduces carbonyl electrophilicity."
+      ],
+      "misconception": "All carbonyl compounds do not have the same substitution reactivity.",
+      "workedExample": {
+        "prompt": "Why is an ester generally more reactive toward acyl substitution than an amide?",
+        "steps": [
+          "Compare resonance donation into the carbonyl.",
+          "Nitrogen donates strongly and reduces amide electrophilicity.",
+          "The corresponding nitrogen-based leaving group is also poorer under comparable conditions."
+        ],
+        "answer": "Amide resonance and leaving-group properties reduce its reactivity."
+      },
+      "check": {
+        "prompt": "Which sequence describes nucleophilic acyl substitution?",
+        "choices": [
+          "Elimination then nuclear fission",
+          "Only proton transfer with no bond change",
+          "Only rotation around a single bond",
+          "Addition then elimination"
+        ],
+        "answer": 3,
+        "explanation": "Attack forms a tetrahedral species, followed by carbonyl restoration and leaving-group departure."
+      },
+      "transfer": {
+        "prompt": "Hydrolysis of a simple ester produces which broad classes after suitable workup?",
+        "choices": [
+          "Ketone and alkene only",
+          "Two amines",
+          "Only carbon dioxide",
+          "Carboxylic acid and alcohol"
+        ],
+        "answer": 3,
+        "explanation": "Breaking the acyl–oxygen connection through hydrolysis yields acid and alcohol products."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Nucleophilic attack",
+          "Tetrahedral intermediate",
+          "Leaving group departs",
+          "Carbonyl restored"
+        ],
+        "caption": "The leaving group distinguishes acyl substitution from simple carbonyl addition."
+      },
+      "source": "https://openstax.org/details/books/organic-chemistry"
+    },
+    {
+      "id": "organic-oxidation",
+      "subject": "organic",
+      "title": "Organic oxidation and reduction",
+      "summary": "Organic oxidation commonly increases bonds from carbon to electronegative atoms or decreases bonds to hydrogen; reduction does the reverse. A primary alcohol can oxidize to an aldehyde and, under stronger aqueous oxidizing conditions, to a carboxylic acid. A secondary alcohol typically oxidizes to a ketone. Ordinary tertiary alcohols lack the necessary hydrogen at the alcohol-bearing carbon for the same simple oxidation pathway.",
+      "keyPoints": [
+        "Primary alcohol → aldehyde → carboxylic acid under appropriate conditions.",
+        "Secondary alcohol → ketone."
+      ],
+      "misconception": "Adding oxygen is a useful pattern, but electron bookkeeping defines oxidation more generally.",
+      "workedExample": {
+        "prompt": "What product class forms when 2-propanol undergoes ordinary alcohol oxidation?",
+        "steps": [
+          "The hydroxyl-bearing carbon is attached to two carbon groups.",
+          "The alcohol is secondary.",
+          "Oxidation creates a ketone at that carbon."
+        ],
+        "answer": "A ketone: propanone."
+      },
+      "check": {
+        "prompt": "Reducing a ketone generally forms a:",
+        "choices": [
+          "Carboxylic acid",
+          "Tertiary amide",
+          "Secondary alcohol",
+          "Carbon dioxide molecule"
+        ],
+        "answer": 2,
+        "explanation": "Hydride addition and protonation convert a ketone to a secondary alcohol."
+      },
+      "transfer": {
+        "prompt": "Which sequence raises the oxidation level of the same terminal carbon?",
+        "choices": [
+          "Carboxylic acid → aldehyde → alcohol",
+          "Alkene → alkane only",
+          "Alcohol → aldehyde → carboxylic acid",
+          "Ether rotation → ether rotation"
+        ],
+        "answer": 2,
+        "explanation": "Each step increases carbon’s bonding to oxygen or decreases its bonding to hydrogen."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Identify carbon type",
+          "Count C–H and C–O bonds",
+          "Choose oxidation direction",
+          "Predict product class"
+        ],
+        "caption": "Track the reacting carbon rather than treating the whole molecule as a label."
+      },
+      "source": "https://openstax.org/details/books/organic-chemistry"
+    },
+    {
+      "id": "organic-spectroscopy",
+      "subject": "organic",
+      "title": "IR, NMR, and molecular evidence",
+      "summary": "Spectroscopic methods provide complementary clues. Infrared absorption can identify bond vibrations, including a strong carbonyl region near 1700 cm⁻¹ and a broad alcohol O–H feature commonly around 3200–3600 cm⁻¹. Proton NMR reports distinct hydrogen environments, integration, chemical shifts, and coupling. In simple first-order cases, n equivalent neighboring hydrogens can split a signal into n + 1 peaks. Exchangeable protons and complex systems require caution.",
+      "keyPoints": [
+        "IR identifies characteristic bond-vibration patterns.",
+        "NMR integration estimates relative proton counts."
+      ],
+      "misconception": "A single spectral peak rarely identifies a complete structure uniquely.",
+      "workedExample": {
+        "prompt": "A simple proton signal couples to two equivalent neighboring hydrogens. Predict splitting.",
+        "steps": [
+          "Count the equivalent neighboring protons: n = 2.",
+          "Apply the simple n + 1 rule.",
+          "The signal is split into three peaks."
+        ],
+        "answer": "A triplet."
+      },
+      "check": {
+        "prompt": "A strong absorption near 1700 cm⁻¹ most directly suggests:",
+        "choices": [
+          "A carbonyl group",
+          "Only a C–C single bond",
+          "A metal nucleus",
+          "A peptide sequence uniquely"
+        ],
+        "answer": 0,
+        "explanation": "Many carbonyl groups absorb in that approximate region; other evidence identifies the specific class."
+      },
+      "transfer": {
+        "prompt": "A proton NMR signal integrates to three relative to another signal integrating to one. What is supported?",
+        "choices": [
+          "The first represents about three times as many contributing protons",
+          "The first must be three times farther downfield",
+          "The molecule has exactly three atoms",
+          "Both signals have identical chemical environments"
+        ],
+        "answer": 0,
+        "explanation": "Integration measures relative contributing proton number, not chemical shift or molecular identity."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Functional-group clues",
+          "Hydrogen environments",
+          "Integration and splitting",
+          "Combine evidence"
+        ],
+        "caption": "Use several independent spectral clues to test a proposed structure."
+      },
+      "source": "https://openstax.org/details/books/organic-chemistry"
+    },
+    {
+      "id": "organic-separation",
+      "subject": "organic",
+      "title": "Extraction and chromatography",
+      "summary": "Separations exploit differences in solubility, charge, volatility, or interactions with phases. Acid–base extraction can convert an acidic or basic compound into a charged form that prefers an aqueous phase. In normal-phase silica thin-layer chromatography, more strongly adsorbed polar compounds often travel less far under the same solvent conditions. Rf is the spot’s travel distance divided by the solvent front’s distance.",
+      "keyPoints": [
+        "Rf = compound distance / solvent-front distance.",
+        "Ionization often changes partitioning between aqueous and organic phases."
+      ],
+      "misconception": "An Rf value is condition-dependent, not a universal molecular constant.",
+      "workedExample": {
+        "prompt": "A TLC spot travels 2 cm while the solvent front travels 5 cm. Find Rf.",
+        "steps": [
+          "Measure both distances from the origin line.",
+          "Divide compound distance by solvent-front distance.",
+          "2/5 = 0.40."
+        ],
+        "answer": "Rf = 0.40."
+      },
+      "check": {
+        "prompt": "A carboxylic acid is treated with aqueous base. Why can it move into the aqueous layer?",
+        "choices": [
+          "It loses all oxygen atoms",
+          "It forms an ionic carboxylate",
+          "It becomes a noble gas",
+          "It must become nonpolar"
+        ],
+        "answer": 1,
+        "explanation": "Deprotonation forms a charged carboxylate that is often more water-soluble."
+      },
+      "transfer": {
+        "prompt": "On the same normal-phase silica TLC plate with the same eluent, stronger adsorption generally produces:",
+        "choices": [
+          "A higher Rf always",
+          "A lower Rf",
+          "Rf above 1",
+          "No relationship to travel"
+        ],
+        "answer": 1,
+        "explanation": "Stronger retention on the stationary phase reduces travel relative to the solvent front."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Choose property difference",
+          "Adjust phase or pH",
+          "Separate components",
+          "Check identity and purity"
+        ],
+        "caption": "Name the stationary and mobile phases before predicting movement."
+      },
+      "source": "https://openstax.org/details/books/organic-chemistry"
+    },
+    {
+      "id": "physics-units",
+      "subject": "physics",
+      "title": "Units, estimation, and proportional reasoning",
+      "summary": "Before calculating, identify the quantity requested and convert measurements into compatible units. Dimensional analysis can reject an equation with the wrong units even when its numbers look plausible. Scientific notation separates powers of ten from leading coefficients. Proportional reasoning often gives the answer faster than substitution: if y is proportional to x², doubling x quadruples y. Estimation helps detect misplaced decimals.",
+      "keyPoints": [
+        "1 mL = 1 cm³ = 10⁻⁶ m³.",
+        "Units multiply and cancel like algebraic factors."
+      ],
+      "misconception": "A plausible number with the wrong units is not a correct physical answer.",
+      "workedExample": {
+        "prompt": "Convert 3 mL to cubic meters.",
+        "steps": [
+          "One liter is 10⁻³ m³.",
+          "One milliliter is 10⁻³ liter.",
+          "Multiply 3 by 10⁻⁶ m³."
+        ],
+        "answer": "3 × 10⁻⁶ m³."
+      },
+      "check": {
+        "prompt": "If y is proportional to 1/r², doubling r changes y to:",
+        "choices": [
+          "2y",
+          "4y",
+          "y/2",
+          "y/4"
+        ],
+        "answer": 3,
+        "explanation": "The denominator becomes four times larger, so y falls to one fourth."
+      },
+      "transfer": {
+        "prompt": "Which unit combination equals a newton?",
+        "choices": [
+          "kg·m/s²",
+          "kg·m²/s",
+          "m/s",
+          "kg/s"
+        ],
+        "answer": 0,
+        "explanation": "From F = ma, force has units kg times m/s²."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Identify quantity",
+          "Convert units",
+          "Apply relation",
+          "Estimate and check"
+        ],
+        "caption": "Use units as a second route to the answer."
+      },
+      "source": "https://openstax.org/details/books/college-physics-2e"
+    },
+    {
+      "id": "physics-forces",
+      "subject": "physics",
+      "title": "Motion and Newton’s laws",
+      "summary": "Velocity describes the rate of position change; acceleration describes the rate of velocity change. A net force produces acceleration according to Fnet = ma. Draw all external forces before writing an equation. A zero net force means constant velocity, which can include rest. Action–reaction force pairs act on different objects and therefore do not cancel within a single object’s free-body diagram.",
+      "keyPoints": [
+        "Fnet = ma uses the vector sum of forces.",
+        "Constant speed in a straight line means zero acceleration."
+      ],
+      "misconception": "Zero net force does not mean zero velocity.",
+      "workedExample": {
+        "prompt": "A 2 kg cart experiences 10 N rightward and 4 N leftward. Find acceleration.",
+        "steps": [
+          "Choose rightward as positive.",
+          "Net force is 10 − 4 = 6 N.",
+          "Divide by mass: 6/2 = 3 m/s²."
+        ],
+        "answer": "3 m/s² rightward."
+      },
+      "check": {
+        "prompt": "A car moves at constant velocity on a straight road. Its net force is:",
+        "choices": [
+          "Equal to its weight necessarily",
+          "Increasing",
+          "Zero",
+          "Opposite velocity necessarily"
+        ],
+        "answer": 2,
+        "explanation": "Constant velocity implies zero acceleration and therefore zero net force."
+      },
+      "transfer": {
+        "prompt": "A force of 12 N acts on a 3 kg object with no other horizontal force. Acceleration is:",
+        "choices": [
+          "0.25 m/s²",
+          "3 m/s²",
+          "4 m/s²",
+          "36 m/s²"
+        ],
+        "answer": 2,
+        "explanation": "a = F/m = 12/3 = 4 m/s²."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Choose object",
+          "Draw external forces",
+          "Sum vectors",
+          "Find acceleration"
+        ],
+        "caption": "A free-body diagram is a model of one object, not every interacting object at once."
+      },
+      "source": "https://openstax.org/details/books/college-physics-2e"
+    },
+    {
+      "id": "physics-work-energy",
+      "subject": "physics",
+      "title": "Work, energy, and power",
+      "summary": "Work transfers energy through a force acting over displacement. For a constant force, W = Fd cosθ, where θ is the angle between force and displacement. Net work changes kinetic energy. Gravitational potential energy near Earth changes by mgΔh, and power is energy transferred per unit time. Energy methods are especially useful when the detailed force history is unnecessary.",
+      "keyPoints": [
+        "Kinetic energy = ½mv².",
+        "Average power = work/time."
+      ],
+      "misconception": "A force perpendicular to displacement does no work on that displacement.",
+      "workedExample": {
+        "prompt": "A 2 kg object is lifted 3 m at constant speed. Use g = 10 m/s². Find work by the lifting force.",
+        "steps": [
+          "Constant speed means no kinetic-energy change.",
+          "The lifting work increases gravitational potential energy.",
+          "W = mgh = 2 × 10 × 3."
+        ],
+        "answer": "60 J."
+      },
+      "check": {
+        "prompt": "Doubling speed at fixed mass changes kinetic energy by a factor of:",
+        "choices": [
+          "4",
+          "2",
+          "1/2",
+          "1/4"
+        ],
+        "answer": 0,
+        "explanation": "Kinetic energy depends on v², so doubling speed quadruples it."
+      },
+      "transfer": {
+        "prompt": "A machine transfers 600 J in 20 s. Its average power is:",
+        "choices": [
+          "12 W",
+          "300 W",
+          "12000 W",
+          "30 W"
+        ],
+        "answer": 3,
+        "explanation": "P = E/t = 600/20 = 30 W."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Force over distance",
+          "Energy transfer",
+          "Kinetic or potential change",
+          "Power over time"
+        ],
+        "caption": "Choose an energy balance before doing detailed motion calculations."
+      },
+      "source": "https://openstax.org/details/books/college-physics-2e"
+    },
+    {
+      "id": "physics-torque",
+      "subject": "physics",
+      "title": "Torque and static equilibrium",
+      "summary": "Torque measures a force’s rotational effect about a chosen pivot. Its magnitude is rF sinθ, or force times perpendicular lever arm. Static equilibrium requires both zero net force and zero net torque. Choosing a pivot at an unknown support force can remove that force from the torque equation. Keep clockwise and counterclockwise signs consistent; a force through the pivot has zero torque about that pivot.",
+      "keyPoints": [
+        "Torque = force × perpendicular lever arm.",
+        "Equilibrium requires force balance and torque balance."
+      ],
+      "misconception": "Equal forces do not balance rotational effects if their lever arms differ.",
+      "workedExample": {
+        "prompt": "A 20 N load acts 0.6 m from a pivot. What opposing force at 0.3 m balances it?",
+        "steps": [
+          "Compute the load torque: 20 × 0.6 = 12 N·m.",
+          "Set opposing torque F × 0.3 equal to 12.",
+          "Solve F = 40 N."
+        ],
+        "answer": "40 N."
+      },
+      "check": {
+        "prompt": "A force’s line of action passes through the pivot. Its torque about that pivot is:",
+        "choices": [
+          "Zero",
+          "Equal to the force",
+          "Always maximal",
+          "Undefined"
+        ],
+        "answer": 0,
+        "explanation": "The perpendicular lever arm is zero."
+      },
+      "transfer": {
+        "prompt": "A 5 N force acts perpendicular to a 0.4 m lever arm. Torque magnitude is:",
+        "choices": [
+          "0.8 N·m",
+          "2 N·m",
+          "5.4 N·m",
+          "12.5 N·m"
+        ],
+        "answer": 1,
+        "explanation": "Torque is 5 × 0.4 = 2 N·m."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Choose pivot",
+          "Find perpendicular arms",
+          "Assign torque signs",
+          "Balance torques"
+        ],
+        "caption": "Draw distances to lines of action, not merely to the nearest point."
+      },
+      "source": "https://openstax.org/details/books/college-physics-2e"
+    },
+    {
+      "id": "physics-fluids",
+      "subject": "physics",
+      "title": "Fluids: pressure, flow, and resistance",
+      "summary": "Hydrostatic pressure increases with depth by ρgh. For steady incompressible flow, continuity gives Av = constant, so a narrower segment has higher speed. For ideal laminar flow through a rigid cylindrical tube, Poiseuille’s law gives Q proportional to ΔP r⁴/(ηL). The strong fourth-power radius dependence makes small diameter changes important, but biological vessels are not perfect rigid tubes.",
+      "keyPoints": [
+        "At fixed flow, smaller area means greater speed.",
+        "Poiseuille flow scales with radius to the fourth power under its assumptions."
+      ],
+      "misconception": "Bernoulli and Poiseuille describe different idealizations; do not mix their assumptions blindly.",
+      "workedExample": {
+        "prompt": "A tube’s radius doubles while pressure difference, viscosity, and length stay fixed. Predict ideal laminar flow rate.",
+        "steps": [
+          "Use Q proportional to r⁴.",
+          "The new-to-old radius ratio is two.",
+          "The flow ratio is 2⁴ = 16."
+        ],
+        "answer": "16 times the original flow."
+      },
+      "check": {
+        "prompt": "An incompressible fluid enters a region with half the cross-sectional area at steady flow. Speed becomes:",
+        "choices": [
+          "Half",
+          "Unchanged",
+          "Double",
+          "Fourfold"
+        ],
+        "answer": 2,
+        "explanation": "Continuity requires A1v1 = A2v2, so halving area doubles speed."
+      },
+      "transfer": {
+        "prompt": "At fixed radius and other conditions, doubling viscosity in Poiseuille’s model changes flow to:",
+        "choices": [
+          "Twice",
+          "Four times",
+          "Unchanged",
+          "Half"
+        ],
+        "answer": 3,
+        "explanation": "Flow is inversely proportional to viscosity, so doubling viscosity halves flow."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Pressure difference",
+          "Tube resistance",
+          "Volume flow",
+          "Local speed"
+        ],
+        "caption": "Flow rate and local speed are different quantities connected by area."
+      },
+      "source": "https://openstax.org/books/college-physics-2e/pages/12-4-viscosity-and-laminar-flow-poiseuilles-law"
+    },
+    {
+      "id": "physics-electrostatics",
+      "subject": "physics",
+      "title": "Electric fields, potential, and capacitance",
+      "summary": "Electric field is force per unit positive test charge. Electric potential is potential energy per unit charge, so ΔU = qΔV. A charge’s force direction depends on its sign. Capacitors store separated charge with Q = CV and energy ½CV². In a parallel-plate model, larger plate area increases capacitance and larger separation decreases it, assuming the same dielectric.",
+      "keyPoints": [
+        "F = qE; negative charges accelerate opposite the field direction.",
+        "Q = CV relates stored charge, capacitance, and voltage."
+      ],
+      "misconception": "Electric potential is a scalar; electric field is a vector.",
+      "workedExample": {
+        "prompt": "A 2 μC positive charge moves through a +3 V potential difference. Find its potential-energy change.",
+        "steps": [
+          "Use ΔU = qΔV.",
+          "Convert charge to 2 × 10⁻⁶ C.",
+          "Multiply by +3 V."
+        ],
+        "answer": "+6 μJ."
+      },
+      "check": {
+        "prompt": "An electron in an electric field experiences force:",
+        "choices": [
+          "Along the field",
+          "Always zero",
+          "Always perpendicular to the field",
+          "Opposite the field"
+        ],
+        "answer": 3,
+        "explanation": "The electron’s negative charge reverses the direction in F = qE."
+      },
+      "transfer": {
+        "prompt": "A 4 μF capacitor at 5 V stores what charge?",
+        "choices": [
+          "20 μC",
+          "0.8 μC",
+          "9 μC",
+          "100 μC"
+        ],
+        "answer": 0,
+        "explanation": "Q = CV = 4 μF × 5 V = 20 μC."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Charge distribution",
+          "Electric field and potential",
+          "Force or energy change",
+          "Capacitor storage"
+        ],
+        "caption": "Choose force reasoning for fields and energy reasoning for potential differences."
+      },
+      "source": "https://openstax.org/details/books/college-physics-2e"
+    },
+    {
+      "id": "physics-circuits",
+      "subject": "physics",
+      "title": "Circuits and electrical power",
+      "summary": "Ohm’s law V = IR applies to an ohmic component under its stated conditions. Series resistors carry the same current and their resistances add. Parallel branches share the same voltage, and their conductances add. Electrical power can be written P = IV, I²R, or V²/R for a resistor. Identify whether voltage or current is fixed before predicting how a resistance change affects power.",
+      "keyPoints": [
+        "Series: Req = R1 + R2 + …",
+        "Parallel: 1/Req = 1/R1 + 1/R2 + …"
+      ],
+      "misconception": "Increasing resistance does not always increase power; the fixed variable matters.",
+      "workedExample": {
+        "prompt": "Two 6 Ω resistors are in parallel across 12 V. Find total current.",
+        "steps": [
+          "Two equal parallel resistors give Req = 3 Ω.",
+          "Use I = V/Req.",
+          "I = 12/3 = 4 A."
+        ],
+        "answer": "4 A total."
+      },
+      "check": {
+        "prompt": "Two resistors of 2 Ω and 4 Ω in series have equivalent resistance:",
+        "choices": [
+          "6 Ω",
+          "1.33 Ω",
+          "2 Ω",
+          "4 Ω"
+        ],
+        "answer": 0,
+        "explanation": "Series resistances add: 2 + 4 = 6 Ω."
+      },
+      "transfer": {
+        "prompt": "At fixed voltage, doubling a resistor’s resistance changes its power to:",
+        "choices": [
+          "Twice",
+          "Four times",
+          "Unchanged",
+          "Half"
+        ],
+        "answer": 3,
+        "explanation": "P = V²/R, so doubling R at fixed V halves power."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Identify series/parallel",
+          "Find equivalent resistance",
+          "Apply voltage/current relation",
+          "Compute power"
+        ],
+        "caption": "State the fixed source condition before using a power formula."
+      },
+      "source": "https://openstax.org/details/books/college-physics-2e"
+    },
+    {
+      "id": "physics-waves",
+      "subject": "physics",
+      "title": "Waves, sound, and frequency",
+      "summary": "Wave speed, wavelength, and frequency satisfy v = fλ. Frequency is set by the source; when a wave enters a different medium, its speed and wavelength may change while frequency remains continuous across the boundary. Sound intensity is power per area. The decibel scale uses 10 log10(I/I0), so a tenfold intensity increase adds 10 dB and a hundredfold increase adds 20 dB.",
+      "keyPoints": [
+        "v = fλ.",
+        "A 10 dB increase corresponds to tenfold intensity, not tenfold perceived loudness."
+      ],
+      "misconception": "Frequency and amplitude are separate properties.",
+      "workedExample": {
+        "prompt": "A sound wave travels at 340 m/s with frequency 170 Hz. Find wavelength.",
+        "steps": [
+          "Rearrange v = fλ to λ = v/f.",
+          "Divide 340 by 170.",
+          "The units m/s divided by 1/s give meters."
+        ],
+        "answer": "2 m."
+      },
+      "check": {
+        "prompt": "At constant wave speed, doubling frequency changes wavelength to:",
+        "choices": [
+          "Twice",
+          "Half",
+          "Four times",
+          "Unchanged"
+        ],
+        "answer": 1,
+        "explanation": "Wavelength is inversely proportional to frequency when speed is fixed."
+      },
+      "transfer": {
+        "prompt": "Intensity increases by a factor of 100. The sound level rises by:",
+        "choices": [
+          "2 dB",
+          "20 dB",
+          "10 dB",
+          "100 dB"
+        ],
+        "answer": 1,
+        "explanation": "10 log10(100) = 10 × 2 = 20 dB."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Source frequency",
+          "Medium sets speed",
+          "Wavelength adjusts",
+          "Intensity sets level"
+        ],
+        "caption": "Separate timing, spacing, and amplitude when describing a wave."
+      },
+      "source": "https://openstax.org/details/books/college-physics-2e"
+    },
+    {
+      "id": "physics-optics",
+      "subject": "physics",
+      "title": "Light, lenses, and image formation",
+      "summary": "Geometric optics tracks rays through reflection and refraction. Snell’s law relates refractive index to ray angle measured from the normal. A thin lens follows 1/f = 1/do + 1/di with a consistent sign convention. For a converging lens and an object beyond the focal point, a real image can form on the opposite side. Magnification gives image size and orientation.",
+      "keyPoints": [
+        "Measure refraction angles from the normal.",
+        "Lens power in diopters is 1/f when f is in meters."
+      ],
+      "misconception": "A converging lens does not always produce a real image; object position matters.",
+      "workedExample": {
+        "prompt": "A converging lens has f = 10 cm and an object at 20 cm. Find image distance.",
+        "steps": [
+          "Use 1/10 = 1/20 + 1/di.",
+          "Subtract 1/20 from both sides.",
+          "1/di = 1/20, so di = 20 cm."
+        ],
+        "answer": "20 cm on the image side under the usual real-is-positive convention."
+      },
+      "check": {
+        "prompt": "A converging lens with focal length +0.5 m has power:",
+        "choices": [
+          "+0.5 D",
+          "−2 D",
+          "+2 D",
+          "+5 D"
+        ],
+        "answer": 2,
+        "explanation": "Power is 1/0.5 = +2 diopters."
+      },
+      "transfer": {
+        "prompt": "Light enters a higher-index medium at a nonzero angle. It generally bends:",
+        "choices": [
+          "Away from the normal",
+          "Toward the normal",
+          "Exactly parallel to the boundary always",
+          "Without any change in direction always"
+        ],
+        "answer": 1,
+        "explanation": "Snell’s law gives a smaller angle from the normal in the higher-index medium."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Locate focal point",
+          "Draw principal rays",
+          "Apply lens equation",
+          "Interpret image"
+        ],
+        "caption": "Use a ray sketch to check the sign and plausibility of the calculated image."
+      },
+      "source": "https://openstax.org/details/books/college-physics-2e"
+    },
+    {
+      "id": "physics-nuclear-statistics",
+      "subject": "physics",
+      "title": "Radioactive decay and quantitative data",
+      "summary": "Radioactive decay is probabilistic for individual nuclei but predictable for a large sample. After each half-life, half the remaining undecayed nuclei remain, so N = N0(1/2)^(t/t½). Distinguish physical decay from biological elimination when reading a tracer experiment. More broadly, quantitative passages require careful axes, units, control comparisons, and uncertainty; a trend can be real without identifying its cause.",
+      "keyPoints": [
+        "After n half-lives, the remaining fraction is (1/2)^n.",
+        "Activity is proportional to the number of undecayed nuclei for a fixed isotope."
+      ],
+      "misconception": "Half-life is not the time for every nucleus to decay.",
+      "workedExample": {
+        "prompt": "A sample begins with 80 units of activity and has a 3-hour half-life. Find activity after 9 hours, ignoring biological elimination.",
+        "steps": [
+          "Nine hours contains three half-lives.",
+          "Halve the activity three times: 80 → 40 → 20 → 10.",
+          "Keep the physical-decay assumption explicit."
+        ],
+        "answer": "10 units."
+      },
+      "check": {
+        "prompt": "After two half-lives, what fraction of the original undecayed nuclei remains?",
+        "choices": [
+          "1/2",
+          "1/3",
+          "0",
+          "1/4"
+        ],
+        "answer": 3,
+        "explanation": "Two successive halvings leave one fourth."
+      },
+      "transfer": {
+        "prompt": "A graph plots concentration in μM, but an equation requires M. A value of 5 μM is:",
+        "choices": [
+          "5 × 10⁶ M",
+          "5 × 10⁻³ M",
+          "5 × 10⁻⁶ M",
+          "0.5 M"
+        ],
+        "answer": 2,
+        "explanation": "The prefix micro means 10⁻⁶, so 5 μM = 5 × 10⁻⁶ M."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Initial sample",
+          "Count half-lives",
+          "Repeated halving",
+          "Check measurement assumptions"
+        ],
+        "caption": "Read the experimental assumptions before applying an ideal decay model."
+      },
+      "source": "https://openstax.org/details/books/college-physics-2e"
+    },
+    {
+      "id": "cars-main-idea",
+      "subject": "cars",
+      "title": "Finding the main claim",
+      "summary": "A useful main-idea statement explains what the author wants the reader to accept, not merely the topic under discussion. Track the problem introduced, the qualification added, and the resolution proposed. Test a candidate summary against the whole passage: a claim that fits one vivid example but misses the conclusion is too narrow. The short original passages here isolate one skill before full-length practice.",
+      "keyPoints": [
+        "Separate the topic from the author’s position.",
+        "Keep the author’s qualifications in your summary."
+      ],
+      "misconception": "The most memorable detail is not necessarily the main point.",
+      "workedExample": {
+        "prompt": "In the museum passage, how do replicas contribute to the author’s overall proposal?",
+        "steps": [
+          "The opening identifies a cost of viewing artifacts only as protected shapes.",
+          "The author preserves the need to protect fragile originals.",
+          "Replicas allow participation without sacrificing conservation."
+        ],
+        "answer": "Replicas reconcile participation with preservation."
+      },
+      "check": {
+        "prompt": "Which statement best expresses the main claim?",
+        "choices": [
+          "Museums should let visitors handle every original object.",
+          "Preservation and participation can be combined through different treatment of originals and replicas.",
+          "Replicas are more historically valuable than originals.",
+          "Cooking vessels are the only artifacts worth displaying."
+        ],
+        "answer": 1,
+        "explanation": "The conclusion reconciles preservation with participation. The other choices remove qualifications or overfocus on an example.",
+        "passage": "A museum that places every object behind glass may protect its collection while obscuring why the objects mattered. A cooking vessel was once lifted, heated, and passed between people; viewed only as a shape, it loses part of its history. Yet unrestricted handling would destroy fragile artifacts. The solution is not to abandon preservation, but to supplement protected originals with replicas that visitors can use. Conservation and participation need not be rivals when each is assigned an appropriate object."
+      },
+      "transfer": {
+        "prompt": "Which statement best captures the argument?",
+        "choices": [
+          "Book ownership alone defines library quality.",
+          "Collections and support for using them jointly make libraries useful.",
+          "Libraries should replace all books with staff.",
+          "Catalogues are more valuable than every book."
+        ],
+        "answer": 1,
+        "explanation": "The passage argues for both resources and navigation, explicitly rejecting either as sufficient alone.",
+        "passage": "A public library is often praised for the number of books it owns. Ownership, however, is a poor measure if readers cannot locate or interpret what they need. Staff guidance, accessible catalogues, and welcoming spaces turn possession into use. This does not make collections irrelevant: an excellent guide cannot retrieve a book the library lacks. A useful library therefore joins a strong collection to the means of navigating it."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Topic",
+          "Problem",
+          "Qualification",
+          "Central claim"
+        ],
+        "caption": "Summarize the relationship among ideas, not just the subject matter."
+      },
+      "source": "https://students-residents.aamc.org/prepare-mcat-exam/whats-mcat-exam-pdf-outline",
+      "passage": "A museum that places every object behind glass may protect its collection while obscuring why the objects mattered. A cooking vessel was once lifted, heated, and passed between people; viewed only as a shape, it loses part of its history. Yet unrestricted handling would destroy fragile artifacts. The solution is not to abandon preservation, but to supplement protected originals with replicas that visitors can use. Conservation and participation need not be rivals when each is assigned an appropriate object."
+    },
+    {
+      "id": "cars-tone",
+      "subject": "cars",
+      "title": "Tone and qualified judgments",
+      "summary": "Tone questions ask for the author’s attitude, which often combines approval with a specific reservation. Underline evaluative words, then identify what each evaluates. A passage can praise a result while criticizing a larger claim about it. Prefer a tone description proportionate to the language: measured criticism is different from contempt, and qualified support is different from wholehearted celebration.",
+      "keyPoints": [
+        "Tie tone labels to evaluative language.",
+        "Identify the object of praise or criticism."
+      ],
+      "misconception": "A single negative word does not make the whole passage hostile.",
+      "workedExample": {
+        "prompt": "What does “admirably readable” do in the translation passage?",
+        "steps": [
+          "It explicitly praises one feature: readability.",
+          "Later sentences identify a separate loss: strangeness.",
+          "Together they create a qualified evaluation, not total rejection."
+        ],
+        "answer": "It establishes genuine but limited praise."
+      },
+      "check": {
+        "prompt": "The author’s attitude toward the translation is best described as:",
+        "choices": [
+          "Unqualified admiration",
+          "Total contempt",
+          "Qualified appreciation",
+          "Complete indifference"
+        ],
+        "answer": 2,
+        "explanation": "The author values accessibility while criticizing loss of the original’s unsettling quality.",
+        "passage": "The new translation is admirably readable. Its sentences move with an ease that earlier versions rarely achieved, and readers once deterred by the work may now enter it. Still, the translator’s preference for familiar idioms sometimes erases the original’s productive strangeness. A voice that should unsettle us occasionally sounds like a friendly columnist. Accessibility is an achievement, but it is not the only achievement a translation should seek."
+      },
+      "transfer": {
+        "prompt": "The author is most critical of:",
+        "choices": [
+          "The bridge’s appearance",
+          "Pedestrians who use the bridge",
+          "Every form of public construction",
+          "Claims that the bridge alone solves broader social problems"
+        ],
+        "answer": 3,
+        "explanation": "The passage praises the bridge but rejects exaggerated claims about what it can accomplish.",
+        "passage": "The city’s new pedestrian bridge is graceful and offers a convenient crossing. Officials also call it a cure for the neighborhood’s isolation. That claim asks a bridge to do the work of affordable transit, reliable services, and economic opportunity. The structure deserves appreciation for what it supplies, not a mythology that excuses the absence of everything else."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Evaluative words",
+          "Target of evaluation",
+          "Balance of praise and criticism",
+          "Proportionate tone"
+        ],
+        "caption": "Attach attitude to a specific object or claim."
+      },
+      "source": "https://students-residents.aamc.org/prepare-mcat-exam/whats-mcat-exam-pdf-outline",
+      "passage": "The new translation is admirably readable. Its sentences move with an ease that earlier versions rarely achieved, and readers once deterred by the work may now enter it. Still, the translator’s preference for familiar idioms sometimes erases the original’s productive strangeness. A voice that should unsettle us occasionally sounds like a friendly columnist. Accessibility is an achievement, but it is not the only achievement a translation should seek."
+    },
+    {
+      "id": "cars-inference",
+      "subject": "cars",
+      "title": "Making supported inferences",
+      "summary": "An inference connects passage evidence to a conclusion the author need not state word for word. Keep the inferential step small. Ask what must be true, or is strongly supported, if the author’s reasoning is accepted. Avoid importing an attractive outside explanation. A good inference preserves scope: criticism of one policy feature does not establish that the entire institution is harmful.",
+      "keyPoints": [
+        "Use the smallest justified step beyond the text.",
+        "Preserve words such as some, may, and often."
+      ],
+      "misconception": "A possibility consistent with the passage is not automatically a supported inference.",
+      "workedExample": {
+        "prompt": "What distinction drives the plaza argument?",
+        "steps": [
+          "The plaza permits many uses in principle.",
+          "Its physical features may discourage actual use.",
+          "Therefore permission and practical invitation are different."
+        ],
+        "answer": "A design can allow an activity without encouraging it."
+      },
+      "check": {
+        "prompt": "The author would most likely agree that:",
+        "choices": [
+          "All plazas should prohibit large events.",
+          "A legally open space can still discourage gathering.",
+          "Shade is the only meaningful design feature.",
+          "Flexibility always makes a place successful."
+        ],
+        "answer": 1,
+        "explanation": "The passage distinguishes technical permission from conditions that make people comfortable participating.",
+        "passage": "An architect may describe an empty plaza as flexible because it accommodates many possible events. But possibility is not the same as invitation. A place without shade, seating, or clear entrances may technically permit gathering while discouraging anyone from beginning it. Design should be judged not only by the activities it fails to prohibit, but also by the activities it makes comfortable to attempt."
+      },
+      "transfer": {
+        "prompt": "Which inference is best supported?",
+        "choices": [
+          "Every proposal is rejected.",
+          "Budgets have no administrative value.",
+          "Students unfamiliar with school procedures may face greater barriers to proposing projects.",
+          "Independent projects are always inferior to classes."
+        ],
+        "answer": 2,
+        "explanation": "The rules favor institutional familiarity, so less familiar students may face greater barriers. The stronger alternatives are unsupported.",
+        "passage": "A school advertises that students may propose independent projects. Yet proposals require a detailed budget, a faculty sponsor, and approval during a single week in September. These rules may have administrative purposes, but they also favor students who already know how the institution works. Formal permission does not by itself ensure that an opportunity is practically available."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Textual evidence",
+          "Small reasoning step",
+          "Check scope",
+          "Supported inference"
+        ],
+        "caption": "An inference should need the passage, not an outside story."
+      },
+      "source": "https://students-residents.aamc.org/prepare-mcat-exam/whats-mcat-exam-pdf-outline",
+      "passage": "An architect may describe an empty plaza as flexible because it accommodates many possible events. But possibility is not the same as invitation. A place without shade, seating, or clear entrances may technically permit gathering while discouraging anyone from beginning it. Design should be judged not only by the activities it fails to prohibit, but also by the activities it makes comfortable to attempt."
+    },
+    {
+      "id": "cars-function",
+      "subject": "cars",
+      "title": "The function of examples",
+      "summary": "A function question asks why a detail appears in the argument. Distinguish the example’s literal content from the claim it supports. Try replacing the example with a blank labeled “evidence for ___.” If the label captures the surrounding reasoning, you have identified its role. Examples may illustrate, qualify, contrast, or challenge; they do not always prove a universal rule.",
+      "keyPoints": [
+        "Ask what claim an example helps establish.",
+        "Read the sentences before and after the detail."
+      ],
+      "misconception": "Explaining what an example describes is not the same as explaining its argumentative function.",
+      "workedExample": {
+        "prompt": "Why does the historian mention sleep interrupted by street noise?",
+        "steps": [
+          "The detail represents an ordinary lived experience.",
+          "Official categories may omit that kind of experience.",
+          "It illustrates how diaries expand the archive’s coverage."
+        ],
+        "answer": "To show a kind of experience that official reports may miss."
+      },
+      "check": {
+        "prompt": "The shop-closing example primarily serves to:",
+        "choices": [
+          "Prove that all official reports are false.",
+          "Argue that commerce alone defines city life.",
+          "Show that diaries should replace every other source.",
+          "Illustrate experiences diaries may preserve beyond administrative categories."
+        ],
+        "answer": 3,
+        "explanation": "It supports the broader value of diaries while the final sentence explicitly rejects replacing the archive.",
+        "passage": "A historian argues that diaries deserve a larger role in accounts of city life. Official reports record what administrators counted, but a diary may reveal the interruption of sleep by street noise or the meaning of a familiar shop closing. Such details are not merely decoration. They disclose forms of experience that an administrative category may never have been designed to capture. Diaries remain selective and imperfect; their value lies in expanding, not replacing, the archive."
+      },
+      "transfer": {
+        "prompt": "The contrast between dishes and seating arrangement helps the critic show:",
+        "choices": [
+          "That every meal is identical.",
+          "That the novel contains no social argument.",
+          "That food descriptions are accidental decoration.",
+          "Economic change alongside persistent social hierarchy."
+        ],
+        "answer": 3,
+        "explanation": "Changing dishes register income change; fixed seats represent a stable hierarchy.",
+        "passage": "A critic says a novel’s repeated descriptions of meals are central to its argument. The dishes change as the family’s income changes, but the seating arrangement remains fixed. Food registers economic movement while the table preserves social hierarchy. The meals therefore let readers see two kinds of change at once: one occurring and one resisted."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Detail",
+          "Nearby claim",
+          "Relationship",
+          "Function in argument"
+        ],
+        "caption": "Replace the detail with its job in the argument."
+      },
+      "source": "https://students-residents.aamc.org/prepare-mcat-exam/whats-mcat-exam-pdf-outline",
+      "passage": "A historian argues that diaries deserve a larger role in accounts of city life. Official reports record what administrators counted, but a diary may reveal the interruption of sleep by street noise or the meaning of a familiar shop closing. Such details are not merely decoration. They disclose forms of experience that an administrative category may never have been designed to capture. Diaries remain selective and imperfect; their value lies in expanding, not replacing, the archive."
+    },
+    {
+      "id": "cars-assumptions",
+      "subject": "cars",
+      "title": "Assumptions and missing links",
+      "summary": "An assumption is an unstated bridge needed for a conclusion to follow from its reasons. Identify the evidence, state the conclusion, and ask what connects them. A useful test is to negate a proposed assumption: if the argument collapses or is seriously weakened, the assumption may be necessary. Do not confuse something that would make the conclusion nicer with something the reasoning requires.",
+      "keyPoints": [
+        "Map evidence → missing bridge → conclusion.",
+        "Use negation to test a proposed necessary assumption."
+      ],
+      "misconception": "An assumption need not be a fact the author explicitly states.",
+      "workedExample": {
+        "prompt": "What practical assumption supports the garden-hours proposal?",
+        "steps": [
+          "The reason is that residents are unavailable before closing.",
+          "The proposed remedy is later opening.",
+          "The remedy assumes some residents would use the garden during later hours."
+        ],
+        "answer": "At least some residents would visit if later access were offered."
+      },
+      "check": {
+        "prompt": "Which assumption most directly supports the proposal?",
+        "choices": [
+          "Every resident prefers gardens to all other activities.",
+          "The garden should remain open all night.",
+          "Posted schedules are always meaningless.",
+          "Some residents unable to visit now would be able to visit during extended hours."
+        ],
+        "answer": 3,
+        "explanation": "The proposal requires later access to address a real availability barrier; universal preferences and all-night opening are unnecessary.",
+        "passage": "The town should extend evening hours at its public garden, a council member argues, because many residents finish work after the gates close. The garden already has paths and lighting suitable for later visits. If access is to serve residents rather than merely satisfy a posted schedule, the hours should overlap with the time residents can actually come."
+      },
+      "transfer": {
+        "prompt": "Which assumption is most important to the university’s claim of equal understanding?",
+        "choices": [
+          "Scheduling freedom has no value.",
+          "Students dislike all instructors.",
+          "Interaction in the seminar adds no indispensable learning beyond the recorded instructor material.",
+          "Recordings contain fewer facts than live lectures."
+        ],
+        "answer": 2,
+        "explanation": "The proposal equates content delivery with understanding, which requires the omitted interactive elements not to be essential.",
+        "passage": "A university plans to replace a required seminar with recorded lectures, arguing that students will gain the same understanding while enjoying greater scheduling freedom. The proposal emphasizes that the recordings contain all the material presented by the instructor. It says little about the questions students previously asked or the arguments they developed with one another."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Evidence",
+          "Conclusion",
+          "Missing bridge",
+          "Negation test"
+        ],
+        "caption": "Find what must connect the premise to the recommendation."
+      },
+      "source": "https://students-residents.aamc.org/prepare-mcat-exam/whats-mcat-exam-pdf-outline",
+      "passage": "The town should extend evening hours at its public garden, a council member argues, because many residents finish work after the gates close. The garden already has paths and lighting suitable for later visits. If access is to serve residents rather than merely satisfy a posted schedule, the hours should overlap with the time residents can actually come."
+    },
+    {
+      "id": "cars-strengthen-weaken",
+      "subject": "cars",
+      "title": "Strengthening and weakening an argument",
+      "summary": "New evidence strengthens an argument when it makes the move from premises to conclusion more credible; it weakens when it exposes a competing explanation or undermines a necessary link. Focus on the actual conclusion rather than a nearby topic. For causal claims, ask whether another change could explain the outcome. A weakening fact need not prove the conclusion false; reducing support is enough.",
+      "keyPoints": [
+        "Target the link between evidence and conclusion.",
+        "A competing cause can weaken a causal inference."
+      ],
+      "misconception": "A fact can weaken an argument without disproving its conclusion completely.",
+      "workedExample": {
+        "prompt": "Why does the reopened rail station matter to the public-art claim?",
+        "steps": [
+          "The conclusion assigns the traffic increase to art.",
+          "The station reopened at the same time and could bring visitors.",
+          "It supplies an alternative cause not separated by the report."
+        ],
+        "answer": "It introduces a competing explanation."
+      },
+      "check": {
+        "prompt": "Which finding would most strengthen the planner’s causal claim?",
+        "choices": [
+          "The artwork has several colors.",
+          "The planner enjoys galleries.",
+          "Most additional visitors report coming specifically to see the art, and comparable station reopenings without art did not raise weekend visits.",
+          "The station has a long name."
+        ],
+        "answer": 2,
+        "explanation": "The finding links visits to art and addresses the obvious transit alternative; the other facts do not test the causal link.",
+        "passage": "After a neighborhood installed public art, weekend foot traffic rose. A planner concludes that the art attracted the additional visitors and recommends the same strategy elsewhere. During the same month, a nearby rail station also reopened after a long closure. The planner’s report counts visitors but does not ask why they came."
+      },
+      "transfer": {
+        "prompt": "Which follow-up would best address the main weakness?",
+        "choices": [
+          "Compare randomly assigned readers with the same prior preparation, varying only the introduction.",
+          "Use a more decorative introduction font without controlling groups.",
+          "Ask the editor whether introductions are valuable.",
+          "Measure the length of the essays only."
+        ],
+        "answer": 0,
+        "explanation": "Balancing prior preparation while varying the introduction helps isolate its effect on comprehension.",
+        "passage": "An editor argues that adding short introductions to difficult essays improves readers’ understanding. Readers who received introductions performed better on a comprehension test than readers who did not. However, the two groups came from different classes, and the introduction group had already studied the essay’s historical setting."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Claim",
+          "Evidence",
+          "Alternative explanation",
+          "New information test"
+        ],
+        "caption": "Ask whether the added fact changes support for the specific conclusion."
+      },
+      "source": "https://students-residents.aamc.org/prepare-mcat-exam/whats-mcat-exam-pdf-outline",
+      "passage": "After a neighborhood installed public art, weekend foot traffic rose. A planner concludes that the art attracted the additional visitors and recommends the same strategy elsewhere. During the same month, a nearby rail station also reopened after a long closure. The planner’s report counts visitors but does not ask why they came."
+    },
+    {
+      "id": "cars-application",
+      "subject": "cars",
+      "title": "Applying a principle to a new case",
+      "summary": "Application questions move an argument into a new setting. First express the passage’s principle without its surface details. Then choose a new case with the same relationship among goals, methods, and constraints. Matching vocabulary is weak evidence; matching logical structure is strong evidence. Keep qualifications intact so a limited principle does not become an unlimited permission.",
+      "keyPoints": [
+        "Abstract the principle before comparing options.",
+        "Match relationships, not shared nouns."
+      ],
+      "misconception": "An analogy about the same subject can still have the wrong logical structure.",
+      "workedExample": {
+        "prompt": "State the theatre passage’s principle without mentioning theatre.",
+        "steps": [
+          "The intended effect is the goal.",
+          "Changed conditions can make old methods ineffective.",
+          "Changing the method can preserve the goal."
+        ],
+        "answer": "Adapt methods to preserve an intended effect under new conditions."
+      },
+      "check": {
+        "prompt": "Which case best applies the author’s principle?",
+        "choices": [
+          "A museum discards every object because it is old.",
+          "A musician changes an arrangement so a new instrument can preserve the original melody’s expressive effect.",
+          "A reader refuses to read any translation.",
+          "An athlete ignores the rules to guarantee victory."
+        ],
+        "answer": 1,
+        "explanation": "The musician adapts means to changed conditions while preserving the intended effect, matching the argument.",
+        "passage": "A community theatre preserves a play’s historical setting but changes its staging to suit a small outdoor courtyard. Purists object that any departure from the first production is a betrayal. Yet a production that mechanically copies old stage directions may fail to reproduce their effect in a new space. Fidelity can require changing the means when the conditions of performance change."
+      },
+      "transfer": {
+        "prompt": "Which example best fits the map passage’s principle?",
+        "choices": [
+          "A transit diagram simplifies geographic distances to make transfers easier to understand.",
+          "A map removes the only bridge needed for the route.",
+          "A manual hides essential safety steps to look shorter.",
+          "A schedule lists random departure times."
+        ],
+        "answer": 0,
+        "explanation": "The transit diagram omits task-irrelevant precision to improve navigation; the other cases remove essential information or become inaccurate for the task.",
+        "passage": "A teacher uses a handwritten map rather than a satellite image to explain a walking route. The map omits roofs, parked cars, and most side streets while enlarging the important turns. Its distortions are deliberate. A representation can be less complete yet more useful for a particular task, provided the omitted details are irrelevant to that task."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Passage case",
+          "General principle",
+          "New conditions",
+          "Structural match"
+        ],
+        "caption": "Carry the argument’s relationship into a new setting."
+      },
+      "source": "https://students-residents.aamc.org/prepare-mcat-exam/whats-mcat-exam-pdf-outline",
+      "passage": "A community theatre preserves a play’s historical setting but changes its staging to suit a small outdoor courtyard. Purists object that any departure from the first production is a betrayal. Yet a production that mechanically copies old stage directions may fail to reproduce their effect in a new space. Fidelity can require changing the means when the conditions of performance change."
+    },
+    {
+      "id": "cars-structure",
+      "subject": "cars",
+      "title": "Mapping argument structure",
+      "summary": "A passage map records what each part does: introduce a dispute, offer evidence, qualify a claim, answer an objection, or propose a resolution. This is more useful than collecting isolated facts. Transition words often signal changes in direction, but the relationships between sentences matter more than the words alone. A final qualification may narrow an earlier claim without reversing it.",
+      "keyPoints": [
+        "Label paragraph jobs in a few words.",
+        "Track whether a later point supports, limits, or rejects an earlier one."
+      ],
+      "misconception": "A qualification is not necessarily a contradiction.",
+      "workedExample": {
+        "prompt": "How does the archive passage move from its opening to its conclusion?",
+        "steps": [
+          "It presents two extreme positions.",
+          "It identifies distinct strengths of digital and physical forms.",
+          "It recommends choosing based on the research question."
+        ],
+        "answer": "Opposing extremes → complementary strengths → task-based choice."
+      },
+      "check": {
+        "prompt": "The author’s response to the two opening positions is to:",
+        "choices": [
+          "Accept the first and ignore the second.",
+          "Claim all scans are useless.",
+          "Reject the forced choice by distinguishing the questions each form can answer.",
+          "Deny that physical objects contain information."
+        ],
+        "answer": 2,
+        "explanation": "The passage replaces an either-or dispute with a question-dependent comparison.",
+        "passage": "Some critics call digital archives a replacement for physical libraries. Others dismiss them as pale imitations. Both positions miss the more useful comparison. Digital access can make a rare document available across great distances, while the physical object may reveal paper, binding, or marks lost in a scan. The two forms answer overlapping but nonidentical questions. A research practice that understands this difference will ask which form a question requires."
+      },
+      "transfer": {
+        "prompt": "The discussion of delivery workers primarily:",
+        "choices": [
+          "Proves the quiet streets do not exist.",
+          "Shows the author opposes every restriction.",
+          "Introduces an unrelated topic with no argumentative role.",
+          "Qualifies support for the restrictions by identifying an accommodation need."
+        ],
+        "answer": 3,
+        "explanation": "The author maintains support but adds a condition for a fairer implementation.",
+        "passage": "The essay first describes a city’s unusually quiet streets. It then reveals that cars are restricted during certain hours, before considering the delivery workers who must reorganize their routes. The author ends by defending the restrictions while urging better accommodations for those workers. The quiet opening is thus neither a complete account nor a false one; it is the first layer of an evaluation."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Opening dispute",
+          "Evidence or distinction",
+          "Qualification",
+          "Resolution"
+        ],
+        "caption": "Make a map of reasoning moves rather than a list of facts."
+      },
+      "source": "https://students-residents.aamc.org/prepare-mcat-exam/whats-mcat-exam-pdf-outline",
+      "passage": "Some critics call digital archives a replacement for physical libraries. Others dismiss them as pale imitations. Both positions miss the more useful comparison. Digital access can make a rare document available across great distances, while the physical object may reveal paper, binding, or marks lost in a scan. The two forms answer overlapping but nonidentical questions. A research practice that understands this difference will ask which form a question requires."
+    },
+    {
+      "id": "cars-context",
+      "subject": "cars",
+      "title": "Words in context and figurative language",
+      "summary": "A word’s relevant meaning is the one supported by its role in the sentence and argument. When an author uses a term figuratively, translate the relationship rather than choosing the most literal dictionary sense. Substitute a plain-language paraphrase and reread the sentence. If the paraphrase preserves the argument while avoiding unsupported implications, it is a strong interpretation.",
+      "keyPoints": [
+        "Use surrounding claims to constrain meaning.",
+        "Translate a metaphor into the relationship it expresses."
+      ],
+      "misconception": "A familiar word can carry a specialized or figurative meaning in context.",
+      "workedExample": {
+        "prompt": "What does “archive” mean when applied to repeated city practices?",
+        "steps": [
+          "The practices carry traces of the past.",
+          "They also select and reshape those traces.",
+          "The term highlights their role as historical evidence, not a physical storage room."
+        ],
+        "answer": "A source through which aspects of the past are preserved and interpreted."
+      },
+      "check": {
+        "prompt": "In context, calling practices an “archive” primarily emphasizes their:",
+        "choices": [
+          "Ability to supply evidence about the past",
+          "Permanent freedom from change",
+          "Location in a government building",
+          "Exact duplication of every past event"
+        ],
+        "answer": 0,
+        "explanation": "The author treats practices as selective historical evidence and explicitly denies unchanged preservation.",
+        "passage": "A city’s memory is not stored only in monuments. It also resides in repeated practices: a market held on the same corner, an annual procession, a customary route to school. Calling these practices an archive does not mean that they preserve the past unchanged. Like written records, they select, omit, and reorganize. Their fragility is therefore not a reason to exclude them from historical attention, but a reason to observe them carefully."
+      },
+      "transfer": {
+        "prompt": "The phrase “material of music” most nearly means that silence:",
+        "choices": [
+          "Is a physical substance heavier than sound",
+          "Should replace all notes",
+          "Exists only outside musical performances",
+          "Is an element used to organize musical meaning"
+        ],
+        "answer": 3,
+        "explanation": "The following sentences explain the functional role of pauses in shaping expectation and relationships.",
+        "passage": "The composer calls silence a material of music. She does not suggest that silence is a substance that can be weighed. Rather, pauses shape expectation, separate phrases, and alter the meaning of the sounds around them. A score that records only notes would fail to specify the relationships that make those notes intelligible."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Unfamiliar use",
+          "Surrounding claims",
+          "Plain paraphrase",
+          "Argument fit"
+        ],
+        "caption": "Test meanings in the actual sentence rather than in isolation."
+      },
+      "source": "https://students-residents.aamc.org/prepare-mcat-exam/whats-mcat-exam-pdf-outline",
+      "passage": "A city’s memory is not stored only in monuments. It also resides in repeated practices: a market held on the same corner, an annual procession, a customary route to school. Calling these practices an archive does not mean that they preserve the past unchanged. Like written records, they select, omit, and reorganize. Their fragility is therefore not a reason to exclude them from historical attention, but a reason to observe them carefully."
+    },
+    {
+      "id": "cars-scope",
+      "subject": "cars",
+      "title": "Scope, certainty, and answer traps",
+      "summary": "An answer can sound relevant while making a stronger claim than the passage permits. Compare quantifiers, causal language, and certainty: some is not all, may is not must, and association is not proof of cause. Also watch for reversed relationships and claims that are true in the world but unsupported in the passage. Evidence-based elimination means naming the specific mismatch, not simply calling an answer too extreme.",
+      "keyPoints": [
+        "Match the author’s degree of certainty.",
+        "Distinguish observation from universal or causal claims."
+      ],
+      "misconception": "A cautious conclusion is not the same as saying the evidence has no value.",
+      "workedExample": {
+        "prompt": "Why does the history-lecture author stop short of a causal promise?",
+        "steps": [
+          "The survey finds an association.",
+          "Either direction of influence could explain it.",
+          "The design does not distinguish those directions."
+        ],
+        "answer": "The evidence supports a connection but not a settled causal direction."
+      },
+      "check": {
+        "prompt": "Which conclusion stays within the passage’s scope?",
+        "choices": [
+          "Lectures always create neighborhood attachment.",
+          "Neighborhood attachment always prevents lecture attendance.",
+          "Attendance and attachment are associated, but causal direction remains unresolved.",
+          "The survey contains no potentially useful information."
+        ],
+        "answer": 2,
+        "explanation": "This preserves both the observed association and the author’s causal caution.",
+        "passage": "A survey found that residents who attend local history lectures report greater attachment to their neighborhood. This association is worth exploring. It may be that the lectures deepen attachment, or that already attached residents are more likely to attend. The survey cannot distinguish these possibilities. It supports further inquiry into the connection, not a confident promise that lectures will create belonging wherever they are offered."
+      },
+      "transfer": {
+        "prompt": "Which claim exceeds the report’s stated support?",
+        "choices": [
+          "Every wetland restoration will increase bird diversity in every climate.",
+          "The observed projects showed an encouraging pattern.",
+          "Rainfall could be relevant to interpretation.",
+          "Site selection limits generalization."
+        ],
+        "answer": 0,
+        "explanation": "The passage explicitly rejects universal generalization across all restorations and climates.",
+        "passage": "Several restored wetlands in the region have attracted more bird species over five years. The report’s author welcomes the pattern but notes that rainfall also increased and that the sites were not selected randomly. The results are encouraging evidence about these projects. They do not establish that every restoration, in every climate, will produce the same outcome."
+      },
+      "visual": {
+        "type": "flow",
+        "nodes": [
+          "Claim wording",
+          "Quantifier and certainty",
+          "Evidence strength",
+          "Scope match"
+        ],
+        "caption": "Reject an answer for its precise overreach, reversal, or unsupported assumption."
+      },
+      "source": "https://students-residents.aamc.org/prepare-mcat-exam/whats-mcat-exam-pdf-outline",
+      "passage": "A survey found that residents who attend local history lectures report greater attachment to their neighborhood. This association is worth exploring. It may be that the lectures deepen attachment, or that already attached residents are more likely to attend. The survey cannot distinguish these possibilities. It supports further inquiry into the connection, not a confident promise that lectures will create belonging wherever they are offered."
+    }
+  ]
+}
