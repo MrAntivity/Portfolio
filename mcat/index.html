@@ -3,38 +3,43 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#f5f4ef" />
+    <meta name="theme-color" content="#080a0e" />
     <meta name="robots" content="noindex" />
-    <title>MCAT Quest · Aiden Yue</title>
+    <title>MCAT · Aiden Yue</title>
     <meta
       name="description"
       content="A personal visual MCAT study studio. Learn, apply, practice, and review."
     />
     <link rel="icon" href="/assets/avatar.svg" />
-    <link rel="stylesheet" href="/mcat/style.css?v=quest-1" />
-    <link rel="stylesheet" href="/mcat/quest.css?v=quest-1" />
+    <link rel="stylesheet" href="/mcat/style.css?v=edge-1" />
+    <link rel="stylesheet" href="/mcat/quest.css?v=edge-1" />
   </head>
-  <body>
+  <body class="dark">
+    <script>
+      try {
+        if (localStorage.getItem("mcat-appearance-v2") === "light")
+          document.body.classList.remove("dark");
+      } catch {}
+    </script>
     <a class="skip" href="#main">Skip to study content</a>
     <div class="shell">
       <aside class="sidebar">
         <a class="brand" href="/">AY<span>AIDEN YUE</span></a>
-        <div class="studio-label">YOUR NEXT GREAT ADVENTURE</div>
-        <a class="studio-title" href="#dashboard">MCAT <i>quest!</i></a>
+        <div class="studio-label">PERSONAL TRAINING / 2027</div>
+        <a class="studio-title" href="#dashboard">MCAT<i> /</i></a>
         <nav aria-label="Study navigation">
-          <a href="#dashboard" data-nav="dashboard"><span>🏡</span>Base camp</a
-          ><a href="#learn" data-nav="learn"><span>🗺️</span>Explore worlds</a
-          ><a href="#practice" data-nav="practice"
-            ><span>🎯</span>Practice playground</a
+          <a href="#dashboard" data-nav="dashboard"><span>⌂</span>Overview</a
+          ><a href="#learn" data-nav="learn"><span>▦</span>Training grounds</a
+          ><a href="#practice" data-nav="practice"><span>◎</span>Practice</a
           ><a href="#review" data-nav="review"
-            ><span>🪃</span>Review queue <b id="review-count">0</b></a
-          ><a href="#tutor" data-nav="tutor"><span>💬</span>Study buddies</a
-          ><a href="#plan" data-nav="plan"><span>📅</span>Adventure plan</a
+            ><span>↻</span>Review queue <b id="review-count">0</b></a
+          ><a href="#tutor" data-nav="tutor"><span>✳</span>Study crew</a
+          ><a href="#plan" data-nav="plan"><span>▤</span>Study plan</a
           ><a href="#resources" data-nav="resources"
-            ><span>🎒</span>Discovery chest</a
+            ><span>↗</span>Resources</a
           >
           <a href="#achievements" data-nav="achievements"
-            ><span>🏆</span>Badge collection</a
+            ><span>◇</span>Achievements</a
           >
         </nav>
         <div class="sidebar-bottom">
@@ -51,8 +56,8 @@
       </aside>
       <div class="workspace">
         <header class="topbar">
-          <span>A LITTLE CURIOUS. A LITTLE BRAVER. EVERY DAY.</span
-          ><button id="theme" aria-label="Toggle dark mode">◐</button>
+          <span>THE WORK ADDS UP.</span
+          ><button id="theme" aria-label="Switch to light mode">◐ Light mode</button>
           <div id="player-meter" class="player-meter"></div>
         </header>
         <main id="main" tabindex="-1">
@@ -90,6 +95,6 @@
         <p id="login-error" role="alert"></p>
       </form>
     </dialog>
-    <script type="module" src="/mcat/app.js?v=quest-1"></script>
+    <script type="module" src="/mcat/app.js?v=edge-1"></script>
   </body>
 </html>

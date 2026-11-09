@@ -1,4 +1,4 @@
-import { safeText as h } from "./model.mjs?v=quest-1";
+import { safeText as h } from "./model.mjs?v=edge-1";
 export function flowVisual(v) {
   return `<figure class="visual"><div class="flow">${(v?.nodes || []).map((x, i) => (i ? '<span class="flow-arrow" aria-hidden="true">→</span>' : "") + `<div class="flow-node">${h(typeof x === "object" ? x.label || JSON.stringify(x) : x)}</div>`).join("")}</div><figcaption>${h(v?.caption || "Follow the relationship from left to right.")}</figcaption></figure>`;
 }

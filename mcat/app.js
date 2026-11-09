@@ -1,4 +1,4 @@
-import { gameState, WORLDS, buddy } from "./game.mjs?v=quest-1";
+import { gameState, WORLDS, buddy } from "./game.mjs?v=edge-1";
 import {
   EXAM_DATE,
   today,
@@ -8,8 +8,8 @@ import {
   reviewDue,
   chooseQuestions,
   safeText as h,
-} from "./model.mjs?v=quest-1";
-import { flowVisual, labHTML, bindLab, heroArt } from "./visuals.js?v=quest-1";
+} from "./model.mjs?v=edge-1";
+import { flowVisual, labHTML, bindLab, heroArt } from "./visuals.js?v=edge-1";
 const $ = (s) => document.querySelector(s),
   main = $("#main");
 let curriculum,
@@ -95,7 +95,7 @@ function recordInfo() {
   const g = gameState(records);
   const meter = $("#player-meter");
   if (meter)
-    meter.innerHTML = `<span>⭐ ${g.xp.toLocaleString()} XP</span><span>Level ${g.level}</span>`;
+    meter.innerHTML = `<span>${g.xp.toLocaleString()} XP</span><span>Level ${g.level}</span>`;
   return m;
 }
 async function save(id, fields, event) {
@@ -181,8 +181,8 @@ function reward(before) {
   if (gain <= 0) return;
   toast(
     g.level > before.level
-      ? `🎉 Level ${g.level}! Your brain is putting in the work.`
-      : `✨ +${gain} XP · ${gain === 5 ? "A mistake turned into learning!" : "Nice work. Keep that brain growing!"}`,
+      ? `Level ${g.level} unlocked. Keep building.`
+      : `+${gain} XP · ${gain === 5 ? "Recovery complete." : "Progress logged."}`,
   );
   const burst = document.createElement("div");
   burst.className = "xp-burst";
@@ -199,7 +199,7 @@ function subjectCard(s) {
   const lessons = curriculum.lessons.filter((l) => l.subject === s.id),
     done = lessons.filter((l) => records["lesson-" + l.id]?.complete).length,
     w = WORLDS[s.id];
-  return `<button class="subject-card world-card" data-subject="${h(s.id)}" style="--world:${w[2]}"><div class="world-scene"><span class="world-cloud">✦</span><span class="world-emoji">${w[0]}</span><span class="world-orbit">· ✧ ·</span></div><span class="world-name">${w[1]}</span><h3>${h(s.title)}</h3><div class="subject-meta"><span>${done} / ${lessons.length} checkpoints</span><span>${done === lessons.length ? "🏁" : "→"}</span></div><div class="progress"><span style="width:${(done / Math.max(1, lessons.length)) * 100}%"></span></div></button>`;
+  return `<button class="subject-card world-card" data-subject="${h(s.id)}" style="--world:${w[2]}"><div class="world-scene"><span class="world-cloud">+</span><span class="world-emoji">${w[0]}</span><span class="world-orbit">↗</span></div><span class="world-name">${w[1]}</span><h3>${h(s.title)}</h3><div class="subject-meta"><span>${done} / ${lessons.length} checkpoints</span><span>${done === lessons.length ? "✓" : "→"}</span></div><div class="progress"><span style="width:${(done / Math.max(1, lessons.length)) * 100}%"></span></div></button>`;
 }
 function dashboard() {
   const g = gameState(records),
@@ -208,47 +208,47 @@ function dashboard() {
       curriculum.lessons[0];
   const quests = [
     [
-      "📖",
-      "Learn one new thing",
+      "01",
+      "Build a concept",
       "Finish a lesson",
       g.todaysLessons,
       1,
       "lesson/" + next.id,
     ],
     [
-      "🎯",
-      "Take a five-question adventure",
+      "02",
+      "Run five questions",
       "Try 5 different questions today",
       g.todaysQuestions,
       5,
       "practice",
     ],
     [
-      "🌈",
-      "Go world hopping",
+      "03",
+      "Mix your disciplines",
       "Practice questions in 2 subjects today",
       g.todaysSubjects,
       2,
       "practice",
     ],
   ];
-  main.innerHTML = `<div class="quest-heading"><div><span class="eyebrow">${user ? "HEY AIDEN," : "HEY EXPLORER,"} READY FOR A LITTLE BRAIN GAIN?</span><h1>Your brain has<br><span>side quests.</span></h1><p>One small adventure closer to August 28.</p></div><div class="streak-chip">🔥 <strong>${g.streak}</strong><span>day streak<br><small>Every fresh start counts.</small></span></div></div>
- <div class="adventure-layout"><section class="adventure-hero"><div class="hero-copy"><span class="tag">✦ YOUR NEXT CHECKPOINT</span><h2>${h(next.title)}</h2><p>A little learning. A little practice.<br>A very satisfying “ohhh, I get it.”</p><button class="primary" data-lesson="${h(next.id)}">Let’s do this! <span>→</span></button><small>50 XP for your first completion</small></div><div class="buddy-home"><div class="speech-bubble">You bring the curiosity.<br>I’ll bring the good vibes.</div>${buddy}<span class="buddy-name">PIP · YOUR STUDY SIDEKICK</span></div></section>
- <section class="level-card"><div class="level-medal">${g.level}<span>LEVEL</span></div><h3>${g.level < 5 ? "Curious explorer" : g.level < 15 ? "Concept collector" : "Knowledge navigator"}</h3><p>${g.xp.toLocaleString()} XP earned</p><div class="progress"><span style="width:${(g.progress / 250) * 100}%"></span></div><small>${250 - g.progress} XP to level ${g.level + 1}</small><a href="#achievements">See your badge collection ↗</a></section></div>
- <div class="section-head"><div><span class="eyebrow">LITTLE WINS ADD UP</span><h2>Today’s side quests</h2></div><span class="tag">${quests.filter((q) => q[3] >= q[4]).length} / 3 complete</span></div><div class="daily-quests">${quests.map((q) => `<a class="quest-card ${q[3] >= q[4] ? "quest-done" : ""}" href="#${q[5]}"><span class="quest-icon">${q[3] >= q[4] ? "✅" : q[0]}</span><div><h3>${q[1]}</h3><p>${q[2]}</p><div class="progress"><span style="width:${Math.min(100, (q[3] / q[4]) * 100)}%"></span></div></div><b>${Math.min(q[3], q[4])}/${q[4]}</b></a>`).join("")}</div>
- <div class="section-head"><div><span class="eyebrow">SEVEN WORLDS. YOUR OWN PACE.</span><h2>Where are we going today?</h2></div><a href="#learn">All lessons →</a></div><div class="subject-grid">${curriculum.subjects.map(subjectCard).join("")}</div>
- <div class="section-head"><h2>Your real learning progress</h2><a href="#review">Visit your review queue →</a></div>${statsHTML()}<div class="friendly-note">💜 No lives to lose. No penalty for getting it wrong. Mistakes are part of the adventure.</div>`;
+  main.innerHTML = `<div class="quest-heading"><div><span class="eyebrow">${user ? "AIDEN YUE" : "YOUR TRAINING SPACE"} / MCAT 2027</span><h1>Build<br><span>your edge.</span></h1><p>Stack the sessions. Sharpen the concepts. Make it count.</p></div><div class="streak-chip"><span class="streak-signal">↗</span> <strong>${g.streak}</strong><span>day streak<br><small>Keep the momentum.</small></span></div></div>
+ <div class="adventure-layout"><section class="adventure-hero"><div class="hero-copy"><span class="tag">NEXT UP / +50 XP</span><h2>${h(next.title)}</h2><p>Understand the concept. Apply it under pressure.<br>Come back stronger.</p><button class="primary" data-lesson="${h(next.id)}">Start session <span>→</span></button><small>50 XP for your first completion</small></div><div class="buddy-home">${buddy}</div></section>
+ <section class="level-card"><div class="level-medal">${g.level}<span>LEVEL</span></div><h3>${g.level < 5 ? "Foundation" : g.level < 15 ? "Building momentum" : "Advanced"}</h3><p>${g.xp.toLocaleString()} XP earned</p><div class="progress"><span style="width:${(g.progress / 250) * 100}%"></span></div><small>${250 - g.progress} XP to level ${g.level + 1}</small><a href="#achievements">View achievements ↗</a></section></div>
+ <div class="section-head"><div><span class="eyebrow">THE DAILY RUN</span><h2>Daily missions</h2></div><span class="tag">${quests.filter((q) => q[3] >= q[4]).length} / 3 complete</span></div><div class="daily-quests">${quests.map((q) => `<a class="quest-card ${q[3] >= q[4] ? "quest-done" : ""}" href="#${q[5]}"><span class="quest-icon">${q[3] >= q[4] ? "✓" : q[0]}</span><div><h3>${q[1]}</h3><p>${q[2]}</p><div class="progress"><span style="width:${Math.min(100, (q[3] / q[4]) * 100)}%"></span></div></div><b>${Math.min(q[3], q[4])}/${q[4]}</b></a>`).join("")}</div>
+ <div class="section-head"><div><span class="eyebrow">CHOOSE YOUR FOCUS</span><h2>Your training grounds</h2></div><a href="#learn">All lessons →</a></div><div class="subject-grid">${curriculum.subjects.map(subjectCard).join("")}</div>
+ <div class="section-head"><h2>The numbers</h2><a href="#review">Visit your review queue →</a></div>${statsHTML()}<div class="friendly-note">No lost points for wrong answers. Review the miss. Earn the comeback.</div>`;
   bindCommon();
 }
 function achievements() {
   const g = gameState(records);
   main.innerHTML =
     heading(
-      "THE LITTLE-WINS COLLECTION",
-      "Look at you grow.",
-      "Your badges come from learning, practicing, and coming back to tricky ideas.",
+      "TRACK RECORD",
+      "Earn your marks.",
+      "Milestones earned through consistent work, new concepts, and recovered mistakes.",
     ) +
-    `<div class="xp-explainer"><strong>⭐ Level ${g.level} · ${g.xp.toLocaleString()} XP</strong><p>First lesson completion: 50 XP. First attempt on a question: 10 XP, plus 5 if correct. Correcting a previously missed question: 5 XP once. Repeating the same answer never farms points.</p></div><div class="badge-grid">${g.badges.map(([icon, name, desc, earned]) => `<section class="badge-card ${earned ? "earned" : "locked"}"><span>${earned ? icon : "🔒"}</span><h3>${name}</h3><p>${desc}</p><b>${earned ? "Unlocked!" : "An adventure ahead"}</b></section>`).join("")}</div><p class="notice">Streaks count study activity by New York calendar day. A missed day resets the streak, but you always keep your XP and learning progress.</p>`;
+    `<div class="xp-explainer"><strong>Level ${g.level} · ${g.xp.toLocaleString()} XP</strong><p>First lesson completion: 50 XP. First attempt on a question: 10 XP, plus 5 if correct. Correcting a previously missed question: 5 XP once. Repeating the same answer never farms points.</p></div><div class="badge-grid">${g.badges.map(([icon, name, desc, earned]) => `<section class="badge-card ${earned ? "earned" : "locked"}"><span>${earned ? "✦" : "◇"}</span><h3>${name}</h3><p>${desc}</p><b>${earned ? "Unlocked!" : "Not yet earned"}</b></section>`).join("")}</div><p class="notice">Streaks count study activity by New York calendar day. A missed day resets the streak, but you always keep your XP and learning progress.</p>`;
 }
 function bindCommon() {
   document.querySelectorAll("[data-subject]").forEach((el) => {
@@ -279,7 +279,7 @@ function learn() {
   main.innerHTML =
     heading(
       "THE LEARNING LIBRARY",
-      "Pick your next adventure.",
+      "Choose your next move.",
       "Seven subjects. Visual relationships. Original explanations you can put to work.",
     ) +
     `<div class="filters"><label>Subject<select id="learn-subject">${subjectOptions(filters.subject)}</select></label><label>Find a concept<input id="learn-search" type="search" placeholder="Try enzymes, memory, or circuits…" value="${h(filters.search)}"></label></div><p class="report-note">${lessons.length} lessons · Foundation curriculum, with links for deeper study. Each lesson includes a check and a transfer question.</p><div class="lesson-grid">${lessons.map((l) => `<button class="lesson-card" data-lesson="${h(l.id)}"><span class="tag">${h(subjectName(l.subject))}</span><h3>${h(l.title)}</h3><p>${h(l.summary.slice(0, 145))}…</p><div class="card-foot"><span>${records["lesson-" + l.id]?.complete ? "✓ Completed" : "Learn → Apply → Practice"}</span><span>↗</span></div></button>`).join("")}</div>${!lessons.length ? '<div class="empty">No lessons match your search.</div>' : ""}`;
@@ -398,7 +398,7 @@ function practice() {
   main.innerHTML =
     heading(
       "PRACTICE WITH PURPOSE",
-      "Ready, set, brain!",
+      "Put it to the test.",
       "Choose a subject, target a weak spot, and learn from every answer.",
     ) +
     `<div class="panel"><h2>Build a practice session</h2><div class="filters"><label>Subject<select id="practice-subject">${subjectOptions(filters.subject)}</select></label><label>Topic<select id="practice-topic"><option value="">All topics</option></select></label><label>Difficulty<select id="practice-difficulty"><option value="">All levels</option>${[...new Set(bank.map((q) => q.difficulty))].map((d) => `<option>${h(d)}</option>`).join("")}</select></label></div><div class="filters"><label>Question selection<select id="practice-filter"><option value="all">All questions</option><option value="unseen">Not attempted yet</option><option value="missed">Last answered incorrectly</option><option value="review">Due or flagged for review</option></select></label><label>Session size<select id="practice-count"><option value="5">5 questions · quick check</option><option value="10" selected>10 questions · daily practice</option><option value="20">20 questions · deep practice</option><option value="59">59 questions · extended practice</option></select></label></div><button id="start-session" class="primary">Start practice session →</button><p class="report-note" id="pool-count"></p></div><div class="notice"><strong>About this bank:</strong> ${bank.length.toLocaleString()} original practice variants, generated from reusable concept and calculation families. Variants are not 5,000 independently authored MCAT exam questions. This bank supplements passage-based official practice; it is not a full-length exam simulator.</div><details><summary>What is in the bank?</summary><p>${curriculum.subjects.map((s) => `${h(s.title)}: ${bank.filter((q) => q.subject === s.id).length.toLocaleString()}`).join(" · ")}</p><p class="report-note">${h(bankInfo.methodology || bankInfo.description || "Original practice variants.")} ${new Set(bank.map((q) => q.family)).size} question families.</p><p class="report-note">${h(bankInfo.limitations || "")}</p></details><div class="section-head"><h2>Build understanding first</h2><a href="#learn">Visit the learning library ↗</a></div><div class="subject-grid">${curriculum.subjects.map(subjectCard).join("")}</div>`;
@@ -572,7 +572,7 @@ function tutor() {
   main.innerHTML =
     heading(
       "YOU DON’T HAVE TO FIGURE IT OUT ALONE",
-      "Your brain’s backup crew.",
+      "Your study crew.",
       "Four ways to work with your AI tutor, powered by your private OpenAI connection.",
     ) +
     `<div class="chat-layout"><aside class="partners">${partners.map(([id, title, desc]) => `<button class="partner ${id === chatMode ? "active" : ""}" data-mode="${id}"><strong>✧ ${title}</strong><small>${desc}</small></button>`).join("")}</aside><section class="panel"><div class="section-head" style="margin-top:0"><h3>${partners.find((p) => p[0] === chatMode)[1]}</h3><button id="new-chat">New chat</button></div>${chatContext.title ? `<div class="notice">Studying: ${h(chatContext.title)} <button id="clear-context">Clear context</button></div>` : ""}<div id="chat-log" class="chat-log" aria-live="polite">${chat.length ? chat.map((m) => `<div class="message ${m.role}"><small>${m.role === "user" ? "YOU" : "STUDY PARTNER · AI"}</small>${h(m.content)}</div>`).join("") : `<div class="empty"><h3>Let’s make it click.</h3><p>Try “Teach me competitive inhibition, then give me a question” or “Help me identify the main claim in this passage.”</p>${!user ? '<button id="tutor-signin" class="primary">Sign in to use your tutor</button>' : ""}</div>`}${busy ? "<p>Thinking through your question…</p>" : ""}</div><form class="chat-input" id="chat-form"><label class="sr-only" for="chat-prompt">Your question</label><textarea id="chat-prompt" placeholder="What would you like to understand?" maxlength="4000" required ${busy ? "disabled" : ""}></textarea><button class="primary" ${busy ? "disabled" : ""}>${busy ? "Thinking…" : "Send ↗"}</button></form><p class="report-note">AI can make mistakes. Check important facts against linked sources. Up to 100 requests/day; API usage is billed to your connected account. Chats stay in this tab; progress and notes sync.</p></section></div>`;
@@ -764,7 +764,7 @@ function resources() {
   main.innerHTML =
     heading(
       "LEARN FROM GOOD SOURCES",
-      "The discovery chest.",
+      "The reference desk.",
       "Original lessons here. Reliable sources for the deeper dive.",
     ) +
     `<section class="panel">${sources.map((s) => `<a class="resource" href="${h(s.url)}" target="_blank" rel="noopener"><span>↗</span><h3>${h(s.title)}</h3><p>${h(s.description || "Supporting educational reference for the study curriculum.")}</p></a>`).join("")}</section><div class="notice">This is an independent study tool. Content and AI responses are educational, not official MCAT material or medical advice. The learning library is a foundation curriculum, not a guarantee of exhaustive exam coverage.</div>`;
@@ -824,15 +824,27 @@ $(".skip").onclick = (event) => {
   main.focus();
   main.scrollIntoView({ block: "start" });
 };
+function applyAppearance(mode) {
+  document.body.classList.toggle("dark", mode !== "light");
+  const label = mode === "light" ? "Dark mode" : "Light mode";
+  $("#theme").textContent = (mode === "light" ? "◑ " : "◐ ") + label;
+  $("#theme").setAttribute("aria-label", "Switch to " + label.toLowerCase());
+  document.querySelector('meta[name="theme-color"]').content =
+    mode === "light" ? "#f4f5f7" : "#080a0e";
+}
+let appearance = "dark";
+try {
+  appearance =
+    localStorage.getItem("mcat-appearance-v2") === "light" ? "light" : "dark";
+} catch {}
+applyAppearance(appearance);
 $("#theme").onclick = () => {
-  document.body.classList.toggle("dark");
-  localStorage.setItem(
-    "mcat-theme",
-    document.body.classList.contains("dark") ? "dark" : "light",
-  );
+  const next = document.body.classList.contains("dark") ? "light" : "dark";
+  applyAppearance(next);
+  try {
+    localStorage.setItem("mcat-appearance-v2", next);
+  } catch {}
 };
-if (localStorage.getItem("mcat-theme") === "dark")
-  document.body.classList.add("dark");
 $("#days-left").textContent = daysUntil() + " days to build something great.";
 $("#date-fill").style.width =
   Math.min(100, Math.max(0, (1 - daysUntil() / 292) * 100)) + "%";
@@ -966,8 +978,8 @@ async function connect() {
 try {
   records = readLocal();
   const [response, module] = await Promise.all([
-    fetch("/mcat/curriculum.json?v=quest-1"),
-    import("./bank.mjs?v=quest-1"),
+    fetch("/mcat/curriculum.json?v=edge-1"),
+    import("./bank.mjs?v=edge-1"),
   ]);
   if (!response.ok) throw Error("Curriculum unavailable");
   curriculum = await response.json();
