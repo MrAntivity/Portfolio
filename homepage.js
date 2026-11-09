@@ -100,30 +100,81 @@
     if (ctx) ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
     drawOrbit(performance.now());
   }
+  const orbitPointer = { x: 0, y: 0, inside: false, strength: 0, tiltX: 0, tiltY: 0 };
+  hero.addEventListener('pointermove', event => {
+    if (event.pointerType !== 'mouse' || motion.matches) return;
+    orbitPointer.x = event.clientX; orbitPointer.y = event.clientY;
+    orbitPointer.inside = true;
+  }, { passive: true });
+  function releaseOrbit() { orbitPointer.inside = false; }
+  hero.addEventListener('pointerleave', releaseOrbit);
+  window.addEventListener('blur', releaseOrbit);
+  motion.addEventListener('change', () => {
+    releaseOrbit();
+    orbitPointer.strength = 0;
+    orbitPointer.tiltX = 0; orbitPointer.tiltY = 0;
+  });
   function drawOrbit(time) {
     if (!ctx || !orbitWidth) return;
     ctx.clearRect(0, 0, orbitWidth, orbitHeight);
     const t = motion.matches ? .5 : time * .000065;
     const radius = Math.min(orbitWidth * .42, orbitHeight * .39);
-    const cx = orbitWidth * .51, cy = orbitHeight * .48;
+    const baseX = orbitWidth * .51, baseY = orbitHeight * .48;
+    const bounds = canvas.getBoundingClientRect();
+    const mx = orbitPointer.x - bounds.left, my = orbitPointer.y - bounds.top;
+    const distance = Math.hypot(mx - baseX, my - baseY);
+    const target = orbitPointer.inside && !motion.matches ? clamp((radius + 170 - distance) / 150) : 0;
+    orbitPointer.strength += (target - orbitPointer.strength) * .1;
+    orbitPointer.tiltX += (clamp((mx - baseX) / Math.max(radius, 1), -1, 1) * target - orbitPointer.tiltX) * .075;
+    orbitPointer.tiltY += (clamp((my - baseY) / Math.max(radius, 1), -1, 1) * target - orbitPointer.tiltY) * .075;
+    const energy = motion.matches ? 0 : orbitPointer.strength;
+    const cx = baseX + orbitPointer.tiltX * 13, cy = baseY + orbitPointer.tiltY * 10;
     const light = body.dataset.theme === 'light';
+    const color = light ? '50,80,120' : '177,207,250';
+    const reach = Math.min(180, radius * .7);
+    if (energy > .01) {
+      const glow = ctx.createRadialGradient(mx, my, 0, mx, my, reach);
+      glow.addColorStop(0, 'rgba(' + color + ',' + energy * .12 + ')');
+      glow.addColorStop(1, 'rgba(' + color + ',0)');
+      ctx.fillStyle = glow; ctx.fillRect(mx - reach, my - reach, reach * 2, reach * 2);
+    }
     for (let ring = 0; ring < 7; ring++) {
-      const tilt = ring * .43 + .3;
-      ctx.beginPath();
+      const tilt = ring * .43 + .3 + orbitPointer.tiltX * .16;
+      const depth = .32 + orbitPointer.tiltY * .07;
+      const points = [];
       for (let i = 0; i <= 120; i++) {
         const angle = i / 120 * Math.PI * 2 + t;
         const x = Math.cos(angle) * radius;
         const z = Math.sin(angle) * radius;
-        const px = cx + x * Math.cos(tilt) - z * .32 * Math.sin(tilt);
-        const py = cy + x * Math.sin(tilt) + z * .32 * Math.cos(tilt);
-        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        let px = cx + x * Math.cos(tilt) - z * depth * Math.sin(tilt);
+        let py = cy + x * Math.sin(tilt) + z * depth * Math.cos(tilt);
+        const dx = px - mx, dy = py - my;
+        const d = Math.hypot(dx, dy);
+        const heat = Math.pow(clamp(1 - d / Math.max(reach, 1)), 2) * energy;
+        const force = heat * 42;
+        px += dx / Math.max(d, 1) * force;
+        py += dy / Math.max(d, 1) * force;
+        points.push({ x: px, y: py, heat });
+      }
+      ctx.beginPath();
+      points.forEach((point, i) => {
+        if (i === 0) ctx.moveTo(point.x, point.y); else ctx.lineTo(point.x, point.y);
+      });
+      ctx.strokeStyle = 'rgba(' + color + ',' + ((light ? .16 : .19) + energy * .1) + ')';
+      ctx.lineWidth = .65 + energy * .2; ctx.stroke();
+      for (let i = 1; i < points.length; i++) {
+        const point = points[i], previous = points[i - 1];
+        if (point.heat > .025) {
+          ctx.beginPath(); ctx.moveTo(previous.x, previous.y); ctx.lineTo(point.x, point.y);
+          ctx.strokeStyle = 'rgba(' + color + ',' + point.heat * .85 + ')';
+          ctx.lineWidth = 1.4; ctx.stroke();
+        }
         if (i % 15 === 0) {
-          ctx.fillStyle = light ? 'rgba(50,80,120,.45)' : 'rgba(177,207,250,.6)';
-          ctx.fillRect(px - 1, py - 1, 2, 2);
+          ctx.beginPath(); ctx.arc(point.x, point.y, 1 + point.heat * 2.5, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(' + color + ',' + Math.min(1, .6 + point.heat) + ')';
+          ctx.fill();
         }
       }
-      ctx.strokeStyle = light ? 'rgba(50,80,120,.16)' : 'rgba(151,190,245,.19)';
-      ctx.lineWidth = .65; ctx.stroke();
     }
   }
   function animateOrbit(time) {
