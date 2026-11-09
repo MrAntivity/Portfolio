@@ -1,5 +1,9 @@
-import { renderAI } from "./ai-format.mjs?v=visual-2";
-import { gameState, WORLDS } from "./game.mjs?v=visual-2";
+import {
+  diagramContext,
+  withDiagramContext,
+} from "./diagram-context.mjs?v=visual-3";
+import { renderAI } from "./ai-format.mjs?v=visual-3";
+import { gameState, WORLDS } from "./game.mjs?v=visual-3";
 import {
   EXAM_DATE,
   today,
@@ -9,12 +13,12 @@ import {
   reviewDue,
   chooseQuestions,
   safeText as h,
-} from "./model.mjs?v=visual-2";
-import { labHTML, bindLab } from "./visuals.js?v=visual-2";
-import { conceptArt, subjectArt } from "./concept-art.mjs?v=visual-2";
-import { practiceArt } from "./practice-art.mjs?v=visual-2";
-import { mountCoach, clearCoaches } from "./study-coach.mjs?v=visual-2";
-import { momentumHTML, subjectRail } from "./study-layout.mjs?v=visual-2";
+} from "./model.mjs?v=visual-3";
+import { labHTML, bindLab } from "./visuals.js?v=visual-3";
+import { conceptArt, subjectArt } from "./concept-art.mjs?v=visual-3";
+import { practiceArt } from "./practice-art.mjs?v=visual-3";
+import { mountCoach, clearCoaches } from "./study-coach.mjs?v=visual-3";
+import { momentumHTML, subjectRail } from "./study-layout.mjs?v=visual-3";
 const $ = (s) => document.querySelector(s),
   main = $("#main");
 let curriculum,
@@ -49,6 +53,10 @@ function coachOptions(key, context, extra = {}) {
         throw new Error(
           "Your tutor is offline. Check your connection and try again.",
         );
+      payload = {
+        ...payload,
+        context: withDiagramContext(payload.context, diagramContext(main)),
+      };
       const result = await cloud.httpsCallable(cloud.functions, "mcatTutor", {
         timeout: 120000,
       })(payload);
@@ -1151,8 +1159,8 @@ async function connect() {
 try {
   records = readLocal();
   const [response, module] = await Promise.all([
-    fetch("/mcat/curriculum.json?v=visual-2"),
-    import("./bank.mjs?v=visual-2"),
+    fetch("/mcat/curriculum.json?v=visual-3"),
+    import("./bank.mjs?v=visual-3"),
   ]);
   if (!response.ok) throw Error("Curriculum unavailable");
   curriculum = await response.json();
