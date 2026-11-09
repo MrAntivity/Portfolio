@@ -304,6 +304,9 @@ function lesson(id) {
       ? "✓ Saved for review"
       : "↻ Save for review";
   };
+  $("#lesson-notes").oninput = () => {
+    $("#lesson-notes").dataset.dirty = "1";
+  };
   $("#save-notes").onclick = async () => {
     await save("lesson-" + id, {
       kind: "lesson",
@@ -311,6 +314,7 @@ function lesson(id) {
       title: l.title,
       notes: $("#lesson-notes").value.slice(0, 12000),
     });
+    delete $("#lesson-notes").dataset.dirty;
     $("#note-status").textContent = user
       ? "Saved; check sync status for cloud confirmation."
       : "Saved on this device.";
@@ -583,8 +587,12 @@ function plan() {
     ) +
     statsHTML() +
     `<div class="two-col"><section class="panel"><h2>Build. Apply. Refine.</h2><div class="plan-phase"><span class="tag">NOW → FEBRUARY 2027</span><h3>Make the foundations solid</h3><p>Work through lessons across all seven subjects. Explain each idea aloud, try the guided checks, and keep a list of gaps. Read a CARS passage regularly.</p></div><div class="plan-phase"><span class="tag">MARCH → MAY 2027</span><h3>Connect ideas across subjects</h3><p>Mix subjects, interpret experiments, practice units and graphs, and revisit missed concepts. Add official passage-based practice to these drills.</p></div><div class="plan-phase"><span class="tag">JUNE → JULY 2027</span><h3>Practice under exam conditions</h3><p>Use official full-length exams, review reasoning errors, and adjust your plan to the evidence. Build stamina while preserving recovery time.</p></div><div class="plan-phase"><span class="tag">AUGUST 2027</span><h3>Consolidate and protect your routine</h3><p>Prioritize persistent gaps and reviewed mistakes. Rehearse test-day logistics, reduce last-minute overload, and keep sleep consistent.</p></div><p class="report-note">August 28, 2027 is your supplied target date. This app does not verify your exam registration or the official testing calendar.</p></section><aside><section class="panel"><h3>Your weekly intention</h3><p>Write a realistic plan that fits your classes and energy.</p><label>Study goals<textarea id="plan-notes" maxlength="12000" rows="8" placeholder="For example: 4 study days, 2 lessons a day, 10 practice questions, and a CARS passage…">${h(records.settings?.plan || "")}</textarea></label><button id="save-plan" class="primary">Save my plan</button></section><section class="panel"><h3>Your data, in your hands</h3><p>Export a backup of your study records. Restore a backup to this account or preview when needed.</p><button id="export">Export progress</button><label style="margin-top:15px">Restore a progress backup<input id="import" type="file" accept="application/json,.json"></label><p class="report-note">Restore merges records by ID. Existing records with the same ID are replaced by the backup.</p></section></aside></div>`;
+  $("#plan-notes").oninput = () => {
+    $("#plan-notes").dataset.dirty = "1";
+  };
   $("#save-plan").onclick = async () => {
     await save("settings", { plan: $("#plan-notes").value.slice(0, 12000) });
+    delete $("#plan-notes").dataset.dirty;
     toast("Study plan saved.");
   };
   $("#export").onclick = () => {
@@ -700,6 +708,27 @@ function resources() {
     ) +
     `<section class="panel">${sources.map((s) => `<a class="resource" href="${h(s.url)}" target="_blank" rel="noopener"><span>↗</span><h3>${h(s.title)}</h3><p>${h(s.description || "Supporting educational reference for the study curriculum.")}</p></a>`).join("")}</section><div class="notice">This is an independent study tool. Content and AI responses are educational, not official MCAT material or medical advice. The learning library is a foundation curriculum, not a guarantee of exhaustive exam coverage.</div>`;
 }
+function refreshSavedFields() {
+  // Live snapshots can arrive after a deep link renders, or from another device.
+  // Refresh saved values without replacing text the learner is currently editing.
+  if (view === "lesson") {
+    const id = decodeURIComponent(location.hash.slice("#lesson/".length));
+    const r = records["lesson-" + id] || {};
+    const notes = $("#lesson-notes");
+    if (notes && !notes.dataset.dirty) notes.value = r.notes || "";
+    if ($("#flag-lesson"))
+      $("#flag-lesson").textContent = r.flag
+        ? "✓ Saved for review"
+        : "↻ Save for review";
+    if ($("#complete-lesson"))
+      $("#complete-lesson").textContent = r.complete
+        ? "✓ Lesson completed"
+        : "Mark lesson complete";
+  }
+  const planNotes = $("#plan-notes");
+  if (planNotes && !planNotes.dataset.dirty)
+    planNotes.value = records.settings?.plan || "";
+}
 function route() {
   if (!curriculum) return;
   recordInfo();
@@ -728,7 +757,11 @@ function route() {
   window.scrollTo(0, 0);
 }
 window.addEventListener("hashchange", route);
-$(".skip").onclick = (event) => { event.preventDefault(); main.focus(); main.scrollIntoView({block:"start"}); };
+$(".skip").onclick = (event) => {
+  event.preventDefault();
+  main.focus();
+  main.scrollIntoView({ block: "start" });
+};
 $("#theme").onclick = () => {
   document.body.classList.toggle("dark");
   localStorage.setItem(
@@ -845,6 +878,7 @@ async function connect() {
                 ? "Offline cache · waiting for connection"
                 : "All changes synced";
             if (["dashboard", "review"].includes(view)) route();
+            else refreshSavedFields();
           },
           (error) => {
             $("#sync-status").textContent = "Cloud progress unavailable";
