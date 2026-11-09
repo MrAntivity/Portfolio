@@ -1,37 +1,39 @@
-# MCAT Studio
+# MCAT visual study workspace
 
-Static page for https://aidenyue.com/mcat/, served by the existing GitHub Pages site. Firebase project: `aidenyue`. No Sites-hosting migration.
+Static page at https://aidenyue.com/mcat/, served by existing GitHub Pages hosting. Firebase project: `aidenyue`. No hosting migration.
 
-## Learning material
+## Study experience
 
-`curriculum.json` contains original foundation lessons across seven study subjects. Each lesson has a conceptual visual, a check, a worked example, a transfer question, and a source. `visuals.js` provides additional interactive subject models on related lessons.
+Dark graphite / ice-blue styling defaults to dark, with a persistent light-mode toggle (`mcat-appearance-v2`). `workspace.css` supplies the visual workspace over the existing shared styles.
 
-`bank.mjs` builds 5,000 deterministic practice items. The exact family distribution and material limitations live in `BANK_INFO` and are displayed on the practice page. Most are numerical variations within reusable families, not independently authored MCAT exam questions. CARS passages are original and shorter than full exam passages. No expert review or exhaustive AAMC coverage is claimed. Official AAMC and publisher resources are linked, not copied.
+- `curriculum.json`: 70 original foundational lessons across seven subjects, each with a check, worked example, transfer question, and source.
+- `concept-art.mjs`: 70 explicitly mapped, accessible topic-specific SVG diagrams and seven subject thumbnails. Diagrams can be expanded for small-screen reading.
+- `visuals.js`: 15 exact-topic interactive models, with explanatory assumptions and tested numerical relationships.
+- `practice-art.mjs`: conceptual setups for all 54 question families; answer formulas appear only after a response is checked.
+- Lessons follow four freely navigable steps: Learn, Apply, Review, Try again. Draft notes and answer selections survive step changes within the tab.
+- `study-coach.mjs`: contextual AI conversation beside a lesson/question. Pending replies remain scoped to the right account and context, and follow-up questions stay in place. Hints omit the stored solution before an answer is checked.
+- `ai-format.mjs`: local Marked + KaTeX + DOMPurify render readable headings, lists, tables, and math. User text stays escaped; model-generated HTML is not trusted.
+- `study-layout.mjs`: activity heatmap and momentum cards derived from real records, not demonstration data.
+
+`bank.mjs` builds 5,000 deterministic practice variants from reusable families, not 5,000 independently authored MCAT exam questions. CARS passages are original and shorter than full exam passages. This remains a foundation curriculum; no expert review, exhaustive AAMC coverage, or score prediction is claimed. Official and publisher resources are linked rather than copied.
 
 ## Private progress and AI
 
-Sign in with the existing private VIRO portal PIN. The existing Firebase Auth email is used; the page does not create accounts. Progress is stored under `/users/{uid}/mcatProgress/{recordId}`, protected by the existing owner-only Firestore rules. Preview data is stored separately in the browser. Signed-in Firestore uses persistent local caching; the UI reports pending/offline writes. Export/restore is available from Study plan.
+Sign in using the existing private VIRO portal PIN. Records under `/users/{uid}/mcatProgress/{recordId}` retain the existing owner-only Firestore protection. Preview work stays separate in browser storage. Notes, completion, flags, and study plans sync; export/restore is available in Study plan. AI conversations are tab-local.
 
-Question attempts use Firestore arrayUnion with unique event IDs. Accuracy is calculated from the earliest attempt, never the latest retry. Notes, completed lessons, flags, and study-plan text sync. The suggested exam date is the user-supplied August 28, 2027, not verified registration.
+Question attempts use Firestore `arrayUnion` and unique event IDs. First-attempt accuracy never increases from retries. `game.mjs` derives XP, levels, daily missions, streaks and achievements from existing records. First attempts earn 10 XP plus 5 if correct; one later recovery earns 5 XP; first lesson completion earns 50 XP. Completion toggles do not farm points. Streaks use New York calendar days.
 
-`mcatTutor` is an owner-only callable in `us-central1`, using the existing Secret Manager `OPENAI_API_KEY`. It does not expose the key or access unrelated portal data. Four modes accept bounded conversation and study context. Server-only rate records under `_mcatTutorLimits` limit usage to 12 calls per 10 minutes and 100 calls per Eastern day, with 1,800 output tokens per call. AI chats are tab-local, not synchronized. Input is rendered as text, including AI output.
+The owner-only `mcatTutor` callable in `us-central1` uses the existing server-side `OPENAI_API_KEY`. It accepts bounded conversation/context and retains the limits of 12 calls per 10 minutes, 100 per Eastern day, and 1,800 output tokens per call. Frontend-only redesigns do not require changing rules, secrets, or deploying functions.
 
-## Checks and publication
+## Verification and publication
+
+Install test dependencies with `npm --prefix tests install`, then run:
 
 ```
-node --test tests/mcat-model.test.mjs tests/mcat-tutor.test.cjs mcat/bank.test.mjs tests/mcat-content.test.mjs
+npm --prefix tests run test:mcat
 node --check mcat/app.js
-npx firebase-tools deploy --only functions:mcatTutor --project aidenyue
 ```
 
-Only the new callable needs deployment; Firestore rules are unchanged. Push the static files to the existing GitHub Pages source branch. Browser QA covers local preview, lesson answer/notes/flags, practice/filtering/scoring, desktop and phone layouts. Signed-in live sync and a billed OpenAI reply require an owner session and should be verified separately if no session is available.
+Browser checks cover lesson steps, selecting versus checking an answer, worked feedback, practice advancement, expanded diagrams, interactive sliders, draft-note preservation, desktop/phone layout, and light/dark modes. Use local preview for answer/completion checks to avoid adding test progress to the owner's account. Verify a real tutor reply separately with an authenticated owner session.
 
-## MCAT Quest design and rewards
-
-The Quest redesign adds Pip (a code-native SVG companion), seven colored subject worlds, daily activity quests, levels, XP, and badges. `game.mjs` derives rewards from existing synced records rather than storing a second score balance. First question attempts earn 10 XP plus 5 for a correct first attempt; the first later correction of a first-attempt mistake earns 5 XP once. First lesson completion earns 50 XP and saves `completedEver` / `completedDay`, retaining rewards when completion is toggled. Legacy completions receive credit without fabricated activity dates. Levels require 250 XP. Streaks use Eastern calendar dates and earned streak badges use the best historical streak. Reduced-motion preferences disable mascot motion and confetti.
-
-Validation: `node --test tests/mcat-game.test.mjs tests/mcat-model.test.mjs`. Local preview verifies lesson XP, first-lesson badge, mobile layout, and persistent activity without writing test answers to the owner's account.
-
-## Dark training theme
-
-The current design replaces the cartoon Quest visuals with the homepage's black/graphite and ice-blue palette, Inter typography, and an orbital graphic. Daily missions, XP, levels, streaks and earned achievements retain the same scoring and stored records. Dark mode is the default. The visible theme toggle saves light/dark selection in `mcat-appearance-v2`; the older theme preference is intentionally superseded by the requested dark-default design. The preference is applied before page paint and the toggle label describes the next mode. Desktop dark/light, reload persistence, and phone layout were checked in-browser.
+Push static changes to the existing GitHub Pages source branch and verify the deployment. Exam target remains the user-supplied August 28, 2027; registration and official exam-calendar availability are not verified by this app.

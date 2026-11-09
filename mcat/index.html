@@ -11,10 +11,11 @@
       content="A personal visual MCAT study studio. Learn, apply, practice, and review."
     />
     <link rel="icon" href="/assets/avatar.svg" />
-    <link rel="stylesheet" href="/mcat/style.css?v=inline-1" />
-    <link rel="stylesheet" href="/mcat/quest.css?v=inline-1" />
-  <link rel="stylesheet" href="/mcat/vendor/katex/katex.min.css" />
-</head>
+    <link rel="stylesheet" href="/mcat/style.css?v=visual-2" />
+    <link rel="stylesheet" href="/mcat/quest.css?v=visual-2" />
+    <link rel="stylesheet" href="/mcat/vendor/katex/katex.min.css" />
+    <link rel="stylesheet" href="/mcat/workspace.css?v=visual-2" />
+  </head>
   <body class="dark">
     <script>
       try {
@@ -30,15 +31,13 @@
         <a class="studio-title" href="#dashboard">MCAT<i> /</i></a>
         <nav aria-label="Study navigation">
           <a href="#dashboard" data-nav="dashboard"><span>⌂</span>Overview</a
-          ><a href="#learn" data-nav="learn"><span>▦</span>Training grounds</a
+          ><a href="#learn" data-nav="learn"><span>▦</span>Learn</a
           ><a href="#practice" data-nav="practice"><span>◎</span>Practice</a
           ><a href="#review" data-nav="review"
             ><span>↻</span>Review queue <b id="review-count">0</b></a
           ><a href="#tutor" data-nav="tutor"><span>✳</span>Study crew</a
           ><a href="#plan" data-nav="plan"><span>▤</span>Study plan</a
-          ><a href="#resources" data-nav="resources"
-            ><span>↗</span>Resources</a
-          >
+          ><a href="#resources" data-nav="resources"><span>↗</span>Resources</a>
           <a href="#achievements" data-nav="achievements"
             ><span>◇</span>Achievements</a
           >
@@ -57,8 +56,10 @@
       </aside>
       <div class="workspace">
         <header class="topbar">
-          <span>THE WORK ADDS UP.</span
-          ><button id="theme" aria-label="Switch to light mode">◐ Light mode</button>
+          <span>Your daily training</span
+          ><button id="theme" aria-label="Switch to light mode">
+            ◐ Light mode
+          </button>
           <div id="player-meter" class="player-meter"></div>
         </header>
         <main id="main" tabindex="-1">
@@ -96,6 +97,16 @@
         <p id="login-error" role="alert"></p>
       </form>
     </dialog>
-    <script type="module" src="/mcat/app.js?v=inline-1"></script>
+    <dialog id="visual-dialog" aria-labelledby="visual-dialog-title">
+      <header>
+        <h2 id="visual-dialog-title">Explore the visual</h2>
+        <button id="close-visual" aria-label="Close expanded diagram">×</button>
+      </header>
+      <p class="report-note">
+        On smaller screens, scroll sideways to see the whole diagram.
+      </p>
+      <div id="visual-dialog-content"></div>
+    </dialog>
+    <script type="module" src="/mcat/app.js?v=visual-2"></script>
   </body>
 </html>

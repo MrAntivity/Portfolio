@@ -1,5 +1,5 @@
-import { renderAI } from "./ai-format.mjs?v=inline-1";
-import { gameState, WORLDS, buddy } from "./game.mjs?v=inline-1";
+import { renderAI } from "./ai-format.mjs?v=visual-2";
+import { gameState, WORLDS } from "./game.mjs?v=visual-2";
 import {
   EXAM_DATE,
   today,
@@ -9,8 +9,12 @@ import {
   reviewDue,
   chooseQuestions,
   safeText as h,
-} from "./model.mjs?v=inline-1";
-import { flowVisual, labHTML, bindLab, heroArt } from "./visuals.js?v=inline-1";
+} from "./model.mjs?v=visual-2";
+import { labHTML, bindLab } from "./visuals.js?v=visual-2";
+import { conceptArt, subjectArt } from "./concept-art.mjs?v=visual-2";
+import { practiceArt } from "./practice-art.mjs?v=visual-2";
+import { mountCoach, clearCoaches } from "./study-coach.mjs?v=visual-2";
+import { momentumHTML, subjectRail } from "./study-layout.mjs?v=visual-2";
 const $ = (s) => document.querySelector(s),
   main = $("#main");
 let curriculum,
@@ -29,6 +33,63 @@ let curriculum,
   authReady = false;
 let filters = { subject: "", search: "" };
 const lessonAnswers = new Map();
+const answerDrafts = new Map();
+const lessonStages = new Map();
+const noteDrafts = new Map();
+let currentCoach = null;
+function coachOptions(key, context, extra = {}) {
+  return {
+    key,
+    context,
+    title: context.title,
+    userId: user?.uid,
+    onLogin: () => $("#login").showModal(),
+    request: async (payload) => {
+      if (!cloud)
+        throw new Error(
+          "Your tutor is offline. Check your connection and try again.",
+        );
+      const result = await cloud.httpsCallable(cloud.functions, "mcatTutor", {
+        timeout: 120000,
+      })(payload);
+      return result.data.answer;
+    },
+    ...extra,
+  };
+}
+function bindVisualZoom() {
+  document
+    .querySelectorAll(
+      ".lesson-stage .concept-figure, .practice-stage .concept-figure, .concept-lab",
+    )
+    .forEach((figure) => {
+      if (
+        !figure.querySelector("svg") ||
+        figure.querySelector(".diagram-expand")
+      )
+        return;
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "diagram-expand";
+      button.textContent = "⤢ Expand";
+      button.setAttribute("aria-label", "Expand diagram");
+      button.onclick = () => {
+        const dialog = $("#visual-dialog");
+        $("#visual-dialog-content").innerHTML =
+          `<div class="diagram-scroll">${figure.querySelector("svg").outerHTML}</div><p>${h(figure.querySelector("figcaption, .lab-explanation")?.textContent || "Conceptual model. Use the labels to follow the relationships.")}</p>`;
+        dialog.showModal();
+        $("#close-visual").onclick = () => dialog.close();
+      };
+      figure.append(button);
+    });
+}
+function progressRail() {
+  return subjectRail(curriculum.subjects, curriculum.lessons, records);
+}
+function keepNoteDraft() {
+  const input = $("#lesson-notes");
+  if (input?.dataset.dirty) noteDrafts.set(input.dataset.lesson, input.value);
+}
 const icons = {
   behavioral: "◎",
   biochemistry: "⌬",
@@ -96,7 +157,7 @@ function recordInfo() {
   const g = gameState(records);
   const meter = $("#player-meter");
   if (meter)
-    meter.innerHTML = `<span>${g.xp.toLocaleString()} XP</span><span>Level ${g.level}</span>`;
+    meter.innerHTML = `<span class="header-streak">↗ ${g.streak} day streak</span><span>${g.xp.toLocaleString()} XP</span><span>Level ${String(g.level).padStart(2, "0")}</span>`;
   return m;
 }
 async function save(id, fields, event) {
@@ -200,7 +261,7 @@ function subjectCard(s) {
   const lessons = curriculum.lessons.filter((l) => l.subject === s.id),
     done = lessons.filter((l) => records["lesson-" + l.id]?.complete).length,
     w = WORLDS[s.id];
-  return `<button class="subject-card world-card" data-subject="${h(s.id)}" style="--world:${w[2]}"><div class="world-scene"><span class="world-cloud">+</span><span class="world-emoji">${w[0]}</span><span class="world-orbit">↗</span></div><span class="world-name">${w[1]}</span><h3>${h(s.title)}</h3><div class="subject-meta"><span>${done} / ${lessons.length} checkpoints</span><span>${done === lessons.length ? "✓" : "→"}</span></div><div class="progress"><span style="width:${(done / Math.max(1, lessons.length)) * 100}%"></span></div></button>`;
+  return `<button class="subject-card world-card" data-subject="${h(s.id)}" style="--world:${w[2]}"><div class="world-scene">${subjectArt(s.id)}</div><span class="world-name">${w[1]}</span><h3>${h(s.title)}</h3><div class="subject-meta"><span>${done} / ${lessons.length} checkpoints</span><span>${done === lessons.length ? "✓" : "→"}</span></div><div class="progress"><span style="width:${(done / Math.max(1, lessons.length)) * 100}%"></span></div></button>`;
 }
 function dashboard() {
   const g = gameState(records),
@@ -233,8 +294,8 @@ function dashboard() {
       "practice",
     ],
   ];
-  main.innerHTML = `<div class="quest-heading"><div><span class="eyebrow">${user ? "AIDEN YUE" : "YOUR TRAINING SPACE"} / MCAT 2027</span><h1>Build<br><span>your edge.</span></h1><p>Stack the sessions. Sharpen the concepts. Make it count.</p></div><div class="streak-chip"><span class="streak-signal">↗</span> <strong>${g.streak}</strong><span>day streak<br><small>Keep the momentum.</small></span></div></div>
- <div class="adventure-layout"><section class="adventure-hero"><div class="hero-copy"><span class="tag">NEXT UP / +50 XP</span><h2>${h(next.title)}</h2><p>Understand the concept. Apply it under pressure.<br>Come back stronger.</p><button class="primary" data-lesson="${h(next.id)}">Start session <span>→</span></button><small>50 XP for your first completion</small></div><div class="buddy-home">${buddy}</div></section>
+  main.innerHTML = `<div class="quest-heading"><div><span class="eyebrow">${user ? "AIDEN YUE" : "YOUR TRAINING SPACE"} / MCAT 2027</span><h1>Your daily training.</h1><p>Understand it. Apply it. Make it stick.</p></div><div class="streak-chip"><span class="streak-signal">↗</span> <strong>${g.streak}</strong><span>day streak<br><small>Keep the momentum.</small></span></div></div>
+ <div class="adventure-layout"><section class="adventure-hero"><div class="hero-copy"><span class="tag">NEXT UP / +50 XP</span><h2>${h(next.title)}</h2><p>${h(next.summary.split(". ")[0])}.</p><button class="primary" data-lesson="${h(next.id)}">Start session <span>→</span></button><small>50 XP for your first completion</small></div><div class="dashboard-concept">${conceptArt(next)}</div></section>
  <section class="level-card"><div class="level-medal">${g.level}<span>LEVEL</span></div><h3>${g.level < 5 ? "Foundation" : g.level < 15 ? "Building momentum" : "Advanced"}</h3><p>${g.xp.toLocaleString()} XP earned</p><div class="progress"><span style="width:${(g.progress / 250) * 100}%"></span></div><small>${250 - g.progress} XP to level ${g.level + 1}</small><a href="#achievements">View achievements ↗</a></section></div>
  <div class="section-head"><div><span class="eyebrow">THE DAILY RUN</span><h2>Daily missions</h2></div><span class="tag">${quests.filter((q) => q[3] >= q[4]).length} / 3 complete</span></div><div class="daily-quests">${quests.map((q) => `<a class="quest-card ${q[3] >= q[4] ? "quest-done" : ""}" href="#${q[5]}"><span class="quest-icon">${q[3] >= q[4] ? "✓" : q[0]}</span><div><h3>${q[1]}</h3><p>${q[2]}</p><div class="progress"><span style="width:${Math.min(100, (q[3] / q[4]) * 100)}%"></span></div></div><b>${Math.min(q[3], q[4])}/${q[4]}</b></a>`).join("")}</div>
  <div class="section-head"><div><span class="eyebrow">CHOOSE YOUR FOCUS</span><h2>Your training grounds</h2></div><a href="#learn">All lessons →</a></div><div class="subject-grid">${curriculum.subjects.map(subjectCard).join("")}</div>
@@ -283,7 +344,7 @@ function learn() {
       "Choose your next move.",
       "Seven subjects. Visual relationships. Original explanations you can put to work.",
     ) +
-    `<div class="filters"><label>Subject<select id="learn-subject">${subjectOptions(filters.subject)}</select></label><label>Find a concept<input id="learn-search" type="search" placeholder="Try enzymes, memory, or circuits…" value="${h(filters.search)}"></label></div><p class="report-note">${lessons.length} lessons · Foundation curriculum, with links for deeper study. Each lesson includes a check and a transfer question.</p><div class="lesson-grid">${lessons.map((l) => `<button class="lesson-card" data-lesson="${h(l.id)}"><span class="tag">${h(subjectName(l.subject))}</span><h3>${h(l.title)}</h3><p>${h(l.summary.slice(0, 145))}…</p><div class="card-foot"><span>${records["lesson-" + l.id]?.complete ? "✓ Completed" : "Learn → Apply → Practice"}</span><span>↗</span></div></button>`).join("")}</div>${!lessons.length ? '<div class="empty">No lessons match your search.</div>' : ""}`;
+    `<div class="filters"><label>Subject<select id="learn-subject">${subjectOptions(filters.subject)}</select></label><label>Find a concept<input id="learn-search" type="search" placeholder="Try enzymes, memory, or circuits…" value="${h(filters.search)}"></label></div><p class="report-note">${lessons.length} lessons · Foundation curriculum, with links for deeper study. Each lesson includes a check and a transfer question.</p><div class="lesson-grid">${lessons.map((l) => `<button class="lesson-card" data-lesson="${h(l.id)}"><div class="lesson-thumbnail" aria-hidden="true">${conceptArt(l)}</div><span class="tag">${h(subjectName(l.subject))}</span><h3>${h(l.title)}</h3><p>${h(l.summary.slice(0, 145))}…</p><div class="card-foot"><span>${records["lesson-" + l.id]?.complete ? "✓ Completed" : "Learn → Apply → Practice"}</span><span>↗</span></div></button>`).join("")}</div>${!lessons.length ? '<div class="empty">No lessons match your search.</div>' : ""}`;
   $("#learn-subject").onchange = (e) => {
     filters.subject = e.target.value;
     learn();
@@ -298,24 +359,39 @@ function learn() {
   bindCommon();
 }
 function qHTML(q, key) {
-  const state = lessonAnswers.get(key);
-  return `<div class="question" data-q="${h(key)}">${q.passage ? `<div class="passage">${h(q.passage)}</div>` : ""}<h3>${h(q.prompt)}</h3><div class="choices">${q.choices.map((c, i) => `<button class="choice ${state ? (i === q.answer ? "correct" : i === state.choice ? "incorrect" : "") : ""}" data-choice="${i}" ${state ? "disabled" : ""}><b>${"ABCD"[i]}</b><span>${h(c)}</span></button>`).join("")}</div>${state ? `<div class="feedback" role="status"><strong>${state.choice === q.answer ? "✓ That’s right." : "Let’s work through it."}</strong><p>${h(q.explanation)}</p><small>Correct answer: ${"ABCD"[q.answer]}. ${h(q.choices[q.answer])}</small></div>` : '<p class="report-note">Choose an answer to reveal the explanation.</p>'}</div>`;
+  const state = lessonAnswers.get(key),
+    draft = answerDrafts.get(key);
+  return `<div class="question" data-q="${h(key)}">${q.passage ? `<div class="passage">${h(q.passage)}</div>` : ""}<h3>${h(q.prompt)}</h3><div class="choices" role="group" aria-label="Answer choices">${q.choices.map((c, i) => `<button class="choice ${state ? (i === q.answer ? "correct" : i === state.choice ? "incorrect" : "") : draft === i ? "selected" : ""}" data-choice="${i}" aria-pressed="${(state ? state.choice : draft) === i}" ${state ? "disabled" : ""}><b>${"ABCD"[i]}</b><span>${h(c)}</span></button>`).join("")}</div>${state ? `<div class="feedback" role="status"><strong>${state.choice === q.answer ? "✓ That’s right." : "Let’s work through it."}</strong><p>${h(q.explanation)}</p><small>Correct answer: ${"ABCD"[q.answer]}. ${h(q.choices[q.answer])}</small></div>` : `<div class="question-submit"><button class="primary" data-check-answer ${draft === undefined ? "disabled" : ""}>Check answer</button><span>Select an answer, then check your reasoning.</span></div>`}</div>`;
 }
-function bindQuestion(q, key, subject) {
+function bindQuestion(q, key, subject, onAnswer, afterAnswer) {
   const el = document.querySelector(`[data-q="${CSS.escape(key)}"]`);
-  if (!el) return;
+  if (!el || lessonAnswers.has(key)) return;
   q.openedAt = q.openedAt || Date.now();
   el.querySelectorAll("[data-choice]").forEach(
     (b) =>
-      (b.onclick = async () => {
+      (b.onclick = () => {
         if (lessonAnswers.has(key)) return;
-        const choice = +b.dataset.choice;
-        lessonAnswers.set(key, { choice });
-        await answer({ ...q, id: key, subject }, choice);
-        el.outerHTML = qHTML(q, key);
-        bindQuestion(q, key, subject);
+        answerDrafts.set(key, +b.dataset.choice);
+        el.querySelectorAll("[data-choice]").forEach((choice) => {
+          const selected = choice === b;
+          choice.classList.toggle("selected", selected);
+          choice.setAttribute("aria-pressed", String(selected));
+        });
+        el.querySelector("[data-check-answer]").disabled = false;
       }),
   );
+  el.querySelector("[data-check-answer]").onclick = async () => {
+    const choice = answerDrafts.get(key);
+    if (choice === undefined || lessonAnswers.has(key)) return;
+    lessonAnswers.set(key, { choice });
+    if (onAnswer) return onAnswer(choice);
+    await answer({ ...q, id: key, subject }, choice);
+    if (!el.isConnected) return;
+    el.outerHTML = qHTML(q, key);
+    afterAnswer?.();
+    const momentum = $("#study-momentum");
+    if (momentum) momentum.innerHTML = momentumHTML(records);
+  };
 }
 function lesson(id) {
   const l = curriculum.lessons.find((l) => l.id === id);
@@ -328,33 +404,95 @@ function lesson(id) {
   chatContext = {
     subject: subjectName(l.subject),
     title: l.title,
-    lesson: l.summary + "\n" + l.keyPoints.join("\n"),
+    lesson:
+      l.summary +
+      "\n" +
+      l.keyPoints.join("\n") +
+      (l.passage ? "\nPassage: " + l.passage : ""),
   };
-  main.innerHTML =
-    `<div class="breadcrumb"><a href="#learn">Learning library</a> / ${h(subjectName(l.subject))}</div>` +
-    heading("MAKE THE CONCEPT CLICK", h(l.title)) +
-    `<div class="lesson-layout"><article class="lesson-body"><section class="panel"><span class="step-tag">01 / LEARN & VISUALIZE</span><p>${h(l.summary)}</p>${l.passage ? `<div class="passage">${h(l.passage)}</div>` : ""}${flowVisual(l.visual)}<ul>${l.keyPoints.map((k) => `<li>${h(k)}</li>`).join("")}</ul><div class="callout"><strong>Watch for this trap</strong><p>${h(l.misconception)}</p></div>${/enzyme|kinetic|acid|base|force|motion|membrane|transport|research|correlation|catalys|argument/i.test(l.title) ? labHTML(l.subject) : ""}</section><section class="panel"><span class="step-tag">02 / TRY IT FIRST</span>${qHTML(l.check, "check-" + l.id)}</section><section class="panel"><span class="step-tag">03 / SEE THE WORKED METHOD</span><h3>${h(l.workedExample.prompt)}</h3><details><summary>Show the reasoning, step by step</summary><ol>${l.workedExample.steps.map((s) => `<li>${h(s)}</li>`).join("")}</ol><div class="callout"><strong>${h(l.workedExample.answer)}</strong></div></details></section><section class="panel"><span class="step-tag">04 / MAKE IT YOURS</span><p class="report-note">A related problem, with a new application.</p>${qHTML(l.transfer, "transfer-" + l.id)}<div class="actions"><button class="primary" id="complete-lesson">${r.complete ? "✓ Lesson completed" : "Mark lesson complete"}</button><button id="next-lesson">Next lesson →</button></div></section></article><aside class="sticky"><section class="panel"><span class="eyebrow">YOUR LEARNING LOOP</span><h3>Understanding over memorizing.</h3><p>Predict what happens before moving a slider. Then explain why in your own words.</p><button id="flag-lesson" class="soft-button">${r.flag ? "✓ Saved for review" : "↻ Save for review"}</button><button id="ask-lesson">✧ Ask your AI tutor</button><label style="margin-top:20px">Your notes<textarea id="lesson-notes" maxlength="12000" placeholder="What clicked? What is still unclear?">${h(r.notes || "")}</textarea></label><button id="save-notes">Save notes</button><p class="report-note" id="note-status"></p></section><section class="panel"><span class="eyebrow">GO A LITTLE DEEPER</span><p>Verify the details and explore the topic using the linked learning source.</p><a href="${h(l.source)}" target="_blank" rel="noopener" class="tag">Open learning source ↗</a><p class="report-note">Original study notes. Not official exam questions.</p></section></aside></div>`;
-  bindLab();
-  bindQuestion(l.check, "check-" + id, l.subject);
-  bindQuestion(l.transfer, "transfer-" + id, l.subject);
-  $("#complete-lesson").onclick = async () => {
-    const before = gameState(records);
-    await save("lesson-" + id, {
-      kind: "lesson",
-      subject: l.subject,
-      title: l.title,
-      completedDay:
-        records["lesson-" + id]?.completedDay ||
-        (records["lesson-" + id]?.complete ||
-        records["lesson-" + id]?.completedEver
-          ? ""
-          : today()),
-      completedEver: true,
-      complete: !records["lesson-" + id]?.complete,
-    });
-    reward(before);
+  const stage = lessonStages.get(id) || 0;
+  const stages = ["Learn", "Apply", "Review", "Try again"];
+  const pages = [
+    `<span class="step-tag">01 / SEE THE CONCEPT</span><h2>${h(l.title)}</h2>${conceptArt(l)}<p class="lesson-intro">${h(l.summary)}</p>${l.passage ? `<div class="passage">${h(l.passage)}</div>` : ""}<div class="key-ideas">${l.keyPoints.map((k, i) => `<div><span>0${i + 1}</span><p>${h(k)}</p></div>`).join("")}</div>${labHTML(l.id)}<div class="insight-callout"><span>WATCH FOR THE TRAP</span><p>${h(l.misconception)}</p></div>`,
+    `<span class="step-tag">02 / PUT IT INTO PRACTICE</span><h2>Your turn to connect the dots.</h2><details class="visual-reference" open><summary>Look at the concept visual</summary>${conceptArt(l)}</details>${qHTML(l.check, "check-" + id)}`,
+    `<span class="step-tag">03 / WALK THROUGH THE METHOD</span><h2>See how the reasoning works.</h2><p class="worked-prompt">${h(l.workedExample.prompt)}</p>${l.passage ? `<details class="visual-reference" open><summary>Reference passage</summary><div class="passage">${h(l.passage)}</div></details>` : ""}<ol class="worked-steps">${l.workedExample.steps.map((step, i) => `<li><span>${String(i + 1).padStart(2, "0")}</span><p>${h(step)}</p></li>`).join("")}</ol><div class="insight-callout"><span>THE TAKEAWAY</span><p>${h(l.workedExample.answer)}</p></div><details class="visual-reference"><summary>Reconnect it to the visual</summary>${conceptArt(l)}</details>`,
+    `<span class="step-tag">04 / MAKE IT YOURS</span><h2>Same idea. A new situation.</h2><p class="report-note">Apply what you learned without looking at the worked example.</p>${qHTML(l.transfer, "transfer-" + id)}<div class="actions"><button class="primary" id="complete-lesson">${r.complete ? "✓ Lesson completed" : "Mark lesson complete"}</button><button id="next-lesson">Next lesson →</button></div>`,
+  ];
+  main.innerHTML = `<div class="breadcrumb"><a href="#learn">Learning library</a><span>/</span>${h(subjectName(l.subject))}</div><div class="study-title"><div><h1>Make the concept click.</h1><p>${h(l.title)}</p></div><span class="study-lesson-status">${r.complete ? "✓ Completed" : "+50 XP on first completion"}</span></div><div class="study-layout"><article class="study-main"><nav class="study-stepper" aria-label="Learning steps">${stages.map((name, i) => `<button data-stage="${i}" ${stage === i ? 'aria-current="step"' : ""}><span>0${i + 1}</span>${name}</button>`).join("")}</nav><section class="panel lesson-stage" id="lesson-stage" tabindex="-1">${pages[stage]}<div class="stage-controls">${stage > 0 ? '<button id="previous-stage">← Back</button>' : '<a href="#learn">← All lessons</a>'}${stage < 3 ? `<button id="advance-stage" class="primary">${["Try it yourself", "See the worked method", "Try a new question"][stage]} →</button>` : ""}</div></section></article><aside class="study-side"><div id="study-coach"></div><div id="study-momentum">${momentumHTML(records)}</div><section class="panel study-notes"><button id="flag-lesson" class="soft-button">${r.flag ? "✓ Saved for review" : "↻ Save for review"}</button><details><summary>Your notes & sources</summary><label>Your notes<textarea id="lesson-notes" data-lesson="${h(id)}" ${noteDrafts.has(id) ? 'data-dirty="1"' : ""} maxlength="12000" placeholder="What clicked? What is still unclear?">${h(noteDrafts.get(id) ?? r.notes ?? "")}</textarea></label><button id="save-notes">Save notes</button><p class="report-note" id="note-status"></p><a href="${h(l.source)}" target="_blank" rel="noopener">Learning source ↗</a></details></section></aside></div>${progressRail()}`;
+  const setStage = (n) => {
+    keepNoteDraft();
+    lessonStages.set(id, n);
     lesson(id);
+    $("#lesson-stage").focus({ preventScroll: true });
+    $(".study-stepper").scrollIntoView({ block: "start", behavior: "instant" });
   };
+  document
+    .querySelectorAll("[data-stage]")
+    .forEach((b) => (b.onclick = () => setStage(+b.dataset.stage)));
+  if ($("#previous-stage"))
+    $("#previous-stage").onclick = () => setStage(stage - 1);
+  if ($("#advance-stage"))
+    $("#advance-stage").onclick = () => setStage(stage + 1);
+  const mountLessonCoach = () => {
+    const question = stage === 1 ? l.check : stage === 3 ? l.transfer : null;
+    const answered =
+      question &&
+      lessonAnswers.get((stage === 1 ? "check-" : "transfer-") + id);
+    const context = { ...chatContext };
+    if (question) {
+      context.question = {
+        prompt: question.prompt,
+        choices: question.choices,
+        ...(question.passage ? { passage: question.passage } : {}),
+      };
+      if (answered)
+        Object.assign(context.question, {
+          correctAnswer: question.choices[question.answer],
+          selectedAnswer: question.choices[answered.choice],
+          explanation: question.explanation,
+        });
+    }
+    currentCoach = mountCoach(
+      $("#study-coach"),
+      coachOptions("lesson:" + id, context, {
+        practice: Boolean(question),
+        answered: Boolean(answered),
+        mode: question && !answered ? "socratic" : "teach",
+      }),
+    );
+  };
+  mountLessonCoach();
+  bindLab();
+  bindVisualZoom();
+  bindQuestion(l.check, "check-" + id, l.subject, undefined, mountLessonCoach);
+  bindQuestion(
+    l.transfer,
+    "transfer-" + id,
+    l.subject,
+    undefined,
+    mountLessonCoach,
+  );
+  bindCommon();
+  if ($("#complete-lesson"))
+    $("#complete-lesson").onclick = async () => {
+      const before = gameState(records);
+      await save("lesson-" + id, {
+        kind: "lesson",
+        subject: l.subject,
+        title: l.title,
+        completedDay:
+          records["lesson-" + id]?.completedDay ||
+          (records["lesson-" + id]?.complete ||
+          records["lesson-" + id]?.completedEver
+            ? ""
+            : today()),
+        completedEver: true,
+        complete: !records["lesson-" + id]?.complete,
+      });
+      reward(before);
+      keepNoteDraft();
+      lesson(id);
+    };
   $("#flag-lesson").onclick = async () => {
     await save("lesson-" + id, {
       kind: "lesson",
@@ -376,20 +514,18 @@ function lesson(id) {
       title: l.title,
       notes: $("#lesson-notes").value.slice(0, 12000),
     });
+    noteDrafts.delete(id);
     delete $("#lesson-notes").dataset.dirty;
     $("#note-status").textContent = user
       ? "Saved; check sync status for cloud confirmation."
       : "Saved on this device.";
   };
-  $("#ask-lesson").onclick = () => {
-    chat = [];
-    location.hash = "tutor";
-  };
-  $("#next-lesson").onclick = () => {
-    const i = curriculum.lessons.indexOf(l);
-    location.hash =
-      "lesson/" + curriculum.lessons[(i + 1) % curriculum.lessons.length].id;
-  };
+  if ($("#next-lesson"))
+    $("#next-lesson").onclick = () => {
+      const i = curriculum.lessons.indexOf(l);
+      location.hash =
+        "lesson/" + curriculum.lessons[(i + 1) % curriculum.lessons.length].id;
+    };
 }
 function practice() {
   if (session) {
@@ -455,11 +591,39 @@ function sessionView() {
     sessionSummary();
     return;
   }
-  q.openedAt = Date.now();
+  q.openedAt ||= Date.now();
+  const activeSession = session;
   const state = session.results[session.index],
     key = "session-" + session.startedAt + "-" + q.id;
   if (state) lessonAnswers.set(key, { choice: state.choice });
-  main.innerHTML = `<div class="bank-layout"><div class="bank-top"><a href="#practice" id="end-session">← End session</a><span class="tag">${h(subjectName(q.subject))}</span><span>${session.index + 1} / ${session.questions.length}</span></div><div class="progress-strip">${session.questions.map((_, i) => `<span class="${i < session.results.length ? "done" : ""}"></span>`).join("")}</div><section class="panel"><div class="section-head" style="margin-top:0"><span class="eyebrow">${h(q.topic)}</span><span class="pill">${h(q.difficulty)} · ${q.variant ? "variant" : "original passage"}</span></div>${qHTML(q, key)}<div class="actions"><button id="flag-question">${records[q.id]?.flag ? "✓ Flagged" : "↻ Flag for review"}</button><button id="ask-question">✧ ${state ? "Explain with AI" : "Get an AI hint"}</button>${state ? '<button id="next-question" class="primary">Next question →</button>' : ""}</div><div id="question-ai" data-question="${h(q.id)}"></div></section><p class="report-note">Original practice drill · ${h(q.family)} · Numerical answers use up to 4 significant figures. <a href="${h(q.source)}" target="_blank" rel="noopener">Study reference ↗</a></p></div>`;
+  main.innerHTML = `<div class="breadcrumb">PRACTICE / ${h(subjectName(q.subject))}</div><div class="study-title"><div><h1>Put the concept to work.</h1><p>${h(q.topic)}</p></div><a href="#practice" id="end-session">End session ↗</a></div><div class="study-layout"><article class="study-main"><div class="session-track"><span>QUESTION ${session.index + 1} / ${session.questions.length}</span><span>${h(q.difficulty)}</span></div><div class="progress-strip">${session.questions.map((_, i) => `<span class="${i < session.results.length ? "done" : ""}"></span>`).join("")}</div><section class="panel practice-stage">${practiceArt(q, { revealed: Boolean(state) })}${qHTML(q, key)}<div class="actions"><button id="flag-question">${records[q.id]?.flag ? "✓ Flagged" : "↻ Save for review"}</button><button id="ask-question">✧ ${state ? "Explain with AI" : "Get an AI hint"}</button>${state ? '<button id="next-question" class="primary">Next question →</button>' : ""}</div></section><p class="report-note">Original practice ${q.variant ? "variant" : "passage"} · ${h(q.family)} · <a href="${h(q.source)}" target="_blank" rel="noopener">Study reference ↗</a></p></article><aside class="study-side"><div id="study-coach"></div><div id="study-momentum">${momentumHTML(records)}</div></aside></div>${progressRail()}`;
+  const contextQuestion = {
+    prompt: q.prompt,
+    choices: q.choices,
+    ...(q.passage ? { passage: q.passage } : {}),
+  };
+  if (state)
+    Object.assign(contextQuestion, {
+      correctAnswer: q.choices[q.answer],
+      explanation: q.explanation,
+      selectedAnswer: q.choices[state.choice],
+    });
+  currentCoach = mountCoach(
+    $("#study-coach"),
+    coachOptions(
+      key + (state ? ":explain" : ":hint"),
+      {
+        subject: subjectName(q.subject),
+        title: q.topic,
+        question: contextQuestion,
+      },
+      {
+        practice: true,
+        answered: Boolean(state),
+        mode: state ? "explain" : "socratic",
+      },
+    ),
+  );
   $("#end-session").onclick = (e) => {
     e.preventDefault();
     sessionSummary();
@@ -472,116 +636,41 @@ function sessionView() {
       topic: q.topic,
       flag: !records[q.id]?.flag,
     });
-    $("#flag-question").textContent = records[q.id].flag
-      ? "✓ Flagged"
-      : "↻ Flag for review";
+    if (session === activeSession && $("#flag-question"))
+      $("#flag-question").textContent = records[q.id].flag
+        ? "✓ Flagged"
+        : "↻ Save for review";
   };
-  paintQuestionAI();
-  $("#ask-question").onclick = () => requestQuestionAI(q, Boolean(state));
+  $("#ask-question").onclick = () => {
+    currentCoach.ask(
+      state
+        ? "Explain this question in a short worked solution. Use numbered steps and a typeset equation when useful. Explain my selected answer."
+        : "Give me one brief conceptual hint in 2–3 sentences. Do not substitute the numbers, give the final result, or identify the correct choice.",
+    );
+    if (window.innerWidth < 1100)
+      $("#study-coach").scrollIntoView({ block: "start", behavior: "smooth" });
+  };
   if (state)
     $("#next-question").onclick = () => {
       session.index++;
       sessionView();
+      window.scrollTo(0, 0);
     };
   else
-    document.querySelectorAll("[data-choice]").forEach(
-      (b) =>
-        (b.onclick = async () => {
-          if (session.results[session.index]) return;
-          const choice = +b.dataset.choice;
-          session.results[session.index] = {
-            choice,
-            correct: choice === q.answer,
-          };
-          await answer(q, choice);
-          sessionView();
-        }),
-    );
-}
-function paintQuestionAI() {
-  const host = $("#question-ai");
-  if (!host || !session) return;
-  const data = session.ai?.[host.dataset.question],
-    button = $("#ask-question");
-  if (button) button.disabled = Boolean(data?.pending);
-  if (!data?.open) {
-    host.innerHTML = "";
-    return;
-  }
-  host.innerHTML = `<aside class="inline-ai" aria-label="AI question help"><div class="inline-ai-header"><span>✧ ${data.mode === "explain" ? "Worked explanation" : "A hint, not the answer"}</span><button id="close-question-ai" aria-label="Close AI help">×</button></div><div class="ai-prose" role="status" aria-live="polite">${data.pending ? '<p class="ai-thinking">Thinking through this question…</p>' : data.error ? `<p>${h(data.error)}</p><button id="retry-question-ai">Try again</button>` : renderAI(data.text)}</div><p class="report-note">AI study help · Your question and answer choices stay right here.</p></aside>`;
-  $("#close-question-ai").onclick = () => {
-    data.open = false;
-    paintQuestionAI();
-  };
-  if ($("#retry-question-ai"))
-    $("#retry-question-ai").onclick = () =>
-      requestQuestionAI(
-        session.questions[session.index],
-        data.mode === "explain",
-      );
-}
-async function requestQuestionAI(q, answered) {
-  if (!user) {
-    $("#login").showModal();
-    return;
-  }
-  if (!cloud) {
-    toast("Your tutor is offline. Please check your connection.");
-    return;
-  }
-  const activeSession = session,
-    uid = user.uid,
-    mode = answered ? "explain" : "socratic";
-  activeSession.ai ||= {};
-  const previous = activeSession.ai[q.id];
-  if (previous?.pending) return;
-  if (previous?.text && previous.mode === mode) {
-    previous.open = true;
-    paintQuestionAI();
-    return;
-  }
-  const data = { mode, open: true, pending: true, text: "", error: "" };
-  activeSession.ai[q.id] = data;
-  paintQuestionAI();
-  const question = {
-    prompt: q.prompt,
-    choices: q.choices,
-    ...(q.passage ? { passage: q.passage } : {}),
-  };
-  if (answered) {
-    question.correctAnswer = q.choices[q.answer];
-    question.explanation = q.explanation;
-    question.selectedAnswer =
-      q.choices[activeSession.results[activeSession.index]?.choice];
-  }
-  try {
-    const result = await cloud.httpsCallable(cloud.functions, "mcatTutor", {
-      timeout: 120000,
-    })({
-      mode,
-      context: { subject: subjectName(q.subject), title: q.topic, question },
-      messages: [
-        {
-          role: "user",
-          content: answered
-            ? "Explain this question clearly in a short worked solution. Use a heading, numbered steps, and a typeset equation when useful. Explain the selected answer. Do not add a new practice question."
-            : "Give me one short useful hint for this question, in 2–3 sentences. Point me toward the concept or equation without substituting the numbers, giving the final result, or identifying the correct choice. Do not solve it. Use readable Markdown and LaTeX if useful.",
-        },
-      ],
+    bindQuestion(q, key, q.subject, async (choice) => {
+      const index = activeSession.index;
+      if (activeSession.results[index]) return;
+      activeSession.results[index] = { choice, correct: choice === q.answer };
+      await answer(q, choice);
+      if (
+        session === activeSession &&
+        view === "practice" &&
+        activeSession.index === index
+      )
+        sessionView();
     });
-    data.text = result.data.answer;
-  } catch (error) {
-    data.error = error.message || "The hint could not load. Please try again.";
-  } finally {
-    data.pending = false;
-    if (
-      user?.uid === uid &&
-      session === activeSession &&
-      view === "practice" &&
-      $("#question-ai")?.dataset.question === q.id
-    )
-      paintQuestionAI();
-  }
+  bindVisualZoom();
+  bindCommon();
 }
 function sessionSummary() {
   const count = session.results.length,
@@ -870,6 +959,7 @@ function refreshSavedFields() {
 }
 function route() {
   if (!curriculum) return;
+  keepNoteDraft();
   recordInfo();
   const hash = location.hash.slice(1) || "dashboard";
   view = hash.split("/")[0];
@@ -1005,6 +1095,11 @@ async function connect() {
         chat = [];
         chatContext = {};
         lessonAnswers.clear();
+        answerDrafts.clear();
+        lessonStages.clear();
+        noteDrafts.clear();
+        clearCoaches();
+        $("#lesson-notes")?.removeAttribute("data-dirty");
         session = null;
       }
       records = readLocal();
@@ -1056,8 +1151,8 @@ async function connect() {
 try {
   records = readLocal();
   const [response, module] = await Promise.all([
-    fetch("/mcat/curriculum.json?v=inline-1"),
-    import("./bank.mjs?v=inline-1"),
+    fetch("/mcat/curriculum.json?v=visual-2"),
+    import("./bank.mjs?v=visual-2"),
   ]);
   if (!response.ok) throw Error("Curriculum unavailable");
   curriculum = await response.json();
