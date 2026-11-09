@@ -35,3 +35,16 @@ body[data-theme=light] .keyboard-visual img{mix-blend-mode:normal}
 .theme-toggle.switching svg{animation:theme-spin .85s cubic-bezier(.22,1,.36,1)}
 @keyframes theme-spin{to{transform:rotate(180deg)}}
 @media(prefers-reduced-motion:reduce){.linkedin-button{transition:none}}
+/* Fine-pointer enhancement. Touch and reduced-motion users retain native input. */
+.cursor-dot,.cursor-ring{position:fixed;top:0;left:0;pointer-events:none;z-index:10000;opacity:0;border-radius:50%;will-change:transform}
+.cursor-dot{width:6px;height:6px;background:var(--accent);box-shadow:0 0 14px #b9d3ff38;transition:opacity .2s,width .2s,height .2s}
+.cursor-ring{width:42px;height:42px;border:1px solid #b9d3ff66;transition:opacity .2s,width .25s,height .25s,border-color .25s,background .25s}
+body[data-theme=light] .cursor-dot{background:#26384f;box-shadow:none}
+body[data-theme=light] .cursor-ring{border-color:#26384f66}
+@media(hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
+  body.cursor-ready,body.cursor-ready a,body.cursor-ready button,body.cursor-ready summary{cursor:none}
+  .cursor-ready .cursor-dot,.cursor-ready .cursor-ring{opacity:1}
+  .cursor-hover .cursor-ring{width:64px;height:64px;border-color:var(--accent);background:#b9d3ff0a}
+  .cursor-hover .cursor-dot{width:4px;height:4px}
+  .cursor-down .cursor-ring{width:30px;height:30px;background:#b9d3ff18}
+}

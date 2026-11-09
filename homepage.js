@@ -167,4 +167,49 @@
   motion.addEventListener('change', configureMotion);
   setTheme(storage.get() === 'light' ? 'light' : 'dark');
   configureMotion();
+
+  // Only replace the pointer after a real mouse event on a suitable device.
+  const finePointer = matchMedia('(hover: hover) and (pointer: fine)');
+  const cursorDot = document.createElement('div');
+  const cursorRing = document.createElement('div');
+  cursorDot.className = 'cursor-dot'; cursorRing.className = 'cursor-ring';
+  cursorDot.setAttribute('aria-hidden', 'true'); cursorRing.setAttribute('aria-hidden', 'true');
+  body.append(cursorDot, cursorRing);
+  let cursorX = 0, cursorY = 0, ringX = 0, ringY = 0, cursorFrame = 0;
+  function placeCursor(element, x, y) {
+    element.style.transform = 'translate3d(' + x + 'px,' + y + 'px,0) translate(-50%,-50%)';
+  }
+  function drawCursor() {
+    cursorFrame = 0;
+    ringX += (cursorX - ringX) * .2;
+    ringY += (cursorY - ringY) * .2;
+    placeCursor(cursorRing, ringX, ringY);
+    if (Math.abs(cursorX - ringX) + Math.abs(cursorY - ringY) > .15)
+      cursorFrame = requestAnimationFrame(drawCursor);
+  }
+  function hideCursor() {
+    body.classList.remove('cursor-ready', 'cursor-hover', 'cursor-down');
+    cancelAnimationFrame(cursorFrame); cursorFrame = 0;
+  }
+  window.addEventListener('pointermove', event => {
+    if (!finePointer.matches || motion.matches || event.pointerType !== 'mouse') { hideCursor(); return; }
+    cursorX = event.clientX; cursorY = event.clientY;
+    if (!body.classList.contains('cursor-ready')) {
+      ringX = cursorX; ringY = cursorY;
+      placeCursor(cursorRing, ringX, ringY);
+    }
+    placeCursor(cursorDot, cursorX, cursorY);
+    body.classList.add('cursor-ready');
+    body.classList.toggle('cursor-hover', !!event.target.closest('a,button,summary,[role="button"]'));
+    if (!cursorFrame) cursorFrame = requestAnimationFrame(drawCursor);
+  }, { passive: true });
+  window.addEventListener('pointerdown', event => {
+    if (event.pointerType === 'mouse' && body.classList.contains('cursor-ready')) body.classList.add('cursor-down');
+  }, { passive: true });
+  window.addEventListener('pointerup', () => body.classList.remove('cursor-down'), { passive: true });
+  root.addEventListener('pointerleave', hideCursor);
+  window.addEventListener('blur', hideCursor);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) hideCursor(); });
+  finePointer.addEventListener('change', hideCursor);
+  motion.addEventListener('change', hideCursor);
 })();
