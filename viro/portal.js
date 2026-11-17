@@ -419,6 +419,7 @@ function requestTabSwitch(tabName, onArrive) {
 
 // Real paths support bookmarks, refreshes, and browser back/forward.
 const PORTAL_TAB_NAMES = ['overview', 'birthdays', 'todos', 'vault', 'files', 'budget', 'maps', ...(NOTES_ENABLED ? ['notes'] : []), 'calendar', 'contacts'];
+document.querySelector('[data-tab="maps"] .nav-label').textContent = 'Maps';
 document.querySelector('[data-tab="notes"]').hidden = !NOTES_ENABLED;
 const PORTAL_TAB_LABELS = { overview: 'Overview', birthdays: 'Birthdays', todos: 'Tasks', vault: 'Vault', files: 'Files', budget: 'Budget', notes: 'Notes', maps: 'Concept Maps', calendar: 'Calendar', contacts: 'Contacts' };
 document.getElementById('workspace-search-trigger').addEventListener('click', openWorkspaceSearch);
