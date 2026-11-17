@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'viro/index.html'), 'utf8');
-for (const route of ['overview', 'todos', 'birthdays', 'contacts', 'calendar', 'files', 'budget', 'vault', 'notes', 'drive']) {
+for (const route of ['overview', 'todos', 'birthdays', 'contacts', 'calendar', 'files', 'budget', 'vault', 'notes', 'drive', 'maps']) {
   const dir = path.join(root, 'viro', route);
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(path.join(dir, 'index.html'), html);

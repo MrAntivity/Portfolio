@@ -8,6 +8,7 @@ import { createPreferences } from './preferences.js';
 import { mountBudget } from './budget.js';
 import { createBudgetStore } from './budget-store.js';
 import { mountNotesEditor, NOTE_TEMPLATES } from './notes-editor.js';
+import { mountMaps } from './maps-editor.js';
 import { createNoteSaver } from './notes-save.js';
 const NOTES_ENABLED = true;
 import { firebaseConfig, PORTAL_ACCOUNT_EMAIL, GOOGLE_CLIENT_ID, GOOGLE_PLACES_API_KEY } from './firebase-config.js';
@@ -48,6 +49,7 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 const functions = getFunctions(app);
 const lectureStudio = NOTES_ENABLED ? (await import('./lectures.js')).initLectures({ auth, db, storage, functions }) : { isBusy: () => false };
+let mapWorkspace = null;
 let stopBudget = null;
 let layoutPreferences = null;
 const callAiAssist = httpsCallable(functions, 'aiAssist');
@@ -269,6 +271,7 @@ onAuthStateChanged(auth, async (user) => {
 
   if (!user || user.email !== PORTAL_ACCOUNT_EMAIL) {
     if (typeof noteSaver !== 'undefined') { noteSaver?.dispose(); noteSaver = null; currentNoteId = null; notes = []; noteFolders = []; editorSurface.replaceChildren(); editorTitleInput.value = ''; driveEditorView.hidden = true; driveListView.hidden = false; notesEditor.close(); }
+    mapWorkspace?.dispose(); mapWorkspace = null;
     lockVault();
     currentUser = null;
     document.querySelector('.workspace-search-dialog[open]')?.close();
@@ -415,9 +418,9 @@ function requestTabSwitch(tabName, onArrive) {
 }
 
 // Real paths support bookmarks, refreshes, and browser back/forward.
-const PORTAL_TAB_NAMES = ['overview', 'birthdays', 'todos', 'vault', 'files', 'budget', ...(NOTES_ENABLED ? ['notes'] : []), 'calendar', 'contacts'];
+const PORTAL_TAB_NAMES = ['overview', 'birthdays', 'todos', 'vault', 'files', 'budget', 'maps', ...(NOTES_ENABLED ? ['notes'] : []), 'calendar', 'contacts'];
 document.querySelector('[data-tab="notes"]').hidden = !NOTES_ENABLED;
-const PORTAL_TAB_LABELS = { overview: 'Overview', birthdays: 'Birthdays', todos: 'Tasks', vault: 'Vault', files: 'Files', budget: 'Budget', notes: 'Notes', calendar: 'Calendar', contacts: 'Contacts' };
+const PORTAL_TAB_LABELS = { overview: 'Overview', birthdays: 'Birthdays', todos: 'Tasks', vault: 'Vault', files: 'Files', budget: 'Budget', notes: 'Notes', maps: 'Concept Maps', calendar: 'Calendar', contacts: 'Contacts' };
 document.getElementById('workspace-search-trigger').addEventListener('click', openWorkspaceSearch);
 const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
 const portalHeader = document.querySelector('.portal-header');
@@ -557,6 +560,31 @@ function lockVault() {
 
 function switchTab(tabName) {
   if (!hasPortalSession()) return;
+  if (tabName === 'maps' && !mapWorkspace) {
+    const uid = currentUser.uid;
+    const maps = collection(db, 'users', uid, 'conceptMaps');
+    mapWorkspace = mountMaps(document.getElementById('tab-maps'), {
+      uid,
+      subscribe: (next, fail) => onSnapshot(maps, snap => next(snap.docs.map(d => ({...d.data(), id:d.id}))), fail),
+      create: async value => (await addDoc(maps, {...value, revision:0, updatedAt:serverTimestamp()})).id,
+      write: (id, value, revision) => runTransaction(db, async tx => {
+        const ref = doc(maps,id);
+        const latest = await tx.get(ref);
+        if (!latest.exists() || latest.data().revision !== revision) {
+          throw Object.assign(Error('Map changed on another device'), {code:'notes/conflict'});
+        }
+        tx.update(ref,{...value, revision:revision+1, updatedAt:serverTimestamp()});
+        return revision+1;
+      }),
+      cleanNote: sanitizeNoteHtml,
+      notes: () => notes,
+      openNote: id => {
+        const note = notes.find(item => item.id === id);
+        if (!note) throw Error('This note is no longer available.');
+        pushTab('notes'); openNoteEditor(note);
+      }
+    });
+  }
   if (typeof noteSaver !== 'undefined' && tabName !== 'notes') { flushAutosave().catch(() => {}); notesEditor.close(); }
   if (tabName !== 'vault') lockVault();
   document.querySelectorAll('.portal-tab').forEach((panel) => {
@@ -3149,6 +3177,21 @@ function syncOpenNote() {
 function scheduleAutosave() { if (currentNoteId && noteSaver) noteSaver.edit(noteValue()); }
 function flushAutosave() { return noteSaver ? noteSaver.flush() : Promise.resolve(); }
 editorFolderSelect.addEventListener('change', scheduleAutosave);
+document.getElementById('notes-create-map').addEventListener('click', async event => {
+  const button = event.currentTarget;
+  button.disabled = true;
+  try {
+    await flushAutosave();
+    if (!hasPortalSession() || !currentNoteId) return;
+    const note = {id:currentNoteId, title:editorTitleInput.value, contentHtml:editorSurface.innerHTML};
+    pushTab('maps');
+    await mapWorkspace.fromNote(note);
+  } catch (error) {
+    const target = document.querySelector('#tab-maps:not([hidden]) [role=status]');
+    if (target) target.textContent = error.message;
+    else notesEditor.status('Could not create a map. Save this note and try again.');
+  } finally { button.disabled = false; }
+});
 document.getElementById('notes-retry-save').addEventListener('click', () => flushAutosave().catch(() => {}));
 document.getElementById('notes-save-copy').addEventListener('click', async () => {
   if (!hasPortalSession()) return;

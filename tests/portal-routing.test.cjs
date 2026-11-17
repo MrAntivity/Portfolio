@@ -5,7 +5,7 @@ const vm = require('node:vm');
 const { JSDOM } = require('jsdom');
 const source = fs.readFileSync('viro/portal.js', 'utf8');
 const fn = name => source.match(new RegExp('function ' + name + '\\([^\\n]*\\) \\{[\\s\\S]*?\\n\\}'))[0];
-const routes = ['overview','todos','birthdays','contacts','calendar','files','budget','vault','notes','drive'];
+const routes = ['overview','todos','birthdays','contacts','calendar','files','budget','vault','notes','drive','maps'];
 function harness(url, signedIn = true) {
  const dom = new JSDOM('', {url});
  const user = {uid:'owner', email:'owner@example.test'};
@@ -23,7 +23,7 @@ test('every direct route serves the same hidden, authenticated shell with stable
  }
 });
 test('direct routes and legacy bookmarks normalize to clean paths',()=>{
- for(const [url,wanted] of [['/viro/contacts/','contacts'],['/viro/#contacts','contacts'],['/viro/','overview'],['/viro/notes/','notes'],['/viro/#drive','notes'],['/viro/drive/','notes'],['/viro/vault/','overview']]){
+ for(const [url,wanted] of [['/viro/contacts/','contacts'],['/viro/#contacts','contacts'],['/viro/','overview'],['/viro/notes/','notes'],['/viro/maps/','maps'],['/viro/#drive','notes'],['/viro/drive/','notes'],['/viro/vault/','overview']]){
   const {dom,ctx}=harness('https://aidenyue.com'+url);ctx.applyTabFromLocation(true);
   assert.equal(dom.window.location.pathname,'/viro/'+wanted);assert.equal(dom.window.location.hash,'');assert.equal(ctx.shown[0],wanted);dom.window.close();
  }
