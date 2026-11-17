@@ -16,7 +16,7 @@ test('map editing, study, saved versions, copy, recovery and Notes',async()=>{
     await click('[data-template="Feedback loop"]');assert.equal(nodes(),3);assert.equal(root.querySelectorAll('[data-edge]').length,3);
     await click('[data-node]');await act('branch');assert.equal(nodes(),4);await act('undo');assert.equal(nodes(),3);await act('redo');assert.equal(nodes(),4);
     await click('[data-node]');await act('connect');await click('[data-node]');assert.equal(root.querySelectorAll('[data-edge]').length,5);
-    await act('layout');await act('study');assert.equal(q('[data-node]').getAttribute('aria-label'),'Recall concept');await act('reveal');assert.equal(q('[data-node]').getAttribute('aria-label'),'Stimulus');await act('study');
+    await act('layout');await act('study');assert.equal(q('[data-node]').getAttribute('aria-label'),'Stimulus');assert.equal(root.querySelectorAll('[data-edge][aria-label="Relationship ?"]').length,1);await act('reveal');assert.equal(q('[data-node]').getAttribute('aria-label'),'Stimulus');await act('study');
     const board=q('.map-board');board.setPointerCapture=()=>{};const pos=q('[data-node]').getAttribute('transform');
     board.onpointerdown({target:q('[data-node]'),button:0,clientX:1,clientY:1});board.onpointermove({clientX:40,clientY:20});board.onpointerup();assert.notEqual(q('[data-node]').getAttribute('transform'),pos);
     await act('save');const first=[...records.values()][0];assert.equal(first.nodes.length,4);assert.ok(first.revision>0);
@@ -59,5 +59,37 @@ test('canvas connection, inline naming, keyboard branches, manual routing and fo
     await click(node(0));await act('fold');await act('save');assert.equal(count(),1);assert.equal(importMap(saved,false).nodes[0].folded,true);
     await act('fold');assert.equal(count(),5);
     await click(node(1));board.ondblclick({target:node(1)});input.value='Discard';input.onkeydown(key(input,'Escape'));await act('save');assert.equal(saved.nodes[1].label,dest.label);
+  }finally{app.dispose();dom.window.close();delete global.window;delete global.localStorage;}
+});
+
+test('long labels, resize, targeted recall, preserved bends, visible fit, quick edits and keyboard deletion',async()=>{
+  const {mountMaps}=await import('../viro/maps-editor.js');
+  const {importMap,cardBox}=await import('../viro/maps-model.mjs');
+  const dom=new JSDOM('<section></section>',{url:'https://test.invalid/viro/maps'});
+  global.window=dom.window;global.localStorage=dom.window.localStorage;
+  const root=dom.window.document.querySelector('section'),q=s=>root.querySelector(s);
+  let saved;
+  const app=mountMaps(root,{uid:'qa',subscribe(){return ()=>{};},notes:()=>[],create:async v=>{saved=v;return 'adh';},write:async(id,v,r)=>{saved=v;return r+1;}});
+  const board=q('.map-board'),canvas=board.querySelector('svg');
+  const click=t=>root.onclick({target:t}),act=name=>click(q('[data-act="'+name+'"]'));
+  const nodes=()=>[...canvas.querySelectorAll('[data-node]')],edges=()=>[...canvas.querySelectorAll('[data-edge]')];
+  const key=(target,key)=>({target,key,preventDefault(){},stopPropagation(){}});
+  const recall=async mode=>{q('.md-recall select').value=mode;q('.md-recall select').onchange();};
+  board.setPointerCapture=()=>{};
+  function drag(t){board.onpointerdown({target:t,button:0,pointerId:1,clientX:50,clientY:50});board.onpointermove({pointerId:1,clientX:145,clientY:80});board.onpointerup({pointerId:1});}
+  try{
+    await click(q('[data-template="Feedback loop"]'));await click(nodes()[0]);
+    board.ondblclick({target:nodes()[0]});const input=q('.md-inline');const label='Increased plasma osmolality after prolonged exercise';
+    input.value=label;input.onkeydown(key(input,'Enter'));assert.equal([...nodes()[0].querySelectorAll('tspan')].map(s=>s.textContent).join(' '),label);
+    drag(q('[data-resize]'));await act('save');assert.ok(importMap(saved,false).nodes[0].width>160);assert.ok(cardBox(saved.nodes[0]).lines.length>=2);
+    assert.equal(q('.md-context').hidden,false);q('.md-context select').value='green';q('.md-context select').onchange({target:q('.md-context select')});
+    await act('study');assert.equal(nodes().filter(n=>n.getAttribute('aria-label')==='Recall concept').length,1);await click(nodes()[0]);assert.equal(nodes()[0].getAttribute('aria-label'),label);
+    await recall('relationship');assert.equal(edges().filter(e=>e.getAttribute('aria-label')==='Relationship ?').length,1);
+    await recall('branch');assert.equal(nodes().filter(n=>n.getAttribute('aria-label')==='Recall concept').length,2);
+    await click(nodes()[1]);assert.equal(nodes().filter(n=>n.getAttribute('aria-label')==='Recall concept').length,1);
+    await act('study');await click(edges()[0]);drag(q('[data-bend]'));await act('save');const bend=saved.edges[0].bend;
+    await act('layout');await act('save');assert.deepEqual(saved.edges[0].bend,bend);
+    await click(nodes()[0]);await act('fold');await act('fit');assert.equal(nodes().length,1);assert.equal(q('[data-expand] text').textContent,'+2');assert.match(q('.map-count').textContent,/2 hidden/);
+    await click(q('[data-expand]'));assert.equal(nodes().length,3);await click(nodes()[1]);root.onkeydown(key(board,'Backspace'));assert.equal(nodes().length,2);await act('undo');assert.equal(nodes().length,3);
   }finally{app.dispose();dom.window.close();delete global.window;delete global.localStorage;}
 });

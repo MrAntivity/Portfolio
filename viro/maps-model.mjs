@@ -25,13 +25,27 @@ export function importMap(raw, fresh = true) {
     if (!n || typeof n.id !== 'string' || !n.id || ids.has(n.id) || ![n.x,n.y].every(Number.isFinite)) throw Error('Invalid concept in map.');
     const key = fresh ? id() : n.id;
     ids.set(n.id,key);
-    return {id:key, ...(n.folded?{folded:true}:{}), label:str(n.label,160) || 'Concept', detail:str(n.detail,4000), noteId:str(n.noteId,150), color:colors.includes(n.color) ? n.color : 'blue', x:Math.max(0,Math.min(100000,n.x)),y:Math.max(0,Math.min(100000,n.y))};
+    return {id:key, ...(Number.isFinite(n.width)?{width:Math.max(120,Math.min(440,n.width))}:{}), ...(n.folded?{folded:true}:{}), label:str(n.label,160) || 'Concept', detail:str(n.detail,4000), noteId:str(n.noteId,150), color:colors.includes(n.color) ? n.color : 'blue', x:Math.max(0,Math.min(100000,n.x)),y:Math.max(0,Math.min(100000,n.y))};
   });
   return {title:str(raw.title,150)||'Untitled map', folder:str(raw.folder,100), favorite:!!raw.favorite,trashed:!!raw.trashed,nodes,edges:raw.edges.map(e => {
     if (!e || !ids.has(e.from) || !ids.has(e.to) || !e.id || edges.has(e.id)) throw Error('Invalid relationship in map.');
     edges.add(e.id);
     return {id:fresh?id():e.id,from:ids.get(e.from),to:ids.get(e.to),label:str(e.label,120), ...(e.bend&&[e.bend.x,e.bend.y].every(Number.isFinite)?{bend:{x:e.bend.x,y:e.bend.y}}:{})};
   })};
+}
+export function cardBox(node){
+  const width=node.width||160;
+  const limit=Math.max(8,Math.floor((width-24)/8));
+  const lines=[];
+  let line='';
+  for(let word of (node.label||'Concept').split(/\s+/u)){
+    if(line && [...line+' '+word].length>limit){lines.push(line);line='';}
+    let letters=[...word];
+    while(letters.length>limit){lines.push(letters.splice(0,limit).join(''));}
+    line=(line?line+' ':'')+letters.join('');
+  }
+  if(line)lines.push(line);
+  return {width,height:Math.max(60,lines.length*17+24),lines};
 }
 export function arrange(map) {
   const levels = new Map(), children = new Map(map.nodes.map(n => [n.id,[]]));
@@ -46,7 +60,10 @@ export function arrange(map) {
       for (const child of children.get(key)) if (!levels.has(child)) {levels.set(child,depth+1); queue.push(child);}
     }
   }
-  for (const node of map.nodes) { const depth=levels.get(node.id); node.x=55+depth*270; node.y=55+(counts[depth]||0)*130; counts[depth]=(counts[depth]||0)+1; }
+  const columns=[];
+  for(const n of map.nodes){const d=levels.get(n.id);columns[d]=Math.max(columns[d]||0,cardBox(n).width);}
+  const starts=[55];for(let i=0;i<columns.length;i++)starts[i+1]=starts[i]+columns[i]+110;
+  for(const node of map.nodes){const depth=levels.get(node.id);node.x=starts[depth];node.y=counts[depth]||55;counts[depth]=node.y+cardBox(node).height+70;}
 }
 
 // Assign each concept one branch parent so folding terminates even in a cycle.
