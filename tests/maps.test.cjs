@@ -28,3 +28,36 @@ test('map editing, study, saved versions, copy, recovery and Notes',async()=>{
     await app.fromNote({id:'note',title:'Physiology',contentHtml:'<h2>Exercise</h2><li>Heart rate</li>'});assert.equal(nodes(),3);assert.ok([...records.values()].at(-1).nodes.every(n=>n.noteId==='note'));
   } finally {app.dispose();dom.window.close();delete global.window;delete global.localStorage;}
 });
+
+test('canvas connection, inline naming, keyboard branches, manual routing and fold persistence',async()=>{
+  const {mountMaps}=await import('../viro/maps-editor.js');
+  const {importMap}=await import('../viro/maps-model.mjs');
+  const dom=new JSDOM('<section></section>',{url:'https://test.invalid/viro/maps'});
+  global.window=dom.window;global.localStorage=dom.window.localStorage;
+  const root=dom.window.document.querySelector('section'),q=s=>root.querySelector(s);
+  let saved;
+  const app=mountMaps(root,{uid:'test',subscribe(){return ()=>{};},notes:()=>[],create:async v=>{saved=v;return 'id';},write:async(id,v,r)=>{saved=v;return r+1;}});
+  const board=q('.map-board'),canvas=board.querySelector('svg'),input=q('.md-inline');
+  board.setPointerCapture=()=>{};
+  const click=target=>root.onclick({target}),act=name=>click(q('[data-act="'+name+'"]'));
+  const node=i=>canvas.querySelectorAll('[data-node]')[i],count=()=>canvas.querySelectorAll('[data-node]').length;
+  const key=(target,key)=>({target,key,preventDefault(){},stopPropagation(){}});
+  const finish=value=>{input.value=value;input.onkeydown(key(input,'Enter'));};
+  const screen=(x,y)=>{const [cx,cy,w]=canvas.getAttribute('viewBox').split(' ').map(Number);return {clientX:(x-cx)*800/w,clientY:(y-cy)*800/w};};
+  function drag(target,start,end){board.onpointerdown({target,button:0,pointerId:1,...start});board.onpointermove({pointerId:1,...end});board.onpointerup({pointerId:1});}
+  try{
+    await click(q('[data-template="Mind map"]'));await click(node(0));
+    const src=saved.nodes[0],dest=saved.nodes[1];
+    drag(q('[data-port]'),screen(src.x,src.y+30),screen(dest.x+80,dest.y+30));
+    assert.equal(input.hidden,false);finish('regulates');await act('save');
+    const edge=saved.edges.at(-1);assert.deepEqual([edge.from,edge.to,edge.label],[src.id,dest.id,'regulates']);
+    drag(q('[data-bend]'),screen(200,200),screen(125,156));await act('save');
+    assert.deepEqual(saved.edges.at(-1).bend,{x:125,y:156});assert.deepEqual(importMap(saved).edges.at(-1).bend,{x:125,y:156});
+    await act('undo');await act('save');assert.equal(saved.edges.at(-1).bend,undefined);
+    await click(node(0));root.onkeydown(key(board,'Tab'));finish('Child');await act('save');assert.equal(count(),4);
+    root.onkeydown(key(board,'Enter'));finish('Sibling');await act('save');assert.equal(saved.edges.at(-1).from,src.id);
+    await click(node(0));await act('fold');await act('save');assert.equal(count(),1);assert.equal(importMap(saved,false).nodes[0].folded,true);
+    await act('fold');assert.equal(count(),5);
+    await click(node(1));board.ondblclick({target:node(1)});input.value='Discard';input.onkeydown(key(input,'Escape'));await act('save');assert.equal(saved.nodes[1].label,dest.label);
+  }finally{app.dispose();dom.window.close();delete global.window;delete global.localStorage;}
+});
