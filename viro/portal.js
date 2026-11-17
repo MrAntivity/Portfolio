@@ -1,14 +1,15 @@
 import { beginCalendarRedirect } from './calendar-redirect.js';
 import { mountContactPhotos } from './contact-photos.js';
-import { safeResourceUrl, sanitizeRichHtml } from './content-security.js';
+import { safeResourceUrl, sanitizeRichHtml, sanitizeNoteHtml } from './content-security.js';
 import { originalUploadMetadata, downloadOriginal } from '../shared/original-files.js';
 import { initFileSharing } from './file-sharing.js';
 import { convertHeicPhoto, isHeicPhoto } from '../shared/heic.js';
 import { createPreferences } from './preferences.js';
 import { mountBudget } from './budget.js';
 import { createBudgetStore } from './budget-store.js';
-// Hidden at the owner's request; existing notes and recordings are retained.
-const NOTES_ENABLED = false;
+import { mountNotesEditor, NOTE_TEMPLATES } from './notes-editor.js';
+import { createNoteSaver } from './notes-save.js';
+const NOTES_ENABLED = true;
 import { firebaseConfig, PORTAL_ACCOUNT_EMAIL, GOOGLE_CLIENT_ID, GOOGLE_PLACES_API_KEY } from './firebase-config.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js';
 import {
@@ -29,7 +30,8 @@ import {
   deleteDoc,
   updateDoc,
   onSnapshot,
-  serverTimestamp
+  serverTimestamp,
+  runTransaction
 } from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js';
 import {
   getStorage,
@@ -266,6 +268,7 @@ onAuthStateChanged(auth, async (user) => {
   if (manualLoginInProgress) return;
 
   if (!user || user.email !== PORTAL_ACCOUNT_EMAIL) {
+    if (typeof noteSaver !== 'undefined') { noteSaver?.dispose(); noteSaver = null; currentNoteId = null; notes = []; noteFolders = []; editorSurface.replaceChildren(); editorTitleInput.value = ''; driveEditorView.hidden = true; driveListView.hidden = false; notesEditor.close(); }
     lockVault();
     currentUser = null;
     document.querySelector('.workspace-search-dialog[open]')?.close();
@@ -291,6 +294,8 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 logoutBtn.addEventListener('click', async () => {
+  if (notesEditor.busy()) { notesEditor.status('Wait for images to finish uploading before signing out.'); return; }
+  try { await flushAutosave(); } catch { notesEditor.status('Your note is not synced yet. Retry saving or export a copy before signing out.'); return; }
   if (lectureStudio.isBusy()) { alert('Finish the lecture and wait for audio sync and AI processing before signing out.'); return; }
   stopBudget?.(); stopBudget = null;
     layoutPreferences?.dispose(); layoutPreferences = null;
@@ -410,9 +415,9 @@ function requestTabSwitch(tabName, onArrive) {
 }
 
 // Real paths support bookmarks, refreshes, and browser back/forward.
-const PORTAL_TAB_NAMES = ['overview', 'birthdays', 'todos', 'vault', 'files', 'budget', ...(NOTES_ENABLED ? ['drive'] : []), 'calendar', 'contacts'];
-document.querySelector('[data-tab="drive"]').hidden = !NOTES_ENABLED;
-const PORTAL_TAB_LABELS = { overview: 'Overview', birthdays: 'Birthdays', todos: 'Tasks', vault: 'Vault', files: 'Files', budget: 'Budget', drive: 'Notes', calendar: 'Calendar', contacts: 'Contacts' };
+const PORTAL_TAB_NAMES = ['overview', 'birthdays', 'todos', 'vault', 'files', 'budget', ...(NOTES_ENABLED ? ['notes'] : []), 'calendar', 'contacts'];
+document.querySelector('[data-tab="notes"]').hidden = !NOTES_ENABLED;
+const PORTAL_TAB_LABELS = { overview: 'Overview', birthdays: 'Birthdays', todos: 'Tasks', vault: 'Vault', files: 'Files', budget: 'Budget', notes: 'Notes', calendar: 'Calendar', contacts: 'Contacts' };
 document.getElementById('workspace-search-trigger').addEventListener('click', openWorkspaceSearch);
 const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
 const portalHeader = document.querySelector('.portal-header');
@@ -461,8 +466,9 @@ function pushTab(tabName) {
 function applyTabFromLocation(replace) {
   if (!hasPortalSession()) return;
   const legacy = location.hash.slice(1);
-  const requested = PORTAL_TAB_NAMES.includes(legacy) ? legacy
+  const requestedRaw = PORTAL_TAB_NAMES.includes(legacy) ? legacy
     : location.pathname.replace(/^\/viro\/?/, '').replace(/\/$/, '');
+  const requested = legacy === 'drive' || requestedRaw === 'drive' ? 'notes' : requestedRaw;
   const tabName = PORTAL_TAB_NAMES.includes(requested) ? requested : 'overview';
   if (tabName === 'vault' && !vaultUnlocked) {
     // Never land straight on Vault from history/a refresh without unlocking it again.
@@ -551,6 +557,7 @@ function lockVault() {
 
 function switchTab(tabName) {
   if (!hasPortalSession()) return;
+  if (typeof noteSaver !== 'undefined' && tabName !== 'notes') { flushAutosave().catch(() => {}); notesEditor.close(); }
   if (tabName !== 'vault') lockVault();
   document.querySelectorAll('.portal-tab').forEach((panel) => {
     panel.hidden = panel.dataset.tabPanel !== tabName;
@@ -853,7 +860,9 @@ function subscribeCollections() {
       noteFolders = snap.docs
         .map((d) => ({ id: d.id, ...d.data() }))
         .sort((a, b) => a.name.localeCompare(b.name));
+      const selectedFolder = editorFolderSelect.value;
       populateNoteFolderSelect();
+      editorFolderSelect.value = selectedFolder;
       renderNotes();
     })
   );
@@ -861,8 +870,9 @@ function subscribeCollections() {
   if (NOTES_ENABLED) unsubscribers.push(
     onSnapshot(userCollection('notes'), (snap) => {
       notes = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      syncOpenNote();
       renderNotes();
-    })
+    }, error => { document.getElementById('notes-list-status').textContent = 'Could not load notes. Check your connection and refresh.'; console.error(error); })
   );
 
   unsubscribers.push(
@@ -2630,7 +2640,7 @@ const editorStatus = document.getElementById('editor-status');
 
 function stripHtml(html) {
   const div = document.createElement('div');
-  div.innerHTML = sanitizeRichHtml(html);
+  div.innerHTML = sanitizeNoteHtml(html);
   return div.textContent || '';
 }
 
@@ -2994,7 +3004,7 @@ function renderNotes() {
   const items = visibleNotes();
 
   if (!items.length) {
-    list.innerHTML = visibleNoteSubfolders().length ? '' : '<p class="entry-empty">No notes found.</p>';
+    list.innerHTML = visibleNoteSubfolders().length ? '' : '<div class="notes-empty"><strong>A fresh page awaits.</strong><span>Create a note above, or try a different search.</span></div>';
     return;
   }
 
@@ -3006,7 +3016,7 @@ function renderNotes() {
         : '';
       return `
         <article class="note-card" data-open-note="${n.id}" draggable="true" tabindex="0" role="button" aria-label="Open ${escapeHtml(n.title || 'Untitled note')}">
-          <div class="note-card-title">${escapeHtml(n.title || 'Untitled note')}</div>
+          <span class="material-symbols-outlined" aria-hidden="true">description</span><div class="note-card-title">${escapeHtml(n.title || 'Untitled note')}</div>
           <p class="note-card-snippet">${escapeHtml(snippet) || '<em>Empty note</em>'}</p>
           <p class="note-card-meta">${updated ? `Updated ${updated}` : ''}${n.folderId ? ` · ${escapeHtml(noteFolderPathLabel(n.folderId))}` : ''}</p>
         </article>
@@ -3050,540 +3060,150 @@ wireCardContextMenu(document.getElementById('note-list'), '[data-open-note]', (c
   ];
 });
 
-document.getElementById('add-note-btn').addEventListener('click', async () => {
-  const ref = await addDoc(userCollection('notes'), {
-    title: '',
-    contentHtml: '',
-    folderId: currentNoteFolderId && currentNoteFolderId !== 'unfiled' ? currentNoteFolderId : null,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp()
-  });
-  openNoteEditor({ id: ref.id, title: '', contentHtml: '', folderId: currentNoteFolderId });
+// Existing notes keep their collection, IDs and content; no migration or replacement.
+let noteSaver = null;
+let editorLoadedRevision = 0;
+let editorBaseline = '';
+const notesEditor = mountNotesEditor({
+  root: driveEditorView, onChange: scheduleAutosave, uploadImages: uploadNoteImages,
+  ai: requestAi, getNoteId: () => currentNoteId
 });
+const noteValue = () => ({ title: editorTitleInput.value.trim().slice(0,300), contentHtml: sanitizeNoteHtml(editorSurface.innerHTML), folderId: editorFolderSelect.value || null });
+const noteFingerprint = value => JSON.stringify([value.title || '', value.contentHtml || '', value.folderId || null]);
+const draftKey = (uid, id) => `viro-note-draft:${uid}:${id}`;
+function saveStatus(text, state) {
+  editorStatus.textContent = text; editorStatus.dataset.state = state;
+  document.getElementById('notes-retry-save').hidden = state !== 'error';
+  document.getElementById('notes-save-copy').hidden = state !== 'error';
+}
+async function createNote(template = 'blank', value = null) {
+  if (!hasPortalSession()) return;
+  const status = document.getElementById('notes-list-status');
+  const buttons = [...document.querySelectorAll('[data-note-template],#add-note-btn')];
+  if (buttons[0]?.disabled) return;
+  buttons.forEach(button => { button.disabled = true; });
+  try {
+    await flushAutosave();
+    const chosen = NOTE_TEMPLATES[template] || NOTE_TEMPLATES.blank;
+    const data = value || { title: chosen.title, contentHtml: chosen.html, folderId: currentNoteFolderId || null };
+    const ref = await addDoc(userCollection('notes'), { ...data, revision: 0, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
+    status.textContent = ''; await openNoteEditor({ id: ref.id, ...data, revision: 0 });
+  } catch(error) { status.textContent = 'Could not create a note. Save your current changes and try again.'; console.error(error); }
+  finally { buttons.forEach(button => { button.disabled = false; }); }
+}
+document.getElementById('add-note-btn').addEventListener('click', () => createNote());
+document.querySelectorAll('[data-note-template]').forEach(button => button.addEventListener('click', () => createNote(button.dataset.noteTemplate)));
 
-function openNoteEditor(note) {
-  currentNoteId = note.id;
+async function openNoteEditor(note) {
+  if (!hasPortalSession()) return;
+  try { await flushAutosave(); } catch { notesEditor.status('Save your current changes or save a copy before opening another note.'); return; }
+  noteSaver?.dispose(); currentNoteId = note.id;
   editorTitleInput.value = note.title || '';
-  editorSurface.innerHTML = sanitizeRichHtml(note.contentHtml);
+  editorSurface.innerHTML = sanitizeNoteHtml(note.contentHtml);
   editorFolderSelect.value = note.folderId || '';
-  editorStatus.textContent = '';
-  driveListView.hidden = true;
-  driveEditorView.hidden = false;
-  editorTitleInput.focus();
-}
-
-document.getElementById('editor-back-btn').addEventListener('click', () => {
-  flushAutosave();
-  currentNoteId = null;
-  driveEditorView.hidden = true;
-  driveListView.hidden = false;
-});
-
-document.getElementById('editor-delete-btn').addEventListener('click', () => {
-  if (!currentNoteId) return;
-  const title = editorTitleInput.value.trim() || 'this note';
-  confirmDelete(`Delete “${title}”? This can’t be undone.`, async () => {
-    await deleteDoc(userDoc('notes', currentNoteId));
-    currentNoteId = null;
-    driveEditorView.hidden = true;
-    driveListView.hidden = false;
+  editorLoadedRevision = Number(note.revision) || 0;
+  editorBaseline = noteFingerprint(note);
+  const uid = currentUser.uid, id = note.id;
+  noteSaver = createNoteSaver({
+    write: async (value, expectedRevision) => {
+      if (!hasPortalSession() || currentUser.uid !== uid) throw Error('Sign in again to save.');
+      if (new TextEncoder().encode(JSON.stringify(value)).length > 800000) { const error = Error('This note is too large. Split it into smaller notes or export a copy.'); error.code = 'notes/too-large'; throw error; }
+      const ref = doc(db, 'users', uid, 'notes', id);
+      const expectedContent = editorBaseline;
+      const nextRevision = await runTransaction(db, async transaction => {
+        const snapshot = await transaction.get(ref);
+        if (!snapshot.exists()) { const error = Error('This note was deleted elsewhere. Save a copy.'); error.code = 'notes/conflict'; throw error; }
+        const latest = snapshot.data();
+        if ((Number(latest.revision) || 0) !== expectedRevision || noteFingerprint(latest) !== expectedContent) { const error = Error('Changed on another device.'); error.code = 'notes/conflict'; throw error; }
+        transaction.update(ref, { ...value, revision: expectedRevision + 1, updatedAt: serverTimestamp() });
+        return expectedRevision + 1;
+      });
+      if (currentNoteId === id) { editorLoadedRevision = nextRevision; editorBaseline = noteFingerprint(value); }
+      return nextRevision;
+    },
+    stash: value => localStorage.setItem(draftKey(uid,id), JSON.stringify({ ...value, baseFingerprint: editorBaseline })),
+    clear: () => localStorage.removeItem(draftKey(uid,id)),
+    status: (text,state) => { if (currentNoteId === id) saveStatus(text,state); }
   });
-});
-
-// Debounced autosave: fires ~1s after the last edit, and can be flushed
-// immediately (e.g. before navigating away) via flushAutosave().
-let autosaveTimer = null;
-function scheduleAutosave() {
-  editorStatus.textContent = 'Saving…';
-  window.clearTimeout(autosaveTimer);
-  autosaveTimer = window.setTimeout(flushAutosave, 900);
+  noteSaver.setRevision(editorLoadedRevision);
+  saveStatus('All changes saved','saved');
+  try {
+    const draft = JSON.parse(localStorage.getItem(draftKey(uid,id)) || 'null');
+    if (draft && noteFingerprint(draft) !== noteFingerprint(note)) {
+      editorTitleInput.value = String(draft.title || '').slice(0,300); editorSurface.innerHTML = sanitizeNoteHtml(draft.contentHtml); editorFolderSelect.value = draft.folderId || '';
+      if (typeof draft.baseFingerprint === 'string') editorBaseline = draft.baseFingerprint;
+      noteSaver.setRevision(draft.revision); noteSaver.edit(noteValue());
+      saveStatus('Recovered an unsynced draft from this device.','pending');
+    }
+  } catch { /* Invalid browser recovery data never prevents opening the cloud note. */ }
+  driveListView.hidden = true; driveEditorView.hidden = false; notesEditor.reset(); editorTitleInput.focus();
 }
-
-function flushAutosave() {
-  window.clearTimeout(autosaveTimer);
-  if (!currentNoteId) return;
-  updateDoc(userDoc('notes', currentNoteId), {
-    title: editorTitleInput.value.trim(),
-    contentHtml: editorSurface.innerHTML,
-    folderId: editorFolderSelect.value || null,
-    updatedAt: serverTimestamp()
-  })
-    .then(() => {
-      editorStatus.textContent = 'Saved';
-    })
-    .catch((err) => {
-      console.error(err);
-      editorStatus.textContent = 'Could not save.';
-    });
+function syncOpenNote() {
+  if (!currentNoteId || !noteSaver || noteSaver.dirty()) return;
+  const latest = notes.find(note => note.id === currentNoteId);
+  if (!latest) { saveStatus('This note was removed on another device. Save a copy to keep it.','error'); return; }
+  if ((Number(latest.revision) || 0) === editorLoadedRevision && noteFingerprint(latest) === editorBaseline) return;
+  editorTitleInput.value = latest.title || ''; editorSurface.innerHTML = sanitizeNoteHtml(latest.contentHtml); editorFolderSelect.value = latest.folderId || '';
+  editorLoadedRevision = Number(latest.revision) || 0; editorBaseline = noteFingerprint(latest); noteSaver.setRevision(editorLoadedRevision); notesEditor.reset(); saveStatus('Updated from another device','saved');
 }
-
-editorTitleInput.addEventListener('input', scheduleAutosave);
+function scheduleAutosave() { if (currentNoteId && noteSaver) noteSaver.edit(noteValue()); }
+function flushAutosave() { return noteSaver ? noteSaver.flush() : Promise.resolve(); }
 editorFolderSelect.addEventListener('change', scheduleAutosave);
-editorSurface.addEventListener('input', scheduleAutosave);
-
-// Toolbar: bold/underline/lists via execCommand - still the simplest,
-// dependency-free way to drive contenteditable formatting, and every major
-// browser continues to support this exact set of commands.
-document.querySelectorAll('#editor-toolbar [data-cmd]').forEach((btn) => {
-  btn.addEventListener('click', () => {
-    editorSurface.focus();
-    document.execCommand(btn.dataset.cmd, false, null);
-    scheduleAutosave();
-  });
-});
-
-// Notion-style: one button per picker (text color / highlight) that opens a
-// popover with a full palette, instead of a fixed row of swatches always
-// taking up toolbar space.
-const TEXT_COLOR_PALETTE = [
-  { name: 'Default', value: null, swatch: 'var(--text)' },
-  { name: 'Gray', value: '#9b9a97' },
-  { name: 'Red', value: '#ff5c5c' },
-  { name: 'Orange', value: '#ffa344' },
-  { name: 'Yellow', value: '#ffd43b' },
-  { name: 'Green', value: '#4ade80' },
-  { name: 'Blue', value: '#4da6ff' },
-  { name: 'Purple', value: '#b388ff' },
-  { name: 'Pink', value: '#ff8fd6' },
-  { name: 'Brown', value: '#c08552' }
-];
-
-const HIGHLIGHT_COLOR_PALETTE = [
-  { name: 'None', value: 'transparent', swatch: 'transparent' },
-  { name: 'Gray', value: 'rgba(155,154,151,0.35)' },
-  { name: 'Red', value: 'rgba(255,92,92,0.35)' },
-  { name: 'Orange', value: 'rgba(255,163,68,0.35)' },
-  { name: 'Yellow', value: 'rgba(255,212,59,0.35)' },
-  { name: 'Green', value: 'rgba(74,222,128,0.35)' },
-  { name: 'Blue', value: 'rgba(77,166,255,0.35)' },
-  { name: 'Purple', value: 'rgba(179,136,255,0.35)' },
-  { name: 'Pink', value: 'rgba(255,143,214,0.35)' }
-];
-
-function buildColorPicker({ btnId, popoverId, swatchId, command, palette, defaultValue }) {
-  const btn = document.getElementById(btnId);
-  const popover = document.getElementById(popoverId);
-  const swatch = document.getElementById(swatchId);
-
-  popover.innerHTML = palette
-    .map(
-      (c) => `
-        <button type="button" class="color-picker-option" data-color="${c.value === null ? '' : c.value}" title="${c.name}">
-          <span class="color-picker-option-swatch" style="background:${c.swatch || c.value}"></span>
-          ${c.name}
-        </button>
-      `
-    )
-    .join('');
-
-  btn.addEventListener('click', (event) => {
-    event.stopPropagation();
-    document.querySelectorAll('.color-picker-popover').forEach((p) => {
-      if (p !== popover) p.hidden = true;
-    });
-    popover.hidden = !popover.hidden;
-  });
-
-  popover.querySelectorAll('.color-picker-option').forEach((option) => {
-    option.addEventListener('click', () => {
-      editorSurface.focus();
-      document.execCommand(command, false, option.dataset.color || defaultValue);
-      swatch.style.background = option.querySelector('.color-picker-option-swatch').style.background;
-      popover.hidden = true;
-      scheduleAutosave();
-    });
-  });
-}
-
-buildColorPicker({
-  btnId: 'text-color-btn',
-  popoverId: 'text-color-popover',
-  swatchId: 'text-color-swatch',
-  command: 'foreColor',
-  palette: TEXT_COLOR_PALETTE,
-  defaultValue: getComputedStyle(document.body).getPropertyValue('--text').trim() || '#ffffff'
-});
-
-buildColorPicker({
-  btnId: 'highlight-color-btn',
-  popoverId: 'highlight-color-popover',
-  swatchId: 'highlight-color-swatch',
-  command: 'hiliteColor',
-  palette: HIGHLIGHT_COLOR_PALETTE,
-  defaultValue: 'transparent'
-});
-
-document.addEventListener('click', (event) => {
-  if (event.target.closest('.color-picker')) return;
-  document.querySelectorAll('.color-picker-popover').forEach((p) => {
-    p.hidden = true;
-  });
-});
-
-// Numeric px size input (Google Docs-style) instead of a small/normal/large/huge
-// dropdown - execCommand only understands the 1-7 scale, so this still routes
-// through it as a marker, then swaps the resulting <font size> tags for a real
-// pixel value.
-const fontSizeInput = document.getElementById('font-size-input');
-
-fontSizeInput.addEventListener('change', () => {
-  const px = Math.max(8, Math.min(96, Number(fontSizeInput.value) || 16));
-  fontSizeInput.value = px;
-  editorSurface.focus();
-  document.execCommand('fontSize', false, '7');
-  editorSurface.querySelectorAll('font[size="7"]').forEach((el) => {
-    const span = document.createElement('span');
-    span.style.fontSize = `${px}px`;
-    // execCommand can merge the size onto an existing <font color> element
-    // instead of nesting a new one - carry the color over so it isn't lost.
-    if (el.color) span.style.color = el.color;
-    span.innerHTML = el.innerHTML;
-    el.replaceWith(span);
-  });
-  scheduleAutosave();
-});
-
-// Auto-format "- " / "* " into a bullet list and "1. " into a numbered
-// list as soon as the trigger space is typed, like most note apps do.
-editorSurface.addEventListener('keydown', (event) => {
-  if (event.key !== ' ') return;
-  const sel = window.getSelection();
-  if (!sel || !sel.isCollapsed || !sel.rangeCount) return;
-  const range = sel.getRangeAt(0);
-  const node = range.startContainer;
-  if (node.nodeType !== Node.TEXT_NODE) return;
-  const before = node.textContent.slice(0, range.startOffset);
-
-  if (before === '-' || before === '*') {
-    event.preventDefault();
-    node.textContent = node.textContent.slice(range.startOffset);
-    document.execCommand('insertUnorderedList');
-    scheduleAutosave();
-    return;
-  }
-  if (before === '1.') {
-    event.preventDefault();
-    node.textContent = node.textContent.slice(range.startOffset);
-    document.execCommand('insertOrderedList');
-    scheduleAutosave();
-  }
-});
-
-// Insert image: uploads to Storage, inserts inline. Repositioning it
-// afterward is native browser behavior for images inside contenteditable -
-// no extra drag/drop code needed.
-const editorImageInput = document.getElementById('editor-image-input');
-document.getElementById('editor-insert-image-btn').addEventListener('click', () => editorImageInput.click());
-
-editorImageInput.addEventListener('change', async () => {
-  let file = editorImageInput.files[0];
-  editorImageInput.value = '';
-  if (!file || !currentNoteId) return;
-  const targetNoteId = currentNoteId;
-
-  editorStatus.textContent = isHeicPhoto(file) ? 'Converting HEIC photo…' : 'Uploading image…';
+document.getElementById('notes-retry-save').addEventListener('click', () => flushAutosave().catch(() => {}));
+document.getElementById('notes-save-copy').addEventListener('click', async () => {
+  if (!hasPortalSession()) return;
+  const button = document.getElementById('notes-save-copy'); button.disabled = true;
   try {
-    file = await convertHeicPhoto(file);
-    editorStatus.textContent = 'Uploading image…';
-    const safeName = file.name.replace(/[/\\]/g, '_');
-    const path = `users/${currentUser.uid}/notes/${targetNoteId}/${crypto.randomUUID()}-${safeName}`;
-    const imgRef = storageRef(storage, path);
-    await new Promise((resolve, reject) => {
-      uploadBytesResumable(imgRef, file).on('state_changed', null, reject, resolve);
-    });
-    const url = await getDownloadURL(imgRef);
-    if (currentNoteId !== targetNoteId) {
-      await deleteObject(imgRef).catch(() => {});
-      return;
-    }
-    editorSurface.focus();
-    document.execCommand('insertHTML', false, `<img src="${url}" alt="${escapeHtml(file.name)}" />`);
-    scheduleAutosave();
-  } catch (err) {
-    console.error(err);
-    editorStatus.textContent = err.message || 'Image upload failed.';
-  }
+    const value = noteValue(), oldId = currentNoteId;
+    const ref = await addDoc(userCollection('notes'), { ...value, title: (value.title || 'Untitled note') + ' (recovered copy)', revision: 0, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
+    noteSaver?.dispose(); noteSaver = null;
+    try { localStorage.removeItem(draftKey(currentUser.uid,oldId)); } catch { /* The cloud copy is already safe. */ }
+    await openNoteEditor({ id: ref.id, ...value, title: (value.title || 'Untitled note') + ' (recovered copy)', revision: 0 });
+  } catch(error) { saveStatus('Could not save a copy. Export your note or try again when connected.','error'); }
+  finally { button.disabled = false; }
 });
-
-// Auto-linkify: typing a space right after something that looks like a URL
-// converts it into a real link, the same way most note/chat apps do.
-const URL_PATTERN = /^(https?:\/\/[^\s]+|www\.[^\s]+\.[a-z]{2,}[^\s]*)$/i;
-
-editorSurface.addEventListener('keydown', (event) => {
-  if (event.key !== ' ') return;
-  const sel = window.getSelection();
-  if (!sel || !sel.isCollapsed || !sel.rangeCount) return;
-  const range = sel.getRangeAt(0);
-  const node = range.startContainer;
-  if (node.nodeType !== Node.TEXT_NODE) return;
-  const before = node.textContent.slice(0, range.startOffset);
-  const lastWord = before.split(/\s+/).pop();
-  if (!lastWord || !URL_PATTERN.test(lastWord)) return;
-
-  event.preventDefault();
-  const href = /^https?:\/\//i.test(lastWord) ? lastWord : `https://${lastWord}`;
-  const prefixLen = before.length - lastWord.length;
-  node.textContent = node.textContent.slice(0, prefixLen) + node.textContent.slice(range.startOffset);
-
-  const newRange = document.createRange();
-  newRange.setStart(node, prefixLen);
-  newRange.collapse(true);
-  sel.removeAllRanges();
-  sel.addRange(newRange);
-  document.execCommand('insertHTML', false, `<a href="${escapeHtml(href)}" target="_blank" rel="noopener">${escapeHtml(lastWord)}</a>&nbsp;`);
-  scheduleAutosave();
+document.getElementById('editor-back-btn').addEventListener('click', async () => {
+  if (notesEditor.busy()) { notesEditor.status('Wait for images to finish uploading.'); return; }
+  try { await flushAutosave(); } catch { return; }
+  noteSaver?.dispose(); noteSaver = null; currentNoteId = null; notesEditor.close(); driveEditorView.hidden = true; driveListView.hidden = false;
 });
-
-// Manual link insert/edit - pre-fills from the current selection, or from the
-// existing <a> if the cursor is already inside one.
-document.getElementById('editor-link-btn').addEventListener('click', () => {
-  const sel = window.getSelection();
-  if (!sel || !editorSurface.contains(sel.anchorNode)) return;
-
-  const anchorEl = sel.anchorNode.nodeType === Node.ELEMENT_NODE ? sel.anchorNode : sel.anchorNode.parentElement;
-  const existingLink = anchorEl?.closest('a');
-  const selectedText = !sel.isCollapsed ? sel.toString() : '';
-  const savedRange = sel.rangeCount ? sel.getRangeAt(0).cloneRange() : null;
-
-  openModal(
-    `
-    <h2>${existingLink ? 'Edit' : 'Insert'} link</h2>
-    <form id="link-form">
-      <label>Text<input type="text" name="text" required value="${escapeHtml(existingLink?.textContent || selectedText)}" /></label>
-      <label>URL<input type="url" name="url" required value="${escapeHtml(existingLink?.href || 'https://')}" placeholder="https://example.com" /></label>
-      <button class="button primary" type="submit">${existingLink ? 'Save' : 'Insert'}</button>
-      ${existingLink ? '<button class="button ghost" type="button" id="link-remove-btn">Remove link</button>' : ''}
-    </form>
-  `,
-    (root) => {
-      root.querySelector('#link-form').addEventListener('submit', (event) => {
-        event.preventDefault();
-        const form = new FormData(event.target);
-        const text = form.get('text').trim();
-        const url = form.get('url').trim();
-
-        editorSurface.focus();
-        if (existingLink) {
-          existingLink.href = url;
-          existingLink.textContent = text;
-        } else {
-          if (savedRange) {
-            sel.removeAllRanges();
-            sel.addRange(savedRange);
-          }
-          document.execCommand('insertHTML', false, `<a href="${escapeHtml(url)}" target="_blank" rel="noopener">${escapeHtml(text)}</a>`);
-        }
-        closeModal();
-        scheduleAutosave();
-      });
-
-      root.querySelector('#link-remove-btn')?.addEventListener('click', () => {
-        existingLink.replaceWith(document.createTextNode(existingLink.textContent));
-        closeModal();
-        scheduleAutosave();
-      });
-    }
-  );
-});
-
-// Comments: wraps the selection in a highlighted span carrying the comment
-// text as a data attribute (so it saves inline with the note, no separate
-// collection needed) - clicking it later reopens the same form to edit/remove it.
-function openCommentForm(onSubmit, existingText = '') {
-  openModal(
-    `
-    <h2>${existingText ? 'Edit' : 'Add'} comment</h2>
-    <form id="comment-form">
-      <label>Comment<textarea name="comment" rows="3" required>${escapeHtml(existingText)}</textarea></label>
-      <button class="button primary" type="submit">Save</button>
-      ${existingText ? '<button class="button ghost" type="button" id="comment-remove-btn">Remove comment</button>' : ''}
-    </form>
-  `,
-    (root) => {
-      root.querySelector('#comment-form').addEventListener('submit', (event) => {
-        event.preventDefault();
-        const text = new FormData(event.target).get('comment').trim();
-        closeModal();
-        if (text) onSubmit(text);
-      });
-      root.querySelector('#comment-remove-btn')?.addEventListener('click', () => {
-        closeModal();
-        onSubmit(null);
-      });
-    }
-  );
-}
-
-document.getElementById('editor-comment-btn').addEventListener('click', () => {
-  const sel = window.getSelection();
-  if (!sel || sel.isCollapsed || !editorSurface.contains(sel.anchorNode)) {
-    editorStatus.textContent = 'Select some text first to comment on it.';
-    return;
-  }
-  const selectedText = sel.toString();
-  const savedRange = sel.getRangeAt(0).cloneRange();
-
-  openCommentForm((commentText) => {
-    if (!commentText) return;
-    editorSurface.focus();
-    sel.removeAllRanges();
-    sel.addRange(savedRange);
-    document.execCommand(
-      'insertHTML',
-      false,
-      `<span class="note-comment" data-comment="${escapeHtml(commentText)}">${escapeHtml(selectedText)}</span>`
-    );
-    scheduleAutosave();
+document.getElementById('editor-delete-btn').addEventListener('click', () => {
+  if (!currentNoteId || notesEditor.busy()) return;
+  const id = currentNoteId, title = editorTitleInput.value.trim() || 'this note';
+  confirmDelete(`Delete “${title}”? This can’t be undone.`, async () => {
+    await flushAutosave();
+    await deleteDoc(userDoc('notes',id));
+    noteSaver?.dispose(); noteSaver = null; localStorage.removeItem(draftKey(currentUser.uid,id)); currentNoteId = null;
+    notesEditor.close(); driveEditorView.hidden = true; driveListView.hidden = false;
   });
 });
+window.addEventListener('beforeunload', event => { if (noteSaver?.dirty() || notesEditor.busy()) { flushAutosave().catch(() => {}); event.preventDefault(); event.returnValue = ''; } });
+window.addEventListener('online', () => { if (noteSaver?.dirty()) flushAutosave().catch(() => {}); });
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushAutosave().catch(() => {}); });
+document.addEventListener('keydown', event => { if (!driveEditorView.hidden && !document.getElementById('tab-notes').hidden && (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') { event.preventDefault(); flushAutosave().catch(() => {}); } });
 
-editorSurface.addEventListener('click', (event) => {
-  const commentSpan = event.target.closest('.note-comment');
-  if (!commentSpan) return;
-  openCommentForm((newText) => {
-    if (newText === null) {
-      commentSpan.replaceWith(document.createTextNode(commentSpan.textContent));
-    } else {
-      commentSpan.dataset.comment = newText;
-    }
-    scheduleAutosave();
-  }, commentSpan.dataset.comment);
-});
-
-document.getElementById('editor-print-btn').addEventListener('click', () => {
-  window.print();
-});
-
-// Loaded lazily (only when someone actually downloads a note) rather than on
-// every portal page load - html2canvas does the actual DOM-to-image work,
-// jsPDF lays the result out on real paper-sized pages.
-let pdfLibsPromise = null;
-function loadPdfLibs() {
-  if (window.jspdf?.jsPDF && window.html2canvas) return Promise.resolve();
-  if (pdfLibsPromise) return pdfLibsPromise;
-
-  function loadScript(src) {
-    return new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = src;
-      script.onload = resolve;
-      script.onerror = () => reject(new Error('Could not load PDF library.'));
-      document.head.appendChild(script);
-    });
+async function uploadNoteImages(files, targetNoteId) {
+  if (!hasPortalSession() || !targetNoteId) throw Error('Open a note first.');
+  if (files.length > 12) throw Error('Choose up to 12 images at a time.');
+  for (const file of files) {
+    if (!/^image\/(png|jpeg|webp|gif)$/.test(file.type) && !isHeicPhoto(file)) throw Error('Use PNG, JPEG, WebP, GIF, or HEIC images.');
+    if (file.size > 20 * 1024 * 1024) throw Error('Each image must be smaller than 20 MB.');
   }
-
-  pdfLibsPromise = Promise.all([
-    loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'),
-    loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js')
-  ]);
-  return pdfLibsPromise;
-}
-
-document.getElementById('editor-download-btn').addEventListener('click', async () => {
-  const title = editorTitleInput.value.trim() || 'Untitled note';
-  editorStatus.textContent = 'Preparing PDF…';
-
+  const uid = currentUser.uid, uploaded = [];
   try {
-    await loadPdfLibs();
-
-    // Render on plain white/black regardless of the site's dark theme - the
-    // on-screen colors aren't meant for paper.
-    const wrapper = document.createElement('div');
-    wrapper.style.cssText = 'background:#fff;color:#000;padding:0;font-family:Georgia,serif;';
-    const titleEl = document.createElement('h1');
-    titleEl.textContent = title;
-    titleEl.style.cssText = 'font-family:Arial,sans-serif;font-size:22px;margin:0 0 18px;color:#000;';
-    const bodyEl = editorSurface.cloneNode(true);
-    bodyEl.style.cssText = 'background:#fff;color:#000;';
-    bodyEl.querySelectorAll('.note-comment').forEach((span) => {
-      span.style.background = 'none';
-      span.style.borderBottom = '1px dotted #999';
-    });
-    wrapper.appendChild(titleEl);
-    wrapper.appendChild(bodyEl);
-
-    const doc = new window.jspdf.jsPDF({ unit: 'pt', format: 'letter' });
-    const margin = 40;
-    const pageWidth = doc.internal.pageSize.getWidth();
-
-    await new Promise((resolve) => {
-      doc.html(wrapper, {
-        x: margin,
-        y: margin,
-        width: pageWidth - margin * 2,
-        windowWidth: 760,
-        autoPaging: 'text',
-        html2canvas: { logging: false, backgroundColor: '#ffffff' },
-        callback: resolve
-      });
-    });
-
-    doc.save(`${title.replace(/[^\w\- ]+/g, '').trim() || 'note'}.pdf`);
-    editorStatus.textContent = '';
-  } catch (err) {
-    console.error('PDF export failed', err);
-    editorStatus.textContent = err.message || 'Could not create PDF.';
-  }
-});
-
-// AI menu
-const aiMenuBtn = document.getElementById('ai-menu-btn');
-const aiMenuDropdown = document.getElementById('ai-menu-dropdown');
-
-aiMenuBtn.addEventListener('click', () => {
-  aiMenuDropdown.hidden = !aiMenuDropdown.hidden;
-});
-
-document.addEventListener('click', (event) => {
-  if (aiMenuDropdown.hidden) return;
-  if (event.target === aiMenuBtn || aiMenuDropdown.contains(event.target)) return;
-  aiMenuDropdown.hidden = true;
-});
-
-aiMenuDropdown.querySelectorAll('[data-ai-task]').forEach((btn) => {
-  btn.addEventListener('click', async () => {
-    aiMenuDropdown.hidden = true;
-    const task = btn.dataset.aiTask;
-
-    const sel = window.getSelection();
-    const hasSelection = !!sel && !sel.isCollapsed && editorSurface.contains(sel.anchorNode);
-    const sourceText = (hasSelection ? sel.toString() : editorSurface.innerText).trim();
-    if (!sourceText) return;
-
-    editorStatus.textContent = 'AI is thinking…';
-    try {
-      const result = await requestAi(task, sourceText);
-      if (!result) throw new Error('Empty AI response');
-
-      editorSurface.focus();
-      if (task === 'continue') {
-        if (hasSelection) {
-          sel.collapseToEnd();
-        } else {
-          document.execCommand('selectAll', false, null);
-          document.getSelection().collapseToEnd();
-        }
-        document.execCommand('insertText', false, ' ' + result);
-      } else if (task === 'format') {
-        // "format" returns real HTML (headings/lists/etc), unlike the other
-        // tasks which return plain text - insertText would show the raw tags
-        // as literal text instead of rendering them.
-        if (hasSelection) {
-          document.execCommand('insertHTML', false, result);
-        } else {
-          editorSurface.innerHTML = sanitizeRichHtml(result);
-        }
-      } else if (hasSelection) {
-        document.execCommand('insertText', false, result);
-      } else {
-        editorSurface.innerText = result;
-      }
-      scheduleAutosave();
-    } catch (err) {
-      editorStatus.textContent = err.message || 'AI request failed.';
+    const html = [];
+    for (let file of files) {
+      file = await convertHeicPhoto(file);
+      const safeName = file.name.replace(/[/\\]/g,'_');
+      const ref = storageRef(storage, `users/${uid}/notes/${targetNoteId}/${crypto.randomUUID()}-${safeName}`);
+      await new Promise((resolve,reject) => uploadBytesResumable(ref,file).on('state_changed',null,reject,resolve));
+      uploaded.push(ref); const url = await getDownloadURL(ref);
+      if (currentNoteId !== targetNoteId || currentUser?.uid !== uid) throw Error('The note changed before the upload finished.');
+      html.push(`<p><img src="${escapeHtml(url)}" alt="${escapeHtml(file.name)}"></p>`);
     }
-  });
-});
+    return html.join('');
+  } catch(error) { await Promise.all(uploaded.map(ref => deleteObject(ref).catch(() => {}))); throw error; }
+}
 
 /* ==================== overview: universal search + add ==================== */
 
@@ -3613,7 +3233,7 @@ const UNIVERSAL_TYPE_TAB = {
   contact: 'contacts',
   vault: 'vault',
   file: 'files',
-  note: 'drive'
+  note: 'notes'
 };
 
 function buildGlobalSearchItems() {

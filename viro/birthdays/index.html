@@ -25,6 +25,7 @@
     <link rel="stylesheet" href="./media-editor.css" />
     <link rel="stylesheet" href="budget.css" />
     <link rel="stylesheet" href="dashboard.css" />
+    <link rel="stylesheet" href="notes.css" />
     <link rel="stylesheet" href="/ui/controls.css">
   <script src="/ui/controls.js" defer></script>
 </head>
@@ -102,7 +103,7 @@
           <span class="nav-group-label">Your collection</span>
           <button type="button" data-tab="files" aria-label="Files" title="Files"><span class="material-symbols-outlined" aria-hidden="true">folder_open</span><span class="nav-label">Files</span></button>
           <button type="button" data-tab="budget" aria-label="Budget" title="Budget"><span class="material-symbols-outlined" aria-hidden="true">account_balance_wallet</span><span class="nav-label">Budget</span></button>
-          <button type="button" data-tab="drive" hidden aria-label="Notes" title="Notes"><span class="material-symbols-outlined" aria-hidden="true">edit_note</span><span class="nav-label">Notes</span></button>
+          <button type="button" data-tab="notes" aria-label="Notes" title="Notes"><span class="material-symbols-outlined" aria-hidden="true">edit_note</span><span class="nav-label">Notes</span></button>
           <button type="button" data-tab="vault" aria-label="Vault" title="Vault"><span class="material-symbols-outlined" aria-hidden="true">lock</span><span class="nav-label">Vault</span></button>
         </nav>
         <div class="sidebar-footer">
@@ -282,10 +283,10 @@
         </section>
 
         <!-- ---------- DRIVE ---------- -->
-        <section class="portal-tab" aria-label="Notes" id="tab-drive" data-tab-panel="drive" hidden>
+        <section class="portal-tab" aria-label="Notes" id="tab-notes" data-tab-panel="notes" hidden>
           <div id="drive-list-view">
             <div class="tab-toolbar">
-              <div><h2>Notes</h2></div>
+              <div><p class="notes-eyebrow">YOUR PERSONAL NOTEBOOK</p><h2>Room to think.</h2><p class="notes-intro">Capture an idea. Make it your own.</p></div>
               <div class="tab-toolbar-actions">
                 <input type="search" id="note-search" placeholder="Search notes…" aria-label="Search notes" />
                 <button class="icon-btn icon-btn--ai" id="ai-note-search-btn" type="button" title="Smart search" aria-label="Smart search">
@@ -295,7 +296,14 @@
                 <button class="button primary" id="add-note-btn" type="button">+ New note</button>
               </div>
             </div>
-            <section id="lecture-studio" aria-label="Lecture recorder"></section>
+            <div class="notes-starters" aria-label="Start from a template">
+              <button type="button" data-note-template="blank"><span class="material-symbols-outlined">edit_square</span><strong>Blank page</strong><span>Start with an idea</span></button>
+              <button type="button" data-note-template="lecture"><span class="material-symbols-outlined">school</span><strong>Lecture notes</strong><span>Learn, connect, remember</span></button>
+              <button type="button" data-note-template="meeting"><span class="material-symbols-outlined">forum</span><strong>Meeting notes</strong><span>Decisions into action</span></button>
+              <button type="button" data-note-template="daily"><span class="material-symbols-outlined">wb_sunny</span><strong>Daily journal</strong><span>A moment for yourself</span></button>
+            </div>
+            <p id="notes-list-status" role="status"></p>
+            <details class="notes-recording"><summary><span class="material-symbols-outlined" aria-hidden="true">mic</span>Lecture recorder <span>Record & transcribe</span></summary><section id="lecture-studio" aria-label="Lecture recorder"></section></details>
             <p class="ai-search-status" id="ai-note-search-status" hidden></p>
             <div class="folder-breadcrumb" id="note-folder-breadcrumb"></div>
             <div class="folder-grid" id="note-folder-grid" hidden></div>
@@ -316,56 +324,17 @@
               </button>
             </div>
 
-            <div class="editor-toolbar" id="editor-toolbar">
-              <button type="button" data-cmd="bold" title="Bold"><span class="material-symbols-outlined">format_bold</span></button>
-              <button type="button" data-cmd="underline" title="Underline"><span class="material-symbols-outlined">format_underlined</span></button>
-              <span class="toolbar-divider"></span>
-              <button type="button" data-cmd="insertUnorderedList" title="Bullet list"><span class="material-symbols-outlined">format_list_bulleted</span></button>
-              <button type="button" data-cmd="insertOrderedList" title="Numbered list"><span class="material-symbols-outlined">format_list_numbered</span></button>
-              <span class="toolbar-divider"></span>
-              <button type="button" data-cmd="justifyLeft" title="Align left"><span class="material-symbols-outlined">format_align_left</span></button>
-              <button type="button" data-cmd="justifyCenter" title="Align center"><span class="material-symbols-outlined">format_align_center</span></button>
-              <button type="button" data-cmd="justifyRight" title="Align right"><span class="material-symbols-outlined">format_align_right</span></button>
-              <span class="toolbar-divider"></span>
-              <div class="color-picker">
-                <button type="button" id="text-color-btn" title="Text color" aria-label="Text color">
-                  <span class="material-symbols-outlined">format_color_text</span>
-                  <span class="color-picker-swatch" id="text-color-swatch"></span>
-                </button>
-                <div class="color-picker-popover" id="text-color-popover" hidden></div>
-              </div>
-              <div class="color-picker">
-                <button type="button" id="highlight-color-btn" title="Highlight color" aria-label="Highlight color">
-                  <span class="material-symbols-outlined">format_color_fill</span>
-                  <span class="color-picker-swatch" id="highlight-color-swatch"></span>
-                </button>
-                <div class="color-picker-popover" id="highlight-color-popover" hidden></div>
-              </div>
-              <input type="number" id="font-size-input" class="font-size-input" min="8" max="96" step="1" value="16" title="Text size" aria-label="Text size in pixels" />
-              <span class="toolbar-divider"></span>
-              <button type="button" id="editor-link-btn" title="Insert link"><span class="material-symbols-outlined">link</span></button>
-              <button type="button" id="editor-comment-btn" title="Add comment"><span class="material-symbols-outlined">add_comment</span></button>
-              <button type="button" id="editor-insert-image-btn" title="Insert image"><span class="material-symbols-outlined">image</span></button>
-              <input type="file" id="editor-image-input" accept="image/*,.heic,.heif" hidden />
-              <span class="toolbar-divider"></span>
-              <button type="button" id="editor-print-btn" title="Print"><span class="material-symbols-outlined">print</span></button>
-              <button type="button" id="editor-download-btn" title="Download"><span class="material-symbols-outlined">download</span></button>
-              <span class="toolbar-divider"></span>
-              <div class="ai-menu">
-                <button type="button" class="icon-btn icon-btn--ai" id="ai-menu-btn" title="AI tools" aria-label="AI tools">
-                  <span class="material-symbols-outlined">auto_awesome</span>
-                </button>
-                <div class="ai-menu-dropdown" id="ai-menu-dropdown" hidden>
-                  <button type="button" data-ai-task="continue">Continue writing</button>
-                  <button type="button" data-ai-task="improve">Make it sound better</button>
-                  <button type="button" data-ai-task="grammar">Fix grammar</button>
-                  <button type="button" data-ai-task="format">Format better</button>
-                </div>
-              </div>
-            </div>
-
-            <div class="editor-surface" id="editor-surface" contenteditable="true" spellcheck="true" role="textbox" aria-label="Note content" aria-multiline="true"></div>
-            <p class="editor-status" id="editor-status" role="status"></p>
+            <div class="notes-document-bar"><span class="notes-document-label"><span class="material-symbols-outlined" aria-hidden="true">description</span> YOUR NOTE</span><div class="notes-document-actions">
+              <button type="button" id="notes-find" title="Find and replace" aria-label="Find and replace"><span class="material-symbols-outlined" aria-hidden="true">find_replace</span></button><button type="button" id="notes-focus" title="Focus mode" aria-label="Focus mode"><span class="material-symbols-outlined" aria-hidden="true">fullscreen</span></button><button type="button" id="editor-print-btn" title="Print" aria-label="Print"><span class="material-symbols-outlined" aria-hidden="true">print</span></button><button type="button" id="editor-download-btn" title="Save as PDF" aria-label="Save as PDF"><span class="material-symbols-outlined" aria-hidden="true">picture_as_pdf</span></button>
+              <select id="notes-export" aria-label="Export note"><option value="">Export</option><option value="html">HTML document</option><option value="txt">Plain text</option></select>
+              <select id="notes-ai" aria-label="Writing assistance"><option value="">Writing help</option><option value="continue">Continue writing</option><option value="improve">Improve writing</option><option value="grammar">Fix grammar</option><option value="format">Format notes</option></select>
+            </div></div>
+            <div class="editor-toolbar" id="editor-toolbar" role="toolbar" aria-label="Note formatting"><div class="notes-tool-group"><button type="button" data-cmd="undo" title="Undo" aria-label="Undo" aria-pressed="false"><span class="material-symbols-outlined" aria-hidden="true">undo</span></button><button type="button" data-cmd="redo" title="Redo" aria-label="Redo" aria-pressed="false"><span class="material-symbols-outlined" aria-hidden="true">redo</span></button></div><div class="notes-tool-group"><select id="notes-block" aria-label="Paragraph style"><option value="p">Normal text</option><option value="h1">Heading 1</option><option value="h2">Heading 2</option><option value="h3">Heading 3</option><option value="blockquote">Quote</option><option value="pre">Code block</option></select><select id="notes-font" aria-label="Font family"><option value="Inter, Arial, sans-serif">Inter</option><option value="Georgia, serif">Georgia</option><option value="Arial, sans-serif">Arial</option><option value="Times New Roman, serif">Times New Roman</option><option value="Courier New, monospace">Monospace</option></select><input type="number" id="font-size-input" min="8" max="96" value="16" title="Font size" aria-label="Font size in pixels"></div><div class="notes-tool-group"><button type="button" data-cmd="bold" title="Bold · ⌘/Ctrl B" aria-label="Bold · ⌘/Ctrl B" aria-pressed="false"><span class="material-symbols-outlined" aria-hidden="true">format_bold</span></button><button type="button" data-cmd="italic" title="Italic · ⌘/Ctrl I" aria-label="Italic · ⌘/Ctrl I" aria-pressed="false"><span class="material-symbols-outlined" aria-hidden="true">format_italic</span></button><button type="button" data-cmd="underline" title="Underline · ⌘/Ctrl U" aria-label="Underline · ⌘/Ctrl U" aria-pressed="false"><span class="material-symbols-outlined" aria-hidden="true">format_underlined</span></button><button type="button" data-cmd="strikeThrough" title="Strikethrough" aria-label="Strikethrough" aria-pressed="false"><span class="material-symbols-outlined" aria-hidden="true">strikethrough_s</span></button><button type="button" data-cmd="superscript" title="Superscript" aria-label="Superscript" aria-pressed="false"><span class="material-symbols-outlined" aria-hidden="true">superscript</span></button><button type="button" data-cmd="subscript" title="Subscript" aria-label="Subscript" aria-pressed="false"><span class="material-symbols-outlined" aria-hidden="true">subscript</span></button></div><div class="notes-tool-group"><label class="notes-color" title="Text color"><span class="material-symbols-outlined" aria-hidden="true">format_color_text</span><input type="color" id="notes-text-color" value="#303845" aria-label="Text color"></label><label class="notes-color" title="Highlight"><span class="material-symbols-outlined" aria-hidden="true">ink_highlighter</span><input type="color" id="notes-highlight" value="#f9e8a0" aria-label="Highlight color"></label><button type="button" data-cmd="removeFormat" title="Clear formatting" aria-label="Clear formatting" aria-pressed="false"><span class="material-symbols-outlined" aria-hidden="true">format_clear</span></button></div><div class="notes-tool-group"><button type="button" data-cmd="insertUnorderedList" title="Bulleted list" aria-label="Bulleted list" aria-pressed="false"><span class="material-symbols-outlined" aria-hidden="true">format_list_bulleted</span></button><button type="button" data-cmd="insertOrderedList" title="Numbered list" aria-label="Numbered list" aria-pressed="false"><span class="material-symbols-outlined" aria-hidden="true">format_list_numbered</span></button><button type="button" id="notes-checklist" title="Checklist · ⌘/Ctrl Shift X to toggle item" aria-label="Checklist · ⌘/Ctrl Shift X to toggle item"><span class="material-symbols-outlined" aria-hidden="true">checklist</span></button><button type="button" data-cmd="outdent" title="Decrease indent" aria-label="Decrease indent" aria-pressed="false"><span class="material-symbols-outlined" aria-hidden="true">format_indent_decrease</span></button><button type="button" data-cmd="indent" title="Increase indent" aria-label="Increase indent" aria-pressed="false"><span class="material-symbols-outlined" aria-hidden="true">format_indent_increase</span></button></div><div class="notes-tool-group"><button type="button" data-cmd="justifyLeft" title="Align left" aria-label="Align left" aria-pressed="false"><span class="material-symbols-outlined" aria-hidden="true">format_align_left</span></button><button type="button" data-cmd="justifyCenter" title="Align center" aria-label="Align center" aria-pressed="false"><span class="material-symbols-outlined" aria-hidden="true">format_align_center</span></button><button type="button" data-cmd="justifyRight" title="Align right" aria-label="Align right" aria-pressed="false"><span class="material-symbols-outlined" aria-hidden="true">format_align_right</span></button><button type="button" data-cmd="justifyFull" title="Justify" aria-label="Justify" aria-pressed="false"><span class="material-symbols-outlined" aria-hidden="true">format_align_justify</span></button><select id="notes-spacing" aria-label="Line spacing"><option value="1.8">Spacing 1.8</option><option value="1">Single</option><option value="1.15">1.15</option><option value="1.5">1.5</option><option value="2">Double</option></select></div><div class="notes-tool-group"><button type="button" id="editor-link-btn" title="Insert link" aria-label="Insert link"><span class="material-symbols-outlined" aria-hidden="true">link</span></button><button type="button" id="editor-insert-image-btn" title="Insert images" aria-label="Insert images"><span class="material-symbols-outlined" aria-hidden="true">image</span></button><input id="editor-image-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif,.heic,.heif" multiple hidden><button type="button" id="notes-table" title="Insert table" aria-label="Insert table"><span class="material-symbols-outlined" aria-hidden="true">table</span></button><select id="notes-table-action" aria-label="Edit table"><option value="">Table tools</option><option value="row">Add row below</option><option value="column">Add column after</option><option value="remove-row">Delete row</option><option value="remove-column">Delete column</option><option value="remove-table">Delete table</option></select><button type="button" id="editor-comment-btn" title="Comment on selection" aria-label="Comment on selection"><span class="material-symbols-outlined" aria-hidden="true">add_comment</span></button><button type="button" id="notes-rule" title="Divider" aria-label="Divider"><span class="material-symbols-outlined" aria-hidden="true">horizontal_rule</span></button><button type="button" id="notes-page-break" title="Page break" aria-label="Page break"><span class="material-symbols-outlined" aria-hidden="true">insert_page_break</span></button></div></div>
+            <div id="notes-find-panel" class="notes-find" hidden><input id="notes-find-text" type="search" placeholder="Find text" aria-label="Find text"><input id="notes-replace-text" placeholder="Replace with" aria-label="Replacement text"><button id="notes-find-next" type="button">Next</button><button id="notes-replace-all" type="button">Replace all</button><span id="notes-find-count" role="status">0 matches</span><button id="notes-find-close" type="button" aria-label="Close find">×</button><small>Matches within each formatted text run.</small></div>
+            <div class="notes-writing-layout"><aside class="notes-outline" aria-label="Document outline"><p>ON THIS PAGE</p><div id="notes-outline-list"></div><span class="notes-outline-tip">A little structure.<br>A clearer thought.</span></aside><div class="notes-paper"><div class="editor-surface" id="editor-surface" contenteditable="true" spellcheck="true" role="textbox" aria-label="Note content" aria-multiline="true"></div></div></div>
+            <footer class="notes-editor-footer"><span id="notes-metrics"></span><div><p class="editor-status" id="editor-status" role="status"></p><button id="notes-retry-save" type="button" hidden>Retry save</button><button id="notes-save-copy" type="button" hidden>Save a copy</button></div></footer>
+            <p id="notes-message" class="notes-message" role="status"></p>
+            <dialog id="notes-dialog" class="notes-dialog" aria-label="Note tools"></dialog>
           </div>
         </section>
 
